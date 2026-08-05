@@ -1,33 +1,19 @@
 const CACHE_NAME = 'taskmanager-v1';
-const ASSETS = [
-  '/login.html',
-  '/tasks.html',
-  '/admin.html',
-  '/manifest.json'
-];
 
-// تثبيت Service Worker وتخزين الملفات
+// Install
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS);
-    })
-  );
+  self.skipWaiting();
 });
 
-// تفعيل Service Worker
+// Activate
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
-      );
-    })
-  );
+  event.waitUntil(clients.claim());
 });
 
-// استراتيجية: الشبكة أولاً، ثم التخزين المؤقت
+// Fetch - Network first, then cache
 self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
+  
   event.respondWith(
     fetch(event.request)
       .then((response) => {
