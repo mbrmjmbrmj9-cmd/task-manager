@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مهامي | تطبيق المهام</title>
+
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#6C63FF">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="مهامي">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%236C63FF'/><text x='50' y='65' text-anchor='middle' font-size='50'>📋</text></svg>">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* ========== CSS Variables (Light Theme - Default) ========== */
+        :root {
+            --primary: #6C63FF;
+            --primary-light: #8B85FF;
+            --secondary: #FF6584;
+            --bg-start: #a8c0ff;
+            --bg-end: #3f2b96;
+            --card-bg: rgba(255, 255, 255, 0.65);
+            --card-border: rgba(255, 255, 255, 0.5);
+            --text-dark: #2d3748;
+            --text-light: #4a5568;
+            --input-bg: rgba(255, 255, 255, 0.8);
+            --task-bg: white;
+            --task-shadow: rgba(0, 0, 0, 0.03);
+            --filter-bg: white;
+            --filter-border: #cbd5e0;
+            --filter-text: #2d3748;
+            --divider: #cbd5e0;
+            --cat-high: #ef4444;
+            --cat-medium: #f59e0b;
+            --cat-low: #10b981;
+            --cat-personal: #8b5cf6;
+            --cat-default: #6b7280;
+            --shadow: 0 25px 45px rgba(0, 0, 0, 0.15);
+            --radius: 20px;
+        }
+
+        /* ========== Dark Theme ========== */
+        body.dark {
+            --bg-start: #1a1a2e;
+            --bg-end: #16213e;
+            --card-bg: rgba(30, 30, 50, 0.8);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-dark: #e2e8f0;
+            --text-light: #a0aec0;
+            --input-bg: rgba(255, 255, 255, 0.1);
+            --task-bg: rgba(40, 40, 60, 0.9);
+            --task-shadow: rgba(0, 0, 0, 0.2);
+            --filter-bg: rgba(40, 40, 60, 0.9);
+            --filter-border: #4a5568;
+            --filter-text: #e2e8f0;
+            --divider: #4a5568;
+            --shadow: 0 25px 45px rgba(0, 0, 0, 0.4);
+        }
+
+        /* ========== Reset ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* ========== Body ========== */
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            transition: background 0.5s;
+        }
+
+        /* ========== Main Card ========== */
+        .app-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: var(--radius);
+            padding: 2rem 2rem 1.5rem;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--card-border);
+            transition: all 0.5s;
+        }
+
+        /* ========== User Bar ========== */
+        .user-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .user-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .dark-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--input-bg);
+            transition: 0.3s;
+        }
+
+        .dark-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .logout-btn {
+            background: none;
+            border: 2px solid #ef4444;
+            color: #ef4444;
+            padding: 0.4rem 1.2rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            font-weight: 700;
+            font-family: inherit;
+        }
+
+        .logout-btn:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        /* ========== Title ========== */
+        h1 {
+            text-align: center;
+            font-weight: 800;
+            font-size: 2rem;
+            color: var(--text-dark);
+            margin-bottom: 1.5rem;
+        }
+
+        /* ========== Add Task Row ========== */
+        .add-task-row {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        #taskInput {
+            flex: 2;
+            min-width: 150px;
+            padding: 0.9rem 1.2rem;
+            border: 2px solid transparent;
+            border-radius: 3rem;
+            background: var(--input-bg);
+            color: var(--text-dark);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        #taskInput:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(108, 99, 255, 0.15);
+        }
+
+        #categorySelect {
+            padding: 0.9rem 1rem;
+            border-radius: 3rem;
+            border: 2px solid transparent;
+            background: var(--input-bg);
+            color: var(--text-dark);
+            font-family: inherit;
+            cursor: pointer;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--secondary), #ff8e9e);
+            border: none;
+            color: white;
+            font-weight: 700;
+            padding: 0 1.5rem;
+            border-radius: 3rem;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.2s;
+            box-shadow: 0 8px 20px rgba(255, 101, 132, 0.3);
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(255, 101, 132, 0.4);
+        }
+
+        /* ========== Filter Row ========== */
+        .filter-row {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.2rem;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            padding: 0.4rem 1.2rem;
+            border-radius: 2rem;
+            border: 1px solid var(--filter-border);
+            background: var(--filter-bg);
+            color: var(--filter-text);
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* ========== Task List ========== */
+        #taskList {
+            list-style: none;
+            margin-bottom: 1.5rem;
+            max-height: 350px;
+            overflow-y: auto;
+            padding-right: 0.2rem;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--task-bg);
+            padding: 0.8rem 1rem;
+            margin-bottom: 0.6rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 10px var(--task-shadow);
+            transition: all 0.3s;
+            border-right: 5px solid var(--cat-default);
+            animation: slideIn 0.3s ease;
+            color: var(--text-dark);
+        }
+
+        .task-item.cat-high {
+            border-right-color: var(--cat-high);
+        }
+        .task-item.cat-medium {
+            border-right-color: var(--cat-medium);
+        }
+        .task-item.cat-low {
+            border-right-color: var(--cat-low);
+        }
+        .task-item.cat-personal {
+            border-right-color: var(--cat-personal);
+        }
+
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+            opacity: 0.5;
+        }
+
+        .task-text {
+            flex: 1;
+            margin: 0 0.5rem;
+            font-weight: 500;
+            word-break: break-word;
+            cursor: pointer;
+        }
+
+        .edit-input {
+            flex: 1;
+            margin: 0 0.5rem;
+            padding: 0.4rem;
+            border: 2px solid var(--primary);
+            border-radius: 0.5rem;
+            font-family: inherit;
+            font-size: 1rem;
+            background: var(--input-bg);
+            color: var(--text-dark);
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 0.3rem;
+        }
+
+        .btn-icon {
+            background: none;
+            border: none;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--text-dark);
+        }
+
+        .btn-icon:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .complete-btn {
+            color: #10b981;
+        }
+        .delete-btn {
+            color: #ef4444;
+        }
+        .edit-btn {
+            color: #3b82f6;
+        }
+
+        /* ========== Footer ========== */
+        .task-footer {
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-light);
+            font-weight: 500;
+            border-top: 1px dashed var(--divider);
+            padding-top: 1rem;
+        }
+
+        /* ========== Animations ========== */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* ========== Delete Confirmation Modal ========== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-box {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius);
+            padding: 2rem;
+            text-align: center;
+            max-width: 350px;
+            width: 90%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--card-border);
+            color: var(--text-dark);
+        }
+
+        .modal-box h3 {
+            margin-bottom: 1rem;
+        }
+
+        .modal-box p {
+            margin-bottom: 1.5rem;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .modal-buttons button {
+            padding: 0.6rem 1.8rem;
+            border-radius: 2rem;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 700;
+        }
+
+        .modal-cancel {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .modal-confirm {
+            background: #ef4444;
+            color: white;
+        }
+
+        /* ========== Toast Notifications ========== */
+        .toast-container {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .toast {
+            background: #10b981;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 3rem;
+            font-weight: 600;
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.4);
+            animation: toastIn 0.4s ease, toastOut 0.4s ease 2s forwards;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes toastOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ========== Delete Confirmation Modal ========== -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal-box">
+            <h3>🗑️ تأكيد الحذف</h3>
+            <p id="deleteModalText">هل أنت متأكد من حذف هذه المهمة؟ لا يمكن التراجع.</p>
+            <div class="modal-buttons">
+                <button class="modal-cancel" id="modalCancel">إلغاء</button>
+                <button class="modal-confirm" id="modalConfirm">حذف</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== Toast Container ========== -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ========== Install Banner (PWA) ========== -->
+    <div id="installBanner" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--card-bg); backdrop-filter:blur(20px); padding:1rem 1.5rem; border-radius:3rem; box-shadow:0 10px 30px rgba(0,0,0,0.3); z-index:999; border:1px solid var(--card-border); color:var(--text-dark); direction:rtl;">
+        <span>📱 ثبّت التطبيق على جهازك</span>
+        <button id="installBtn" style="margin-right:1rem; padding:0.4rem 1.2rem; border-radius:2rem; border:none; background:var(--primary); color:white; cursor:pointer; font-family:inherit; font-weight:700;">تثبيت</button>
+        <button id="dismissBtn" style="background:none; border:none; cursor:pointer; font-size:1.2rem; margin-right:0.5rem;">✕</button>
+    </div>
+
+    <!-- ========== Main App Card ========== -->
+    <div class="app-card">
+        <!-- User Bar -->
+        <div class="user-bar">
+            <span>👤 <strong id="currentUser"></strong></span>
+            <div class="user-bar-left">
+                <button class="dark-toggle" id="darkToggle" title="الوضع الليلي">🌙</button>
+                <button class="logout-btn" id="logoutBtn">تسجيل خروج</button>
+            </div>
+        </div>
+
+        <!-- Title -->
+        <h1>📋 مهامي</h1>
+
+        <!-- Add Task Row -->
+        <div class="add-task-row">
+            <input type="text" id="taskInput" placeholder="اكتب مهمة جديدة..." autocomplete="off">
+            <select id="categorySelect">
+                <option value="default">⚪ عادي</option>
+                <option value="high">🔴 عالي</option>
+                <option value="medium">🟡 متوسط</option>
+                <option value="low">🟢 منخفض</option>
+                <option value="personal">🟣 شخصي</option>
+            </select>
+            <button class="btn" id="addBtn">➕ إضافة</button>
+        </div>
+
+        <!-- Filter Row -->
+        <div class="filter-row">
+            <button class="filter-btn active" data-filter="all">الكل</button>
+            <button class="filter-btn" data-filter="active">النشطة</button>
+            <button class="filter-btn" data-filter="completed">المكتملة</button>
+        </div>
+
+        <!-- Task List -->
+        <ul id="taskList"></ul>
+
+        <!-- Footer -->
+        <div class="task-footer">
+            <span>المهام المتبقية: <strong id="remainingCount">0</strong></span>
+        </div>
+    </div>
+
+    <!-- ========== SCRIPTS ========== -->
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(() => console.log('✅ Service Worker مسجل'))
+                    .catch(err => console.log('❌ خطأ Service Worker:', err));
+            });
+        }
+    </script>
+
+    <!-- PWA Install Banner Logic -->
+    <script>
+        let deferredPrompt;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installBanner').style.display = 'flex';
+        });
+
+        document.getElementById('installBtn').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const result = await deferredPrompt.userChoice;
+                console.log('المستخدم:', result.outcome);
+                deferredPrompt = null;
+            }
+            document.getElementById('installBanner').style.display = 'none';
+        });
+
+        document.getElementById('dismissBtn').addEventListener('click', () => {
+            document.getElementById('installBanner').style.display = 'none';
+        });
+    </script>
+
+    <!-- Main Application Script -->
+    <script>
+        // ========== Configuration ==========
+        const API_BASE = 'http://localhost:3000/api';
+        const token = localStorage.getItem('taskToken');
+        const user = JSON.parse(localStorage.getItem('taskUser') || '{}');
+        let currentFilter = 'all';
+        let allTasks = [];
+        let pendingDeleteId = null;
+
+        // ========== Auth Guard ==========
+        if (!token) {
+            window.location.href = 'login.html';
+        }
+
+        // ========== DOM Elements ==========
+        document.getElementById('currentUser').textContent = user.username || 'مستخدم';
+        const taskInput = document.getElementById('taskInput');
+        const categorySelect = document.getElementById('categorySelect');
+        const addBtn = document.getElementById('addBtn');
+        const taskList = document.getElementById('taskList');
+        const remainingSpan = document.getElementById('remainingCount');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        // ========== Dark Mode Toggle ==========
+        const darkToggle = document.getElementById('darkToggle');
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark');
+            darkToggle.textContent = '☀️';
+        }
+        darkToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            localStorage.setItem('darkMode', isDark);
+            darkToggle.textContent = isDark ? '☀️' : '🌙';
+        });
+
+        // ========== Delete Modal Logic ==========
+        const deleteModal = document.getElementById('deleteModal');
+        const modalCancel = document.getElementById('modalCancel');
+        const modalConfirm = document.getElementById('modalConfirm');
+        const deleteModalText = document.getElementById('deleteModalText');
+
+        function showDeleteModal(taskId, taskText) {
+            pendingDeleteId = taskId;
+            deleteModalText.textContent = `هل أنت متأكد من حذف "${taskText}"؟ لا يمكن التراجع.`;
+            deleteModal.classList.add('active');
+        }
+        modalCancel.addEventListener('click', () => {
+            deleteModal.classList.remove('active');
+            pendingDeleteId = null;
+        });
+        modalConfirm.addEventListener('click', async () => {
+            if (pendingDeleteId) {
+                await deleteTaskConfirmed(pendingDeleteId);
+                deleteModal.classList.remove('active');
+                pendingDeleteId = null;
+            }
+        });
+        deleteModal.addEventListener('click', (e) => {
+            if (e.target === deleteModal) {
+                deleteModal.classList.remove('active');
+                pendingDeleteId = null;
+            }
+        });
+
+        // ========== Toast Notifications ==========
+        function showToast(message) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
+        }
+
+        // ========== Browser Notifications ==========
+        async function requestNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    console.log('✅ تم تفعيل الإشعارات');
+                }
+            }
+        }
+
+        function showBrowserNotification(title, body) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(title, {
+                    body: body,
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%236C63FF"/><text x="50" y="65" text-anchor="middle" font-size="50">📋</text></svg>',
+                    badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%236C63FF"/><text x="50" y="65" text-anchor="middle" font-size="50">✅</text></svg>',
+                    vibrate: [200, 100, 200]
+                });
+            }
+        }
+        requestNotificationPermission();
+
+        // ========== Logout ==========
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('taskToken');
+            localStorage.removeItem('taskUser');
+            window.location.href = 'login.html';
+        });
+
+        // ========== Filter Buttons ==========
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.filter;
+                renderTasks(allTasks);
+            });
+        });
+
+        // ========== API: Fetch Tasks ==========
+        async function fetchTasks() {
+            if (!token) return;
+            try {
+                const res = await fetch(`${API_BASE}/tasks`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.status === 401 || res.status === 403) {
+                    logoutBtn.click();
+                    return;
+                }
+                allTasks = await res.json();
+                renderTasks(allTasks);
+            } catch (err) {
+                console.error('خطأ في جلب المهام:', err);
+            }
+        }
+
+        // ========== Render Tasks ==========
+        function renderTasks(tasks) {
+            let filtered = tasks;
+            if (currentFilter === 'active') {
+                filtered = tasks.filter(t => !t.completed);
+            } else if (currentFilter === 'completed') {
+                filtered = tasks.filter(t => t.completed);
+            }
+            taskList.innerHTML = '';
+            filtered.forEach(task => {
+                taskList.appendChild(createTaskElement(task));
+            });
+            updateRemaining();
+        }
+
+        // ========== Create Task Element ==========
+        function createTaskElement(task) {
+            const li = document.createElement('li');
+            li.className = `task-item cat-${task.category || 'default'} ${task.completed ? 'completed' : ''}`;
+            li.dataset.id = task.id;
+
+            // Task Text
+            const taskText = document.createElement('span');
+            taskText.className = 'task-text';
+            taskText.textContent = task.text;
+            taskText.addEventListener('dblclick', () => startEdit(task, taskText));
+
+            // Actions Container
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'task-actions';
+
+            // Edit Button
+            const editBtn = document.createElement('button');
+            editBtn.className = 'btn-icon edit-btn';
+            editBtn.innerHTML = '✎';
+            editBtn.title = 'تعديل';
+            editBtn.addEventListener('click', () => startEdit(task, taskText));
+
+            // Complete Button
+            const completeBtn = document.createElement('button');
+            completeBtn.className = 'btn-icon complete-btn';
+            completeBtn.innerHTML = '✓';
+            completeBtn.title = 'إكمال';
+            completeBtn.addEventListener('click', () => toggleTask(task.id, !task.completed));
+
+            // Delete Button
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'btn-icon delete-btn';
+            deleteBtn.innerHTML = '✕';
+            deleteBtn.title = 'حذف';
+            deleteBtn.addEventListener('click', () => showDeleteModal(task.id, task.text));
+
+            // Assemble
+            actionsDiv.appendChild(editBtn);
+            actionsDiv.appendChild(completeBtn);
+            actionsDiv.appendChild(deleteBtn);
+            li.appendChild(taskText);
+            li.appendChild(actionsDiv);
+
+            return li;
+        }
+
+        // ========== Inline Edit ==========
+        function startEdit(task, spanElement) {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = task.text;
+            input.className = 'edit-input';
+            spanElement.replaceWith(input);
+            input.focus();
+            input.select();
+
+            const save = async () => {
+                const newText = input.value.trim();
+                if (newText && newText !== task.text) {
+                    try {
+                        await fetch(`${API_BASE}/tasks/${task.id}`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({ text: newText })
+                        });
+                        showToast('✅ تم تعديل المهمة');
+                        fetchTasks();
+                    } catch (err) {
+                        console.error('فشل التعديل:', err);
+                    }
+                } else {
+                    input.replaceWith(spanElement);
+                }
+            };
+
+            input.addEventListener('blur', save);
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') save();
+                if (e.key === 'Escape') input.replaceWith(spanElement);
+            });
+        }
+
+        // ========== API: Add Task ==========
+        async function addTask() {
+            const text = taskInput.value.trim();
+            if (!text) return;
+            try {
+                await fetch(`${API_BASE}/tasks`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        text,
+                        category: categorySelect.value
+                    })
+                });
+                taskInput.value = '';
+                showToast('✅ تمت إضافة المهمة');
+                fetchTasks();
+            } catch (err) {
+                console.error('فشل إضافة المهمة:', err);
+            }
+        }
+
+        // ========== API: Toggle Task ==========
+        async function toggleTask(id, completed) {
+            try {
+                await fetch(`${API_BASE}/tasks/${id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ completed })
+                });
+                if (completed) {
+                    showToast('🎉 مهمة مكتملة!');
+                    showBrowserNotification('🎉 مهمة مكتملة!', 'أحسنت! تم إكمال المهمة بنجاح.');
+                }
+                fetchTasks();
+            } catch (err) {
+                console.error('فشل تحديث المهمة:', err);
+            }
+        }
+
+        // ========== API: Delete Task ==========
+        async function deleteTaskConfirmed(id) {
+            try {
+                await fetch(`${API_BASE}/tasks/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                showToast('🗑️ تم حذف المهمة');
+                fetchTasks();
+            } catch (err) {
+                console.error('فشل حذف المهمة:', err);
+            }
+        }
+
+        // ========== Update Remaining Counter ==========
+        function updateRemaining() {
+            const remaining = allTasks.filter(t => !t.completed).length;
+            remainingSpan.textContent = remaining;
+        }
+
+        // ========== Event Listeners ==========
+        addBtn.addEventListener('click', addTask);
+        taskInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') addTask();
+        });
+
+        // ========== Initial Load ==========
+        fetchTasks();
+    </script>
+
+</body>
+</html>

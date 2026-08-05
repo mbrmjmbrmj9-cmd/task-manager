@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول | مهامي</title>
+
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#6C63FF">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="مهامي">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%236C63FF'/><text x='50' y='65' text-anchor='middle' font-size='50'>📋</text></svg>">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* ========== CSS Variables ========== */
+        :root {
+            --primary: #6C63FF;
+            --primary-light: #8B85FF;
+            --secondary: #FF6584;
+            --bg-start: #a8c0ff;
+            --bg-end: #3f2b96;
+            --card-bg: rgba(255, 255, 255, 0.6);
+            --text-dark: #2d3748;
+            --text-light: #4a5568;
+            --shadow: 0 25px 45px rgba(0, 0, 0, 0.15);
+            --radius: 20px;
+        }
+
+        /* ========== Reset ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* ========== Body ========== */
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        /* ========== Auth Card ========== */
+        .auth-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: var(--radius);
+            padding: 2.5rem 2rem;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.3s;
+        }
+
+        /* ========== Title & Subtitle ========== */
+        .auth-card h1 {
+            text-align: center;
+            font-weight: 800;
+            font-size: 2rem;
+            color: var(--text-dark);
+            margin-bottom: 0.25rem;
+        }
+
+        .auth-card .subtitle {
+            text-align: center;
+            color: var(--text-light);
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+
+        /* ========== Input Groups ========== */
+        .input-group {
+            position: relative;
+            margin-bottom: 1.2rem;
+        }
+
+        .input-group .icon {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 22px;
+            height: 22px;
+            color: #a0aec0;
+            transition: 0.3s;
+            pointer-events: none;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 0.9rem 2.8rem 0.9rem 1rem;
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid transparent;
+            border-radius: 3rem;
+            font-family: inherit;
+            font-size: 1rem;
+            color: var(--text-dark);
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.03);
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(108, 99, 255, 0.15);
+        }
+
+        .input-group:focus-within .icon {
+            color: var(--primary);
+        }
+
+        /* ========== Options Row ========== */
+        .options-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.8rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .remember-me input {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary);
+        }
+
+        .forgot-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .forgot-link:hover {
+            text-decoration: underline;
+        }
+
+        /* ========== Buttons ========== */
+        .btn {
+            width: 100%;
+            padding: 0.9rem;
+            border: none;
+            border-radius: 3rem;
+            font-family: inherit;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            color: white;
+            background: linear-gradient(135deg, var(--secondary), #ff8e9e);
+            box-shadow: 0 8px 20px rgba(255, 101, 132, 0.3);
+            margin-top: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(255, 101, 132, 0.4);
+        }
+
+        .btn.outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            box-shadow: none;
+            margin-top: 1rem;
+        }
+
+        .btn.outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* ========== Switch Text ========== */
+        .switch-text {
+            text-align: center;
+            margin-top: 1.2rem;
+            color: var(--text-light);
+        }
+
+        .switch-text a {
+            color: var(--primary);
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .switch-text a:hover {
+            text-decoration: underline;
+        }
+
+        /* ========== Error Message ========== */
+        .error-message {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            display: none;
+        }
+
+        /* ========== Utilities ========== */
+        .hidden {
+            display: none !important;
+        }
+
+        /* ========== Animations ========== */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ========== Auth Card ========== -->
+    <div class="auth-card">
+
+        <!-- ========== Login Form ========== -->
+        <div id="loginForm">
+            <h1>👋 مرحباً</h1>
+            <p class="subtitle">سجّل دخولك إلى مهامي</p>
+
+            <!-- Error Message -->
+            <div class="error-message" id="loginError">اسم المستخدم أو كلمة المرور غير صحيحة</div>
+
+            <!-- Username Field -->
+            <div class="input-group">
+                <input type="text" id="loginUsername" placeholder="اسم المستخدم" autocomplete="username">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="8" r="4"/>
+                    <path d="M20 21a8 8 0 0 0-16 0"/>
+                </svg>
+            </div>
+
+            <!-- Password Field -->
+            <div class="input-group">
+                <input type="password" id="loginPassword" placeholder="كلمة المرور" autocomplete="current-password">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+            </div>
+
+            <!-- Options Row -->
+            <div class="options-row">
+                <label class="remember-me">
+                    <input type="checkbox" checked> تذكرني
+                </label>
+                <a href="#" class="forgot-link">نسيت كلمة المرور؟</a>
+            </div>
+
+            <!-- Login Button -->
+            <button class="btn" id="loginBtn">تسجيل الدخول</button>
+
+            <!-- Switch to Register -->
+            <p class="switch-text">
+                ليس لديك حساب؟ <a href="#" id="showRegisterLink">أنشئ حساباً الآن</a>
+            </p>
+        </div>
+
+        <!-- ========== Register Form (Hidden by default) ========== -->
+        <div id="registerForm" class="hidden">
+            <h1>📝 انضم إلينا</h1>
+            <p class="subtitle">أنشئ حساباً جديداً لتبدأ</p>
+
+            <!-- Error Message -->
+            <div class="error-message" id="registerError">حدث خطأ، الرجاء المحاولة</div>
+
+            <!-- Username Field -->
+            <div class="input-group">
+                <input type="text" id="regUsername" placeholder="اختر اسم مستخدم">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="8" r="4"/>
+                    <path d="M20 21a8 8 0 0 0-16 0"/>
+                </svg>
+            </div>
+
+            <!-- Password Field -->
+            <div class="input-group">
+                <input type="password" id="regPassword" placeholder="كلمة المرور">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+            </div>
+
+            <!-- Confirm Password Field -->
+            <div class="input-group">
+                <input type="password" id="regConfirmPassword" placeholder="تأكيد كلمة المرور">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+            </div>
+
+            <!-- Register Button -->
+            <button class="btn" id="registerBtn">إنشاء حساب</button>
+
+            <!-- Switch to Login -->
+            <p class="switch-text">
+                لديك حساب بالفعل؟ <a href="#" id="showLoginLink">سجّل دخولك</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- ========== SCRIPTS ========== -->
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(() => console.log('✅ Service Worker مسجل'))
+                    .catch(err => console.log('❌ خطأ Service Worker:', err));
+            });
+        }
+    </script>
+
+    <!-- Main Auth Script -->
+    <script>
+        // ========== Configuration ==========
+        const API_URL = 'http://localhost:3000/api';
+
+        // ========== DOM Elements ==========
+        const loginFormDiv = document.getElementById('loginForm');
+        const registerFormDiv = document.getElementById('registerForm');
+        const showRegisterLink = document.getElementById('showRegisterLink');
+        const showLoginLink = document.getElementById('showLoginLink');
+        const loginBtn = document.getElementById('loginBtn');
+        const registerBtn = document.getElementById('registerBtn');
+        const loginError = document.getElementById('loginError');
+        const registerError = document.getElementById('registerError');
+
+        // ========== Toggle Forms ==========
+        showRegisterLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginFormDiv.classList.add('hidden');
+            registerFormDiv.classList.remove('hidden');
+            loginError.style.display = 'none';
+        });
+
+        showLoginLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            registerFormDiv.classList.add('hidden');
+            loginFormDiv.classList.remove('hidden');
+            registerError.style.display = 'none';
+        });
+
+        // ========== Login Handler ==========
+        loginBtn.addEventListener('click', async () => {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            // Validation
+            if (!username || !password) {
+                loginError.textContent = 'الرجاء إدخال اسم المستخدم وكلمة المرور';
+                loginError.style.display = 'block';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Store token and user data
+                    localStorage.setItem('taskToken', data.token);
+                    localStorage.setItem('taskUser', JSON.stringify(data.user));
+                    // Redirect to tasks page
+                    window.location.href = 'tasks.html';
+                } else {
+                    loginError.textContent = data.error || 'فشل تسجيل الدخول';
+                    loginError.style.display = 'block';
+                }
+            } catch (err) {
+                loginError.textContent = 'تعذر الاتصال بالخادم. تأكد أن الخادم يعمل.';
+                loginError.style.display = 'block';
+                console.error('خطأ:', err);
+            }
+        });
+
+        // ========== Register Handler ==========
+        registerBtn.addEventListener('click', async () => {
+            const username = document.getElementById('regUsername').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const confirm = document.getElementById('regConfirmPassword').value;
+
+            // Validation
+            if (!username || !password || !confirm) {
+                registerError.textContent = 'الرجاء ملء جميع الحقول';
+                registerError.style.display = 'block';
+                return;
+            }
+            if (password !== confirm) {
+                registerError.textContent = 'كلمتا المرور غير متطابقتين';
+                registerError.style.display = 'block';
+                return;
+            }
+            if (password.length < 4) {
+                registerError.textContent = 'كلمة المرور يجب أن تكون 4 أحرف على الأقل';
+                registerError.style.display = 'block';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('تم إنشاء الحساب بنجاح! يمكنك الآن تسجيل الدخول.');
+                    registerFormDiv.classList.add('hidden');
+                    loginFormDiv.classList.remove('hidden');
+                    document.getElementById('loginUsername').value = username;
+                } else {
+                    registerError.textContent = data.error || 'فشل إنشاء الحساب';
+                    registerError.style.display = 'block';
+                }
+            } catch (err) {
+                registerError.textContent = 'تعذر الاتصال بالخادم. تأكد أن الخادم يعمل.';
+                registerError.style.display = 'block';
+                console.error('خطأ:', err);
+            }
+        });
+
+        // ========== Hide Errors on Input ==========
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', () => {
+                loginError.style.display = 'none';
+                registerError.style.display = 'none';
+            });
+        });
+    </script>
+
+</body>
+</html>
