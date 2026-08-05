@@ -391,13 +391,17 @@
                 });
                 const data = await response.json();
 
-                if (response.ok) {
-                    // Store token and user data
-                    localStorage.setItem('taskToken', data.token);
-                    localStorage.setItem('taskUser', JSON.stringify(data.user));
-                    // Redirect to tasks page
-                    window.location.href = 'tasks.html';
-                } else {
+if (response.ok) {
+    console.log('✅ تم تسجيل الدخول');
+    console.log('Token:', data.token ? 'موجود' : 'مفقود');
+    // Store token and user data
+    localStorage.setItem('taskToken', data.token);
+    localStorage.setItem('taskUser', JSON.stringify(data.user));
+    // Verify storage
+    console.log('Stored token:', localStorage.getItem('taskToken') ? 'موجود' : 'مفقود');
+    // Redirect to tasks page
+    window.location.href = 'tasks.html';
+}else {
                     loginError.textContent = data.error || 'فشل تسجيل الدخول';
                     loginError.style.display = 'block';
                 }
