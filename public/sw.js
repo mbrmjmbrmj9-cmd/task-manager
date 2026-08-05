@@ -10,7 +10,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(clients.claim());
 });
 
-// Fetch - Network first, then cache
+// Fetch - Network first, then cache (GET only)
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   
