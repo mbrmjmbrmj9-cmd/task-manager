@@ -325,11 +325,24 @@
         let adminToken = localStorage.getItem('adminToken');
 
         // ========== Auth Check ==========
-        if (adminToken) {
-            document.getElementById('loginSection').classList.add('hidden');
-            document.getElementById('dashboardSection').classList.remove('hidden');
-            loadStats();
-        }
+      if (adminToken) {
+  // تحقق من صحة التوكن أولاً
+  fetch(`${API_BASE}/admin/stats`, {
+    headers: { 'Authorization': `Bearer ${adminToken}` }
+  })
+  .then(res => {
+    if (res.ok) {
+      document.getElementById('loginSection').classList.add('hidden');
+      document.getElementById('dashboardSection').classList.remove('hidden');
+      loadStats();
+    } else {
+      localStorage.removeItem('adminToken');
+    }
+  })
+  .catch(() => {
+    // الخادم غير متاح، لا تسجل خروج
+  });
+}
 
         // ========== Admin Login ==========
         document.getElementById('adminLoginBtn').addEventListener('click', async () => {
