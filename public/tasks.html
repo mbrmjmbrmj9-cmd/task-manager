@@ -579,7 +579,11 @@
     <!-- Main Application Script -->
     <script>
         // ========== Configuration ==========
+<<<<<<< HEAD
        const API_BASE = 'http://localhost:3000/api';
+=======
+      const API_BASE = 'https://task-manager-production-d3cf.up.railway.app/api';
+>>>>>>> 8008be0926a93dcef77212c33b13d6a468a8f3ae
         const token = localStorage.getItem('taskToken');
         const user = JSON.parse(localStorage.getItem('taskUser') || '{}');
         let currentFilter = 'all';
@@ -884,6 +888,5 @@
         // ========== Initial Load ==========
         fetchTasks();
     </script>
-
 </body>
 </html>

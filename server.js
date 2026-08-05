@@ -10,7 +10,7 @@ const PORT = 3000;
 const JWT_SECRET = 'taskapp_super_secret_key_2025';
 
 // ========== MongoDB Atlas Connection ==========
-const MONGO_URI = 'mongodb+srv://admin:Admin12345@cluster0.gnndcfh.mongodb.net/taskmanager?retryWrites=true&w=majority';
+const MONGO_URI = 'mongodb+srv://almbrmjbrmjh60_db_user:wMg3WypI25E3XpWb@taskmanager.renf2sl.mongodb.net/taskmanager?retryWrites=true&w=majority';
 // ⚠️ Replace with your actual MongoDB Atlas connection string!
 
 // ========== Middleware ==========

@@ -345,7 +345,11 @@
     <!-- Main Auth Script -->
     <script>
         // ========== Configuration ==========
+<<<<<<< HEAD
        const API_URL = 'http://localhost:3000/api';
+=======
+      const API_URL = 'https://task-manager-production-d3cf.up.railway.app/api';
+>>>>>>> 8008be0926a93dcef77212c33b13d6a468a8f3ae
         // ========== DOM Elements ==========
         const loginFormDiv = document.getElementById('loginForm');
         const registerFormDiv = document.getElementById('registerForm');
@@ -391,13 +395,17 @@
                 });
                 const data = await response.json();
 
-                if (response.ok) {
-                    // Store token and user data
-                    localStorage.setItem('taskToken', data.token);
-                    localStorage.setItem('taskUser', JSON.stringify(data.user));
-                    // Redirect to tasks page
-                    window.location.href = 'tasks.html';
-                } else {
+if (response.ok) {
+    console.log('✅ تم تسجيل الدخول');
+    console.log('Token:', data.token ? 'موجود' : 'مفقود');
+    // Store token and user data
+    localStorage.setItem('taskToken', data.token);
+    localStorage.setItem('taskUser', JSON.stringify(data.user));
+    // Verify storage
+    console.log('Stored token:', localStorage.getItem('taskToken') ? 'موجود' : 'مفقود');
+    // Redirect to tasks page
+    window.location.href = 'tasks.html';
+}else {
                     loginError.textContent = data.error || 'فشل تسجيل الدخول';
                     loginError.style.display = 'block';
                 }
@@ -464,5 +472,9 @@
         });
     </script>
 
+<footer style="text-align:center;padding:1rem;color:white;position:fixed;bottom:0;width:100%;font-size:0.85rem;opacity:0.8;">
+  <p>© 2026 مهامي | تطوير: <strong>عبدالرقيب الخالدي</strong></p>
+  <p>📧 bdalrqybalkhaldy183@gmail.com | 📞 +967 771417594</p>
+</footer>
 </body>
 </html>
