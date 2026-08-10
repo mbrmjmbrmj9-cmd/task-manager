@@ -23,10 +23,7 @@ connectDB();
 app.use(helmet({ contentSecurityPolicy: false }));
 
 // CORS
-app.use(cors({
-    origin: ['http://localhost:3000', 'https://nivora.vercel.app'],
-    credentials: true
-}));
+app.use(cors({ origin: '*', credentials: true }));
 
 // Rate Limiting
 app.use('/api/', rateLimit({
