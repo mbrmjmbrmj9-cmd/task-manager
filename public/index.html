@@ -9,95 +9,74 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Cairo', sans-serif; background: #F1F5F9; color: #1E293B; min-height: 100vh; }
-        body.dark { background: #0F172A; color: #F8FAFC; }
-        
-        /* Top Nav */
-        .topnav { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1.5rem; background: white; border-bottom: 1px solid #E2E8F0; position: sticky; top: 0; z-index: 50; }
-        body.dark .topnav { background: #1E293B; border-color: #334155; }
-        .topnav .logo { font-size: 1.5rem; font-weight: 800; color: #2563EB; }
-        .topnav .nav-links { display: flex; gap: 0.25rem; overflow-x: auto; }
-        .topnav .nav-links a { padding: 0.5rem 0.75rem; border-radius: 8px; color: #64748B; text-decoration: none; font-weight: 600; font-size: 0.85rem; white-space: nowrap; }
-        .topnav .nav-links a:hover, .topnav .nav-links a.active { background: #EFF6FF; color: #2563EB; }
-        body.dark .topnav .nav-links a { color: #94A3B8; }
-        body.dark .topnav .nav-links a:hover, body.dark .topnav .nav-links a.active { background: #1E3A5F; color: #60A5FA; }
-        .topnav .actions { display: flex; gap: 0.5rem; align-items: center; }
-        .topnav .actions button, .topnav .actions a { background: none; border: 1px solid #E2E8F0; padding: 0.4rem 0.75rem; border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 0.85rem; color: #64748B; text-decoration: none; }
-        body.dark .topnav .actions button, body.dark .topnav .actions a { border-color: #334155; color: #94A3B8; }
-        
-        /* Main */
-        .main { padding: 1.5rem; max-width: 1200px; margin: 0 auto; }
-        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-        .kpi-card { background: white; padding: 1.25rem; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        body.dark .kpi-card { background: #1E293B; }
+        body { display: flex; min-height: 100vh; }
+        .sidebar { width: 240px; background: var(--card); border-left: 1px solid var(--border); padding: 1.5rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 100; overflow-y: auto; }
+        .sidebar .logo { font-size: 1.3rem; font-weight: 800; padding: 0 0.75rem; margin-bottom: 1rem; }
+        .sidebar a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text); text-decoration: none; font-weight: 500; font-size: 0.9rem; }
+        .sidebar a:hover, .sidebar a.active { background: #EFF6FF; color: var(--primary); }
+        .sidebar a svg { width: 20px; height: 20px; }
+        .main { margin-right: 240px; flex: 1; padding: 2rem; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 0.5rem; }
+        .topbar h1 { font-size: 1.5rem; font-weight: 800; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .kpi-card { padding: 1.25rem; }
         .kpi-card .kpi-value { font-size: 2rem; font-weight: 800; }
-        .kpi-card .kpi-label { font-size: 0.85rem; color: #64748B; margin-top: 0.25rem; }
-        body.dark .kpi-card .kpi-label { color: #94A3B8; }
-        
-        /* Mobile Bottom Nav */
-        .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #E2E8F0; padding: 0.5rem; z-index: 50; }
-        body.dark .bottom-nav { background: #1E293B; border-color: #334155; }
-        .bottom-nav { display: none; justify-content: space-around; }
-        .bottom-nav a { display: flex; flex-direction: column; align-items: center; gap: 0.15rem; color: #64748B; text-decoration: none; font-size: 0.65rem; }
-        .bottom-nav a svg { width: 20px; height: 20px; }
-        
+        .kpi-card .kpi-label { font-size: 0.85rem; color: var(--text-light); }
+
         @media (max-width: 768px) {
-            .topnav .nav-links { display: none; }
-            .bottom-nav { display: flex; }
-            .main { padding: 1rem; padding-bottom: 4rem; }
+            .sidebar { width: 100%; height: auto; position: relative; flex-direction: row; flex-wrap: wrap; gap: 0.25rem; padding: 0.75rem; }
+            .sidebar .logo { width: 100%; text-align: center; }
+            .sidebar a { font-size: 0.75rem; padding: 0.4rem 0.6rem; }
+            .sidebar a svg { width: 16px; height: 16px; }
+            body { flex-direction: column; }
+            .main { margin-right: 0; padding: 1rem; }
             .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .topbar h1 { font-size: 1.2rem; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Top Navigation -->
-    <nav class="topnav">
+    <aside class="sidebar">
         <div class="logo">📋 Nivora</div>
-        <div class="nav-links">
-            <a href="index.html" class="active">لوحة القيادة</a>
-            <a href="tasks.html">المهام</a>
-            <a href="projects.html">المشاريع</a>
-            <a href="kanban.html">Kanban</a>
-            <a href="gantt.html">Gantt</a>
-            <a href="calendar.html">التقويم</a>
-            <a href="reports.html">التقارير</a>
-            <a href="workflows.html">Workflows</a>
-            <a href="templates.html">القوالب</a>
-            <a href="archive.html">الأرشيف</a>
-            <a href="team.html">الفريق</a>
-        </div>
-        <div class="actions">
-            <span id="usernameDisplay" style="font-weight:600;font-size:0.85rem;"></span>
-            <button onclick="toggleDark()" id="darkBtn">🌙</button>
-            <button onclick="logout()">خروج</button>
-        </div>
-    </nav>
+        <a href="index.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>لوحة القيادة</a>
+        <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg>المهام</a>
+        <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>المشاريع</a>
+        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg>Kanban</a>
+        <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>Gantt</a>
+        <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>التقويم</a>
+        <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>التقارير</a>
+        <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg>Workflows</a>
+        <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>القوالب</a>
+        <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>الأرشيف</a>
+        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>الفريق</a>
+    </aside>
 
-    <!-- Main Content -->
     <main class="main">
-        <div class="kpi-grid">
-            <div class="kpi-card"><div class="kpi-value" id="totalTasks" style="color:#2563EB;">0</div><div class="kpi-label">إجمالي المهام</div></div>
-            <div class="kpi-card"><div class="kpi-value" id="doneTasks" style="color:#22C55E;">0</div><div class="kpi-label">مكتملة</div></div>
-            <div class="kpi-card"><div class="kpi-value" id="pendingTasks" style="color:#F97316;">0</div><div class="kpi-label">قيد الانتظار</div></div>
-            <div class="kpi-card"><div class="kpi-value" id="overdueTasks" style="color:#EF4444;">0</div><div class="kpi-label">متأخرة</div></div>
-            <div class="kpi-card"><div class="kpi-value" id="projectCount" style="color:#7C3AED;">0</div><div class="kpi-label">المشاريع</div></div>
+        <div class="topbar">
+            <h1>لوحة القيادة</h1>
+            <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+                <span id="usernameDisplay" style="font-weight:600;"></span>
+                <button class="btn btn-outline" onclick="toggleDark()" id="darkBtn" style="height:36px;">🌙</button>
+                <button class="btn btn-outline" id="logoutBtn" style="height:36px;">خروج</button>
+            </div>
         </div>
-        <div style="text-align:center;padding:3rem 1rem;color:#64748B;">
-            <div style="font-size:3rem;">📋</div>
-            <h3 style="margin:0.5rem 0;">لا توجد مهام بعد</h3>
+
+        <div class="kpi-grid">
+            <div class="card kpi-card"><div class="kpi-value" id="totalTasks" style="color:#2563EB;">0</div><div class="kpi-label">إجمالي المهام</div></div>
+            <div class="card kpi-card"><div class="kpi-value" id="doneTasks" style="color:#22C55E;">0</div><div class="kpi-label">مكتملة</div></div>
+            <div class="card kpi-card"><div class="kpi-value" id="pendingTasks" style="color:#F97316;">0</div><div class="kpi-label">قيد الانتظار</div></div>
+            <div class="card kpi-card"><div class="kpi-value" id="overdueTasks" style="color:#EF4444;">0</div><div class="kpi-label">متأخرة</div></div>
+            <div class="card kpi-card"><div class="kpi-value" id="projectCount" style="color:#7C3AED;">0</div><div class="kpi-label">المشاريع</div></div>
+        </div>
+
+        <div class="card" style="text-align:center;padding:3rem 1rem;color:var(--text-light);">
+            <div style="font-size:3rem;margin-bottom:1rem;">📋</div>
+            <h3 style="color:var(--text);margin-bottom:0.5rem;">لا توجد مهام بعد</h3>
+            <p>أنشئ مهمتك الأولى وابدأ بتنظيم أعمالك</p>
             <a href="tasks.html" class="btn btn-primary" style="display:inline-block;margin-top:1rem;">➕ مهمة جديدة</a>
         </div>
     </main>
-
-    <!-- Mobile Bottom Nav -->
-    <nav class="bottom-nav">
-        <a href="index.html">🏠<span>الرئيسية</span></a>
-        <a href="tasks.html">📋<span>مهام</span></a>
-        <a href="kanban.html">📌<span>Kanban</span></a>
-        <a href="team.html">👥<span>فريق</span></a>
-    </nav>
 
     <script>
         const API_BASE = 'https://nivora-t9ov.onrender.com/api';
@@ -109,6 +88,7 @@
         if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
         const displayName = user.fullName || user.email || user.username || 'مستخدم';
         document.getElementById('usernameDisplay').textContent = displayName;
+        document.getElementById('logoutBtn').addEventListener('click', logout);
         async function loadStats() { try { const [tasksRes, projectsRes] = await Promise.all([fetch(`${API_BASE}/tasks`, { headers: { 'Authorization': `Bearer ${token}` } }), fetch(`${API_BASE}/projects`, { headers: { 'Authorization': `Bearer ${token}` } })]); const tasks = await tasksRes.json(); const projects = await projectsRes.json(); document.getElementById('totalTasks').textContent = tasks.length; document.getElementById('doneTasks').textContent = tasks.filter(t => t.status === 'done').length; document.getElementById('pendingTasks').textContent = tasks.filter(t => t.status !== 'done' && t.status !== 'archived').length; document.getElementById('overdueTasks').textContent = tasks.filter(t => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'done').length; document.getElementById('projectCount').textContent = projects.length; } catch (e) {} }
         loadStats();
     </script>
