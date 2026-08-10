@@ -3,8 +3,8 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('../models/User');
 
 passport.use(new GoogleStrategy({
-    clientID: '490941061417-6i5tg0n3nskc61psdkv4pgculjedob6l.apps.googleusercontent.com',
-    clientSecret: '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',
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: 'https://nivora-t9ov.onrender.com/api/auth/google/callback'
 }, async (accessToken, refreshToken, profile, done) => {
     try {
@@ -18,7 +18,9 @@ passport.use(new GoogleStrategy({
             });
         }
         return done(null, user);
-    } catch (err) { return done(err, null); }
+    } catch (err) {
+        return done(err, null);
+    }
 }));
 
 module.exports = passport;

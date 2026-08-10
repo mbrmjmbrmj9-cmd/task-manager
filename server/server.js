@@ -13,8 +13,8 @@ const authRoutes = require('./routes/auth');
 require('./config/google.js');
 
 const app = express();
-const PORT = 3000;
-const JWT_SECRET = 'nivora_secret_2025';
+const PORT = process.env.PORT || 3000;
+const JWT_SECRET = process.env.JWT_SECRET || 'nivora_secret_2025';
 
 // اتصال قاعدة البيانات
 connectDB();
