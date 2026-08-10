@@ -26,6 +26,7 @@ app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({ origin: '*', credentials: true }));
 
 // Rate Limiting
+app.set('trust proxy', 1);
 app.use('/api/', rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 1000,
