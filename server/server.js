@@ -10,7 +10,7 @@ const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const connectDB = require('./config/database');
 const authRoutes = require('./routes/auth');
-require('./config/google');
+require('./config/google.js');
 
 const app = express();
 const PORT = 3000;
