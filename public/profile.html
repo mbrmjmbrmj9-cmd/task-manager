@@ -46,7 +46,7 @@
     </div>
 
     <script>
-        const API = 'http://localhost:3000/api';
+        const API = 'https://nivora-t9ov.onrender.com/api';
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'login.html';
         const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -60,7 +60,7 @@
             const input = document.querySelector('input[type="file"]:not([style*="none"])') || document.querySelector('input[type="file"]');
             const file = input.files[0]; if (!file) return;
             const formData = new FormData(); formData.append('file', file);
-            const res = await fetch('http://localhost:3000/api/upload', { method: 'POST', body: formData });
+            const res = await fetch('https://nivora-t9ov.onrender.com/api/upload', { method: 'POST', body: formData });
             const data = await res.json();
             if (res.ok) { await fetch(`${API}/auth/avatar`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ avatar: data.url }) }); user.avatar = data.url; localStorage.setItem('user', JSON.stringify(user)); location.reload(); }
         }

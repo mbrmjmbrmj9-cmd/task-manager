@@ -37,7 +37,7 @@
         async function join() {
             const code = document.getElementById('inviteCode').value.trim();
             if (!code) return alert('الرمز مطلوب');
-            const res = await fetch('http://localhost:3000/api/workspaces/join', {
+            const res = await fetch('https://nivora-t9ov.onrender.com/api/workspaces/join', {
                 method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ code })
             });

@@ -65,7 +65,7 @@
     <div class="modal-overlay" id="logoutModal"><div class="modal-box"><h3>🚪 تأكيد الخروج</h3><p>هل أنت متأكد من تسجيل الخروج؟</p><div class="modal-buttons"><button class="btn-cancel" onclick="closeLogoutModal()">إلغاء</button><button class="btn-confirm" onclick="confirmLogout()">خروج</button></div></div></div>
 
     <script>
-        const API = 'http://localhost:3000/api';
+        const API = 'https://nivora-t9ov.onrender.com/api';
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'login.html';
         function showToast(msg, type = 'success') { let container = document.getElementById('toastContainer'); if (!container) { container = document.createElement('div'); container.id = 'toastContainer'; container.className = 'toast-container'; document.body.appendChild(container); } const toast = document.createElement('div'); toast.className = `toast toast-${type}`; toast.textContent = msg; container.appendChild(toast); setTimeout(() => toast.remove(), 3000); }

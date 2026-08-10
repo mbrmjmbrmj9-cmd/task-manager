@@ -94,7 +94,7 @@
     </div>
 
     <script>
-        const socket = io('http://localhost:3000');
+        const socket = io('https://nivora-t9ov.onrender.com');
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         const username = user.fullName || user.username || 'مستخدم';
         let messages = [];

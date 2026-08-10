@@ -43,7 +43,7 @@
             const team = document.getElementById('teamName').value.trim();
             if (!manager || !team) return alert('جميع الحقول مطلوبة');
 
-            const res = await fetch('http://localhost:3000/api/workspaces', {
+            const res = await fetch('https://nivora-t9ov.onrender.com/api/workspaces', {
                 method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ name: team })
             });
