@@ -6,91 +6,108 @@
     <title>Nivora | لوحة القيادة</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#2563EB">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
-        body { display: flex; min-height: 100vh; }
-        .sidebar { width: 240px; background: var(--card); border-left: 1px solid var(--border); padding: 1.5rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 100; transition: right 0.3s; }
-        .sidebar .logo { font-size: 1.3rem; font-weight: 800; padding: 0 0.75rem; margin-bottom: 1rem; }
-        .sidebar a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text); text-decoration: none; font-weight: 500; font-size: 0.9rem; transition: all var(--transition); }
-        .sidebar a:hover, .sidebar a.active { background: #EFF6FF; color: var(--primary); }
-        .sidebar a svg { width: 20px; height: 20px; }
-        .main { margin-right: 240px; flex: 1; padding: 2rem; }
-        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-        .topbar h1 { font-size: 1.5rem; font-weight: 800; }
-        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-        .kpi-card { padding: 1.25rem; }
-        .kpi-card .kpi-value { font-size: 2rem; font-weight: 800; }
-        .kpi-card .kpi-label { font-size: 0.85rem; color: var(--text-light); }
-        .dropdown { position: relative; display: inline-block; }
-        .dropdown-menu { position: absolute; top: 100%; left: 0; background: var(--card); border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow-md); padding: 0.5rem 0; min-width: 180px; z-index: 200; display: none; }
-        .dropdown-menu.show { display: block; }
-        .dropdown-menu button { display: block; width: 100%; padding: 0.5rem 1rem; border: none; background: none; cursor: pointer; font-family: inherit; font-size: 0.85rem; text-align: right; color: var(--text); }
-        .dropdown-menu button:hover { background: #F1F5F9; }
-        body.dark .dropdown-menu button:hover { background: #334155; }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: 0.2s; }
-        .modal-overlay.active { opacity: 1; pointer-events: auto; }
-        .modal-box { background: var(--card); border-radius: 16px; padding: 2rem; text-align: center; max-width: 380px; width: 90%; box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
-        .modal-box h3 { margin-bottom: 0.5rem; }
-        .modal-box p { color: var(--text-light); font-size: 0.9rem; margin-bottom: 1.5rem; }
-        .modal-buttons { display: flex; gap: 1rem; justify-content: center; }
-        .modal-buttons button { padding: 0.6rem 1.8rem; border-radius: 12px; border: none; cursor: pointer; font-family: inherit; font-weight: 600; }
-        .btn-cancel { background: #E2E8F0; color: #475569; }
-        .btn-confirm { background: #EF4444; color: white; }
-        #menuBtn { display: none; }
+        :root {
+            --sidebar-w: 240px;
+            --primary: #2563EB;
+            --bg: #F8FAFC;
+            --card: #FFFFFF;
+            --text: #0F172A;
+            --text-light: #64748B;
+            --border: #E2E8F0;
+            --shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        body.dark { --bg: #0F172A; --card: #1E293B; --text: #F8FAFC; --text-light: #94A3B8; --border: #334155; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; transition: background 0.3s; }
 
+        /* Sidebar */
+        .sidebar { width: var(--sidebar-w); background: var(--card); border-left: 1px solid var(--border); padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 100; overflow-y: auto; transition: width 0.3s, right 0.3s; display: flex; flex-direction: column; gap: 0.25rem; }
+        .sidebar .logo { font-size: 1.3rem; font-weight: 800; padding: 0 0.75rem; margin-bottom: 1rem; color: var(--primary); }
+        .sidebar a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 0.9rem; white-space: nowrap; }
+        .sidebar a:hover, .sidebar a.active { background: #EFF6FF; color: var(--primary); }
+        .sidebar a svg { width: 20px; height: 20px; flex-shrink: 0; }
+        .sidebar .label { transition: opacity 0.2s; }
+
+        /* Main */
+        .main { margin-right: var(--sidebar-w); padding: 2rem; transition: margin-right 0.3s; min-height: 100vh; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 0.75rem; }
+        .topbar h1 { font-size: 1.5rem; font-weight: 800; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .kpi-card { padding: 1.25rem 1.5rem; }
+        .kpi-card .kpi-value { font-size: 2rem; font-weight: 800; }
+        .kpi-card .kpi-label { font-size: 0.85rem; color: var(--text-light); margin-top: 0.25rem; }
+
+        /* Bottom Nav (Mobile) */
+        .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); padding: 0.5rem 1rem; z-index: 90; justify-content: space-around; }
+        .bottom-nav a { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-light); text-decoration: none; font-size: 0.65rem; font-weight: 500; }
+        .bottom-nav a.active { color: var(--primary); }
+        .bottom-nav a svg { width: 22px; height: 22px; }
+
+        /* Overlay */
+        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            :root { --sidebar-w: 72px; }
+            .sidebar { padding: 1rem 0.5rem; }
+            .sidebar .logo { font-size: 1rem; text-align: center; }
+            .sidebar .label, .sidebar .logo span { display: none; }
+            .sidebar a { justify-content: center; padding: 0.5rem; }
+        }
         @media (max-width: 768px) {
-            .sidebar { right: -240px; }
+            :root { --sidebar-w: 0; }
+            .sidebar { right: -260px; width: 260px; }
             .sidebar.open { right: 0; }
-            .main { margin-right: 0 !important; padding: 1rem; }
+            .sidebar .label { display: inline; }
+            .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; }
+            .overlay.show { display: block; }
+            .main { margin-right: 0; padding: 1rem; padding-bottom: 5rem; }
+            .bottom-nav { display: flex; }
             .kpi-grid { grid-template-columns: repeat(2, 1fr); }
-            .topbar { flex-wrap: wrap; gap: 0.5rem; }
             .topbar h1 { font-size: 1.2rem; }
-            #menuBtn { display: inline-flex; }
         }
     </style>
 </head>
 <body>
 
+    <!-- Overlay -->
+    <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+    <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
-        <div class="logo">📋 Nivora</div>
-        <a href="index.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>لوحة القيادة</a>
-        <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg>المهام</a>
-        <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>المشاريع</a>
-        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg>Kanban</a>
-        <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>Gantt</a>
-        <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>التقويم</a>
-        <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>التقارير</a>
-        <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg>Workflows</a>
-        <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>القوالب</a>
-        <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>الأرشيف</a>
-        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>الفريق</a>
+        <div class="logo"><span>📋 Nivora</span></div>
+        <a href="index.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="label">لوحة القيادة</span></a>
+        <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg><span class="label">المهام</span></a>
+        <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">المشاريع</span></a>
+        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg><span class="label">Kanban</span></a>
+        <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">Gantt</span></a>
+        <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
+        <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
+        <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg><span class="label">Workflows</span></a>
+        <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">القوالب</span></a>
+        <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">الأرشيف</span></a>
+        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
     </aside>
 
+    <!-- Main -->
     <main class="main">
         <div class="topbar">
-            <div style="display:flex;align-items:center;gap:0.5rem;">
-                <button class="btn btn-outline" id="menuBtn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
-                <h1>لوحة القيادة</h1>
-            </div>
+            <h1>لوحة القيادة</h1>
             <div style="display:flex;gap:0.5rem;align-items:center;">
-                <div class="dropdown">
-                    <button class="btn btn-outline" onclick="toggleDropdown('notifMenu')" style="position:relative;">🔔<span id="notifBadge" style="position:absolute;top:-5px;right:-5px;background:#EF4444;color:white;border-radius:10px;padding:0 5px;font-size:0.65rem;display:none;">0</span></button>
-                    <div class="dropdown-menu" id="notifMenu" style="width:300px;left:auto;right:0;"><div id="notifList" style="padding:0.5rem;color:var(--text-light);font-size:0.8rem;">لا توجد إشعارات</div></div>
-                </div>
-                <a href="profile.html" title="الملف الشخصي"><img id="userAvatar" style="width:36px;height:36px;border-radius:50%;object-fit:cover;background:#E2E8F0;cursor:pointer;" src=""></a>
-                <span id="usernameDisplay" style="font-weight:600;"></span>
-                <button class="btn btn-outline" onclick="toggleLang()" id="langBtn" style="height:36px;">🌐 EN</button>
+                <span id="usernameDisplay" style="font-weight:600;font-size:0.9rem;"></span>
                 <button class="btn btn-outline" onclick="toggleDark()" id="darkBtn" style="height:36px;">🌙</button>
-                <button class="btn btn-outline" id="logoutBtn">خروج</button>
+                <button class="btn btn-outline" id="logoutBtn" style="height:36px;">خروج</button>
             </div>
         </div>
 
         <div class="kpi-grid">
             <div class="card kpi-card"><div class="kpi-value" id="totalTasks" style="color:#2563EB;">0</div><div class="kpi-label">إجمالي المهام</div></div>
-            <div class="card kpi-card"><div class="kpi-value" id="doneTasks" style="color:#22C55E;">0</div><div class="kpi-label">مكتملة</div></div>
-            <div class="card kpi-card"><div class="kpi-value" id="pendingTasks" style="color:#F97316;">0</div><div class="kpi-label">قيد الانتظار</div></div>
-            <div class="card kpi-card"><div class="kpi-value" id="overdueTasks" style="color:#EF4444;">0</div><div class="kpi-label">متأخرة</div></div>
+            <div class="card kpi-card"><div class="kpi-value" id="doneTasks" style="color:#16A34A;">0</div><div class="kpi-label">مكتملة</div></div>
+            <div class="card kpi-card"><div class="kpi-value" id="pendingTasks" style="color:#D97706;">0</div><div class="kpi-label">قيد الانتظار</div></div>
+            <div class="card kpi-card"><div class="kpi-value" id="overdueTasks" style="color:#DC2626;">0</div><div class="kpi-label">متأخرة</div></div>
             <div class="card kpi-card"><div class="kpi-value" id="projectCount" style="color:#7C3AED;">0</div><div class="kpi-label">المشاريع</div></div>
         </div>
 
@@ -102,32 +119,31 @@
         </div>
     </main>
 
-    <div class="modal-overlay" id="logoutModal"><div class="modal-box"><h3>🚪 تأكيد الخروج</h3><p>هل أنت متأكد من تسجيل الخروج؟</p><div class="modal-buttons"><button class="btn-cancel" onclick="closeLogoutModal()">إلغاء</button><button class="btn-confirm" onclick="confirmLogout()">خروج</button></div></div></div>
+    <!-- Bottom Nav (Mobile) -->
+    <nav class="bottom-nav">
+        <a href="index.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>الرئيسية</a>
+        <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg>مهام</a>
+        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg>Kanban</a>
+        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>فريق</a>
+        <a href="#" onclick="openSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>المزيد</a>
+    </nav>
 
     <script>
+        function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
+        function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
+
         const API_BASE = 'https://nivora-t9ov.onrender.com/api';
         const token = localStorage.getItem('token');
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         if (!token) window.location.href = 'login.html';
-        function showToast(msg, type = 'success') { let container = document.getElementById('toastContainer'); if (!container) { container = document.createElement('div'); container.id = 'toastContainer'; container.className = 'toast-container'; document.body.appendChild(container); } const toast = document.createElement('div'); toast.className = `toast toast-${type}`; toast.textContent = msg; container.appendChild(toast); setTimeout(() => toast.remove(), 3000); }
-        function showLoading(){document.body.insertAdjacentHTML('beforeend','<div class="spinner-overlay" id="loadingOverlay"><div class="spinner"></div></div>');}
-        function hideLoading(){const e=document.getElementById('loadingOverlay');if(e)e.remove();}
-        function logout() { document.getElementById('logoutModal').classList.add('active'); }
-        function closeLogoutModal() { document.getElementById('logoutModal').classList.remove('active'); }
-        function confirmLogout() { localStorage.clear(); window.location.href = 'login.html'; }
+        function logout() { localStorage.clear(); window.location.href = 'login.html'; }
         function toggleDark() { document.body.classList.toggle('dark'); const isDark = document.body.classList.contains('dark'); localStorage.setItem('dark', isDark); document.getElementById('darkBtn').textContent = isDark ? '☀️' : '🌙'; }
         if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
-        if (typeof currentLang !== 'undefined') { document.getElementById('langBtn').innerHTML = currentLang === 'ar' ? '🌐 EN' : '🌐 AR'; }
         const displayName = user.fullName || user.email || user.username || 'مستخدم';
         document.getElementById('usernameDisplay').textContent = displayName;
         document.getElementById('logoutBtn').addEventListener('click', logout);
-        const userAvatar = user.avatar || '';
-        document.getElementById('userAvatar').src = userAvatar;
-        function toggleDropdown(id) { const menu = document.getElementById(id); const isOpen = menu.classList.contains('show'); document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show')); if (!isOpen) menu.classList.add('show'); }
-        document.addEventListener('click', (e) => { if (!e.target.closest('.dropdown')) { document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show')); } });
-        async function loadStats() { showLoading(); try { const [tasksRes, projectsRes] = await Promise.all([fetch(`${API_BASE}/tasks`, { headers: { 'Authorization': `Bearer ${token}` } }), fetch(`${API_BASE}/projects`, { headers: { 'Authorization': `Bearer ${token}` } })]); const tasks = await tasksRes.json(); const projects = await projectsRes.json(); document.getElementById('totalTasks').textContent = tasks.length; document.getElementById('doneTasks').textContent = tasks.filter(t => t.status === 'done').length; document.getElementById('pendingTasks').textContent = tasks.filter(t => t.status !== 'done' && t.status !== 'archived').length; const now = new Date(); document.getElementById('overdueTasks').textContent = tasks.filter(t => t.dueDate && new Date(t.dueDate) < now && t.status !== 'done').length; document.getElementById('projectCount').textContent = projects.length; } catch (e) {} hideLoading(); }
-        async function loadNotifications() { const res = await fetch(`${API_BASE}/tasks`, { headers: { 'Authorization': `Bearer ${token}` } }); const tasks = await res.json(); const now = new Date(); const overdue = tasks.filter(t => t.dueDate && new Date(t.dueDate) < now && t.status !== 'done'); const tomorrow = new Date(now.getTime() + 24*60*60*1000); const upcoming = tasks.filter(t => t.dueDate && new Date(t.dueDate) > now && new Date(t.dueDate) < tomorrow); const notifs = [...overdue.map(t => ({ type: 'overdue', text: `⚠️ متأخرة: ${t.title}`, id: t._id })), ...upcoming.map(t => ({ type: 'upcoming', text: `⏰ تستحق قريباً: ${t.title}`, id: t._id }))]; const badge = document.getElementById('notifBadge'); const list = document.getElementById('notifList'); if (notifs.length > 0) { badge.style.display = 'inline'; badge.textContent = notifs.length; list.innerHTML = notifs.map(n => `<button onclick="location.href='task.html?id=${n.id}'" style="color:${n.type === 'overdue' ? '#EF4444' : '#F97316'};">${n.text}</button>`).join(''); } else { badge.style.display = 'none'; list.innerHTML = '<div style="padding:0.5rem;color:var(--text-light);font-size:0.8rem;">✅ لا توجد إشعارات</div>'; } }
-        loadStats(); loadNotifications();
+        async function loadStats() { try { const [tasksRes, projectsRes] = await Promise.all([fetch(`${API_BASE}/tasks`, { headers: { 'Authorization': `Bearer ${token}` } }), fetch(`${API_BASE}/projects`, { headers: { 'Authorization': `Bearer ${token}` } })]); const tasks = await tasksRes.json(); const projects = await projectsRes.json(); document.getElementById('totalTasks').textContent = tasks.length; document.getElementById('doneTasks').textContent = tasks.filter(t => t.status === 'done').length; document.getElementById('pendingTasks').textContent = tasks.filter(t => t.status !== 'done' && t.status !== 'archived').length; document.getElementById('overdueTasks').textContent = tasks.filter(t => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'done').length; document.getElementById('projectCount').textContent = projects.length; } catch (e) {} }
+        loadStats();
     </script>
 </body>
 </html>
