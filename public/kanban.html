@@ -13,40 +13,41 @@
         body.dark { --bg: #0F172A; --card: #1E293B; --text: #F8FAFC; --text-light: #94A3B8; --border: #334155; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-
         .sidebar { width: var(--sidebar-w); background: var(--card); border-left: 1px solid var(--border); padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 100; overflow-y: auto; display: flex; flex-direction: column; gap: 0.25rem; }
         .sidebar .logo { font-size: 1.3rem; font-weight: 800; padding: 0 0.75rem; margin-bottom: 1rem; color: var(--primary); }
         .sidebar a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 0.9rem; white-space: nowrap; }
         .sidebar a:hover, .sidebar a.active { background: #EFF6FF; color: var(--primary); }
         .sidebar a svg { width: 20px; height: 20px; flex-shrink: 0; }
         .sidebar .label { transition: opacity 0.2s; }
-
         .main { margin-right: var(--sidebar-w); padding: 1.5rem; min-height: 100vh; display: flex; flex-direction: column; }
-        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem; }
         .topbar h1 { font-size: 1.5rem; font-weight: 800; }
+        .toolbar { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
+        .toolbar button, .toolbar select, .toolbar input { height: 32px; font-size: 0.8rem; padding: 0 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-family: inherit; }
         .kanban { display: flex; gap: 1rem; flex: 1; overflow-x: auto; padding-bottom: 1rem; }
-        .column { flex: 1; min-width: 250px; background: #F1F5F9; border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; }
+        .column { flex: 1; min-width: 260px; background: #F1F5F9; border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; }
         body.dark .column { background: #1E293B; }
         .column h3 { font-size: 0.85rem; font-weight: 700; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
         .count { background: var(--card); padding: 0.1rem 0.5rem; border-radius: 10px; font-size: 0.75rem; }
         .task-list { flex: 1; overflow-y: auto; }
-        .task-card { background: var(--card); border-radius: 8px; padding: 0.75rem; margin-bottom: 0.5rem; border-right: 4px solid #E2E8F0; cursor: grab; }
+        .task-card { background: var(--card); border-radius: 8px; padding: 0.75rem; margin-bottom: 0.5rem; border-right: 4px solid #E2E8F0; cursor: grab; position: relative; }
         .task-card .task-title { font-weight: 600; font-size: 0.85rem; }
+        .task-card .card-footer { display: flex; gap: 0.5rem; margin-top: 0.4rem; font-size: 0.75rem; color: var(--text-light); }
+        .task-card .card-actions { position: absolute; top: 5px; left: 5px; display: none; gap: 0.15rem; }
+        .task-card:hover .card-actions { display: flex; }
+        .task-card .icon-btn { background: none; border: none; cursor: pointer; font-size: 0.9rem; padding: 0.15rem; border-radius: 4px; color: var(--text-light); }
         .add-task-btn { margin-top: auto; padding: 0.5rem; text-align: center; border: 2px dashed var(--border); border-radius: 8px; cursor: pointer; font-size: 0.8rem; color: var(--text-light); }
-
         .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
         .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); padding: 0.5rem 1rem; z-index: 90; justify-content: space-around; }
         .bottom-nav a { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-light); text-decoration: none; font-size: 0.65rem; font-weight: 500; }
         .bottom-nav a.active { color: var(--primary); }
         .bottom-nav a svg { width: 22px; height: 22px; }
-
         @media (max-width: 1024px) { :root { --sidebar-w: 72px; } .sidebar { padding: 1rem 0.5rem; } .sidebar .logo { font-size: 1rem; text-align: center; } .sidebar .label, .sidebar .logo span { display: none; } .sidebar a { justify-content: center; padding: 0.5rem; } }
         @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 1rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } .kanban { flex-direction: column; } .column { min-width: auto; } }
     </style>
 </head>
 <body>
     <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
-
     <aside class="sidebar" id="sidebar">
         <div class="logo"><span>📋 Nivora</span></div>
         <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="label">لوحة القيادة</span></a>
@@ -63,12 +64,13 @@
     </aside>
 
     <main class="main">
-        <div class="topbar">
-            <h1>Kanban</h1>
-            <div style="display:flex;gap:0.5rem;">
-                <button class="btn btn-outline" onclick="toggleDark()" id="darkBtn" style="height:36px;">🌙</button>
-                <button class="btn btn-outline" onclick="logout()" style="height:36px;">خروج</button>
-            </div>
+        <div class="topbar"><h1>Kanban</h1><div style="display:flex;gap:0.5rem;"><button class="btn btn-outline" onclick="toggleDark()" id="darkBtn" style="height:36px;">🌙</button><button class="btn btn-outline" onclick="logout()" style="height:36px;">خروج</button></div></div>
+        <div class="toolbar">
+            <select id="workflowSelect" onchange="changeWorkflow()"><option value="default">📋 افتراضي</option></select>
+            <button onclick="refreshBoard()">🔄</button>
+            <input type="text" placeholder="🔍 بحث..." id="searchInput">
+            <button onclick="showSettings()">⚙️</button>
+            <button onclick="archiveDone()">📦 أرشفة</button>
         </div>
         <div class="kanban" id="kanbanBoard"></div>
     </main>
@@ -100,13 +102,18 @@
             const board = document.getElementById('kanbanBoard');
             board.innerHTML = statuses.map(s => {
                 const filtered = tasks.filter(t => t.status === s);
-                return `<div class="column"><h3>${labels[s]} <span class="count">${filtered.length}</span></h3><div class="task-list">${filtered.map(t => `<div class="task-card" draggable="true" data-id="${t._id}"><div class="task-title">${t.title}</div></div>`).join('')}</div><div class="add-task-btn" onclick="addTask('${s}')">+ إضافة</div></div>`;
+                return `<div class="column"><h3>${labels[s]} <span class="count">${filtered.length}</span></h3><div class="task-list">${filtered.map(t => `<div class="task-card" draggable="true" data-id="${t._id}"><div class="task-title"><a href="task.html?id=${t._id}" style="color:var(--text);text-decoration:none;">${t.title}</a></div><div class="card-footer"><span>💬${t.comments?.length||0}</span><span>📁${t.attachments?.length||0}</span><span>${t.priority==='critical'?'🔴':t.priority==='high'?'🟠':'🟡'}</span></div><div class="card-actions"><button class="icon-btn" onclick="location.href='task.html?id=${t._id}'">✏️</button><button class="icon-btn" onclick="deleteTask('${t._id}')">🗑️</button></div></div>`).join('')}</div><div class="add-task-btn" onclick="addTask('${s}')">+ إضافة</div></div>`;
             }).join('');
             document.querySelectorAll('.task-card').forEach(card => { card.addEventListener('dragstart', e => e.dataTransfer.setData('text/plain', card.dataset.id)); });
             document.querySelectorAll('.column').forEach(col => { col.addEventListener('dragover', e => e.preventDefault()); col.addEventListener('drop', async e => { e.preventDefault(); const id = e.dataTransfer.getData('text/plain'); const status = col.querySelector('.add-task-btn').getAttribute('onclick').match(/'([^']+)'/)[1]; await fetch(`${API_BASE}/tasks/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ status }) }); loadKanban(); }); });
         }
 
         async function addTask(status) { const title = prompt('عنوان المهمة:'); if (!title) return; await fetch(`${API_BASE}/tasks`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ title, status }) }); loadKanban(); }
+        async function deleteTask(id) { if (!confirm('حذف؟')) return; await fetch(`${API_BASE}/tasks/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); loadKanban(); }
+        function refreshBoard() { loadKanban(); }
+        function showSettings() { alert('إعدادات Kanban - قيد التطوير'); }
+        async function archiveDone() { if (!confirm('أرشفة المكتملة؟')) return; const res = await fetch(`${API_BASE}/tasks`, { headers: { 'Authorization': `Bearer ${token}` } }); const tasks = await res.json(); for (const t of tasks.filter(t => t.status === 'done')) { await fetch(`${API_BASE}/tasks/${t._id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ status: 'archived' }) }); } loadKanban(); }
+        document.getElementById('searchInput').addEventListener('input', function() { const q = this.value.toLowerCase(); document.querySelectorAll('.task-card').forEach(c => c.style.display = c.textContent.toLowerCase().includes(q) ? 'block' : 'none'); });
         loadKanban();
     </script>
 </body>
