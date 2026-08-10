@@ -12,7 +12,7 @@ passport.use(new GoogleStrategy({
         let user = await User.findOne({ email: email });
         if (!user) {
             user = await User.create({
-                username: email,
+                username: 'google_' + profile.id,
                 email: email,
                 fullName: profile.displayName,
                 password: 'google-oauth'
