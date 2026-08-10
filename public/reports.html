@@ -6,122 +6,95 @@
     <title>Nivora | التقارير</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#2563EB">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
-        body { display: flex; min-height: 100vh; }
-        .sidebar { width: 240px; background: var(--card); border-left: 1px solid var(--border); padding: 1.5rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 100; }
-        .sidebar .logo { font-size: 1.3rem; font-weight: 800; padding: 0 0.75rem; margin-bottom: 1rem; }
-        .sidebar a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text); text-decoration: none; font-weight: 500; font-size: 0.9rem; }
+        :root { --sidebar-w: 240px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+        .sidebar { width: var(--sidebar-w); background: var(--card); border-left: 1px solid var(--border); padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 100; overflow-y: auto; display: flex; flex-direction: column; gap: 0.25rem; }
+        .sidebar .logo { font-size: 1.3rem; font-weight: 800; padding: 0 0.75rem; margin-bottom: 1rem; color: var(--primary); }
+        .sidebar a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 0.9rem; white-space: nowrap; }
         .sidebar a:hover, .sidebar a.active { background: #EFF6FF; color: var(--primary); }
-        .sidebar a svg { width: 20px; height: 20px; }
-        .main { margin-right: 240px; flex: 1; padding: 2rem; }
-        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .sidebar a svg { width: 20px; height: 20px; flex-shrink: 0; }
+        .sidebar .label { transition: opacity 0.2s; }
+        .main { margin-right: var(--sidebar-w); padding: 1.5rem; min-height: 100vh; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem; }
         .topbar h1 { font-size: 1.5rem; font-weight: 800; }
-        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
         .kpi-card { padding: 1.25rem; text-align: center; }
-        .kpi-card .kpi-value { font-size: 2rem; font-weight: 800; }
-        .kpi-card .kpi-label { font-size: 0.85rem; color: var(--text-light); }
-        .chart-container { margin-bottom: 2rem; }
-        .chart-container h3 { margin-bottom: 1rem; font-size: 1rem; }
-        .bar-chart { display: flex; gap: 0.5rem; align-items: flex-end; height: 180px; }
+        .kpi-card .value { font-size: 2rem; font-weight: 800; }
+        .kpi-card .label { font-size: 0.85rem; color: var(--text-light); }
+        .bar-chart { display: flex; gap: 0.5rem; align-items: flex-end; height: 150px; margin-bottom: 1.5rem; }
         .bar-item { flex: 1; text-align: center; }
-        .bar { border-radius: 6px 6px 0 0; transition: height 0.5s; margin: 0 auto; max-width: 60px; }
-        .bar-label { font-size: 0.75rem; margin-top: 0.5rem; color: var(--text-light); }
-        .bar-value { font-size: 0.8rem; font-weight: 700; }
-        .table-card { margin-top: 1rem; }
-        .table-card h3 { margin-bottom: 1rem; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 0.6rem 0.75rem; text-align: right; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
-        th { color: var(--text-light); font-weight: 600; }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: 0.2s; }
-        .modal-overlay.active { opacity: 1; pointer-events: auto; }
-        .modal-box { background: var(--card); border-radius: 16px; padding: 2rem; text-align: center; max-width: 380px; width: 90%; box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
-        .modal-box h3 { margin-bottom: 0.5rem; }
-        .modal-box p { color: var(--text-light); font-size: 0.9rem; margin-bottom: 1.5rem; }
-        .modal-buttons { display: flex; gap: 1rem; justify-content: center; }
-        .modal-buttons button { padding: 0.6rem 1.8rem; border-radius: 12px; border: none; cursor: pointer; font-family: inherit; font-weight: 600; }
-        .btn-cancel { background: #E2E8F0; color: #475569; }
-        .btn-confirm { background: #EF4444; color: white; }
+        .bar { border-radius: 4px 4px 0 0; margin: 0 auto; max-width: 50px; }
+        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+        .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); padding: 0.5rem 1rem; z-index: 90; justify-content: space-around; }
+        .bottom-nav a { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-light); text-decoration: none; font-size: 0.65rem; font-weight: 500; }
+        .bottom-nav a.active { color: var(--primary); }
+        .bottom-nav a svg { width: 22px; height: 22px; }
+        @media (max-width: 1024px) { :root { --sidebar-w: 72px; } .sidebar { padding: 1rem 0.5rem; } .sidebar .logo { font-size: 1rem; text-align: center; } .sidebar .label, .sidebar .logo span { display: none; } .sidebar a { justify-content: center; padding: 0.5rem; } }
+        @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 1rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } }
     </style>
 </head>
 <body>
-
-    <aside class="sidebar">
-        <div class="logo">📋 Nivora</div>
-        <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>لوحة القيادة</a>
-        <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg>المهام</a>
-        <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>المشاريع</a>
-        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg>Kanban</a>
-        <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>Gantt</a>
-        <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>التقويم</a>
-        <a href="reports.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>التقارير</a>
-        <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg>Workflows</a>
-        <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>القوالب</a>
-        <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>الأرشيف</a>
-        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>الفريق</a>
+    <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="logo"><span>📋 Nivora</span></div>
+        <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="label">لوحة القيادة</span></a>
+        <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg><span class="label">المهام</span></a>
+        <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">المشاريع</span></a>
+        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg><span class="label">Kanban</span></a>
+        <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">Gantt</span></a>
+        <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
+        <a href="reports.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
+        <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg><span class="label">Workflows</span></a>
+        <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">القوالب</span></a>
+        <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">الأرشيف</span></a>
+        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
     </aside>
-
     <main class="main">
-        <div class="topbar">
-            <h1>التقارير</h1>
-            <div style="display:flex;gap:0.5rem;align-items:center;">
-                <button class="btn btn-outline" onclick="toggleLang()" id="langBtn" style="height:36px;">🌐 EN</button>
-                <button class="btn btn-outline" onclick="toggleDark()" style="height:36px;" id="darkBtn">🌙</button>
-                <button class="btn btn-outline" onclick="logout()">خروج</button>
-            </div>
-        </div>
-
+        <div class="topbar"><h1>التقارير</h1><div style="display:flex;gap:0.5rem;"><button class="btn btn-outline" onclick="toggleDark()" id="darkBtn" style="height:36px;">🌙</button><button class="btn btn-outline" onclick="logout()" style="height:36px;">خروج</button></div></div>
         <div class="kpi-grid">
-            <div class="card kpi-card"><div class="kpi-value" id="totalTasks" style="color:#2563EB;">0</div><div class="kpi-label">إجمالي المهام</div></div>
-            <div class="card kpi-card"><div class="kpi-value" id="doneTasks" style="color:#22C55E;">0</div><div class="kpi-label">مكتملة</div></div>
-            <div class="card kpi-card"><div class="kpi-value" id="overdueTasks" style="color:#EF4444;">0</div><div class="kpi-label">متأخرة</div></div>
-            <div class="card kpi-card"><div class="kpi-value" id="completionRate" style="color:#7C3AED;">0%</div><div class="kpi-label">نسبة الإنجاز</div></div>
+            <div class="card kpi-card"><div class="value" id="totalTasks" style="color:#2563EB;">0</div><div class="label">إجمالي المهام</div></div>
+            <div class="card kpi-card"><div class="value" id="doneTasks" style="color:#16A34A;">0</div><div class="label">مكتملة</div></div>
+            <div class="card kpi-card"><div class="value" id="overdueTasks" style="color:#DC2626;">0</div><div class="label">متأخرة</div></div>
+            <div class="card kpi-card"><div class="value" id="completionRate" style="color:#7C3AED;">0%</div><div class="label">نسبة الإنجاز</div></div>
         </div>
-
-        <div class="card chart-container"><h3>📊 المهام حسب الحالة</h3><div class="bar-chart" id="barChart"></div></div>
-        <div class="card table-card"><h3>📁 ملخص المشاريع</h3><table><thead><tr><th>المشروع</th><th>المهام</th><th>مكتملة</th><th>نسبة الإنجاز</th></tr></thead><tbody id="projectSummary"></tbody></table></div>
+        <div class="card" style="margin-bottom:1.5rem;"><h3 style="margin-bottom:1rem;">📊 المهام حسب الحالة</h3><div class="bar-chart" id="barChart"></div></div>
+        <div class="card"><h3 style="margin-bottom:1rem;">📁 ملخص المشاريع</h3><table style="width:100%;border-collapse:collapse;"><thead><tr><th style="text-align:right;padding:0.5rem;border-bottom:1px solid var(--border);">المشروع</th><th>المهام</th><th>مكتملة</th><th>%</th></tr></thead><tbody id="projectSummary"></tbody></table></div>
     </main>
-
-    <div class="modal-overlay" id="logoutModal"><div class="modal-box"><h3>🚪 تأكيد الخروج</h3><p>هل أنت متأكد من تسجيل الخروج؟</p><div class="modal-buttons"><button class="btn-cancel" onclick="closeLogoutModal()">إلغاء</button><button class="btn-confirm" onclick="confirmLogout()">خروج</button></div></div></div>
-
+    <nav class="bottom-nav">
+        <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>الرئيسية</a>
+        <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg>مهام</a>
+        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg>Kanban</a>
+        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>فريق</a>
+        <a href="#" onclick="openSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>المزيد</a>
+    </nav>
     <script>
+        function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
+        function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
         const API_BASE = 'https://nivora-t9ov.onrender.com/api';
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'login.html';
-
-        function showToast(msg, type = 'success') { let container = document.getElementById('toastContainer'); if (!container) { container = document.createElement('div'); container.id = 'toastContainer'; container.className = 'toast-container'; document.body.appendChild(container); } const toast = document.createElement('div'); toast.className = `toast toast-${type}`; toast.textContent = msg; container.appendChild(toast); setTimeout(() => toast.remove(), 3000); }
-        function showLoading(){document.body.insertAdjacentHTML('beforeend','<div class="spinner-overlay" id="loadingOverlay"><div class="spinner"></div></div>');}
-        function hideLoading(){const e=document.getElementById('loadingOverlay');if(e)e.remove();}
-        function logout() { document.getElementById('logoutModal').classList.add('active'); }
-        function closeLogoutModal() { document.getElementById('logoutModal').classList.remove('active'); }
-        function confirmLogout() { localStorage.clear(); window.location.href = 'login.html'; }
+        function logout() { localStorage.clear(); window.location.href = 'login.html'; }
         function toggleDark() { document.body.classList.toggle('dark'); const isDark = document.body.classList.contains('dark'); localStorage.setItem('dark', isDark); document.getElementById('darkBtn').textContent = isDark ? '☀️' : '🌙'; }
         if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
-        if (typeof currentLang !== 'undefined') { document.getElementById('langBtn').innerHTML = currentLang === 'ar' ? '🌐 EN' : '🌐 AR'; }
-
         async function loadReports() {
-            showLoading();
-            try {
-                const [tasksRes, projectsRes] = await Promise.all([fetch(`${API_BASE}/tasks`, { headers: { 'Authorization': `Bearer ${token}` } }), fetch(`${API_BASE}/projects`, { headers: { 'Authorization': `Bearer ${token}` } })]);
-                const tasks = await tasksRes.json(); const projects = await projectsRes.json();
-                const total = tasks.length; const done = tasks.filter(t => t.status === 'done').length;
-                const now = new Date(); const overdue = tasks.filter(t => t.dueDate && new Date(t.dueDate) < now && t.status !== 'done').length;
-                const rate = total > 0 ? Math.round((done / total) * 100) : 0;
-                document.getElementById('totalTasks').textContent = total;
-                document.getElementById('doneTasks').textContent = done;
-                document.getElementById('overdueTasks').textContent = overdue;
-                document.getElementById('completionRate').textContent = rate + '%';
-                const statuses = ['new', 'in-progress', 'review', 'done'];
-                const labels = { 'new': 'جديدة', 'in-progress': 'قيد التنفيذ', 'review': 'مراجعة', 'done': 'مكتملة' };
-                const colors = { 'new': '#2563EB', 'in-progress': '#F97316', 'review': '#7C3AED', 'done': '#22C55E' };
-                const maxVal = Math.max(...statuses.map(s => tasks.filter(t => t.status === s).length), 1);
-                document.getElementById('barChart').innerHTML = statuses.map(s => { const count = tasks.filter(t => t.status === s).length; const height = (count / maxVal) * 150; return `<div class="bar-item"><div class="bar-value">${count}</div><div class="bar" style="height:${height}px;background:${colors[s]};"></div><div class="bar-label">${labels[s]}</div></div>`; }).join('');
-                document.getElementById('projectSummary').innerHTML = projects.map(p => `<tr><td>${p.name}</td><td>${p.taskCount}</td><td>${p.doneCount}</td><td>${p.taskCount > 0 ? Math.round((p.doneCount/p.taskCount)*100) : 0}%</td></tr>`).join('');
-            } catch (e) {}
-            hideLoading();
+            const [tRes, pRes] = await Promise.all([fetch(`${API_BASE}/tasks`, { headers: { 'Authorization': `Bearer ${token}` } }), fetch(`${API_BASE}/projects`, { headers: { 'Authorization': `Bearer ${token}` } })]);
+            const tasks = await tRes.json(), projects = await pRes.json();
+            document.getElementById('totalTasks').textContent = tasks.length;
+            const done = tasks.filter(t => t.status === 'done').length;
+            document.getElementById('doneTasks').textContent = done;
+            document.getElementById('overdueTasks').textContent = tasks.filter(t => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'done').length;
+            document.getElementById('completionRate').textContent = tasks.length ? Math.round((done/tasks.length)*100) + '%' : '0%';
+            const statuses = ['new', 'in-progress', 'review', 'done'];
+            const colors = { 'new': '#2563EB', 'in-progress': '#D97706', 'review': '#7C3AED', 'done': '#16A34A' };
+            const labels = { 'new': 'جديدة', 'in-progress': 'قيد التنفيذ', 'review': 'مراجعة', 'done': 'مكتملة' };
+            const maxVal = Math.max(...statuses.map(s => tasks.filter(t => t.status === s).length), 1);
+            document.getElementById('barChart').innerHTML = statuses.map(s => { const c = tasks.filter(t => t.status === s).length; return `<div class="bar-item"><div style="font-size:0.8rem;font-weight:600;">${c}</div><div class="bar" style="height:${(c/maxVal)*120}px;background:${colors[s]};"></div><div class="label" style="font-size:0.7rem;">${labels[s]}</div></div>`; }).join('');
+            document.getElementById('projectSummary').innerHTML = projects.map(p => `<tr><td style="padding:0.5rem;border-bottom:1px solid var(--border);">${p.name}</td><td>${p.taskCount}</td><td>${p.doneCount}</td><td>${p.taskCount?Math.round((p.doneCount/p.taskCount)*100)+'%':'0%'}</td></tr>`).join('');
         }
-
         loadReports();
     </script>
 </body>
