@@ -5,12 +5,12 @@ const http = require('http');
 const socketIo = require('socket.io');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-//const passport = require('passport');
+const passport = require('passport');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const connectDB = require('./config/database');
 const authRoutes = require('./routes/auth');
-//require('./config/google');
+require('./config/google');
 
 const app = express();
 const PORT = 3000;
@@ -37,14 +37,14 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 // Passport
-//app.use(passport.initialize());
+app.use(passport.initialize());
 
 // Google OAuth
-//app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-//app.get('/api/auth/google/callback', passport.authenticate('google', { session: false }), (req, res) => {
-    //const token = jwt.sign({ id: req.user._id, username: req.user.username }, JWT_SECRET, { expiresIn: '7d' });
-    //res.redirect(`/login.html?token=${token}&username=${req.user.username}`);
-//});
+app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+app.get('/api/auth/google/callback', passport.authenticate('google', { session: false }), (req, res) => {
+    const token = jwt.sign({ id: req.user._id, username: req.user.username }, JWT_SECRET, { expiresIn: '7d' });
+    res.redirect(`/login.html?token=${token}&username=${req.user.username}`);
+});
 
 // Routes
 app.use('/api/auth', authRoutes);
