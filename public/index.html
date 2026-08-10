@@ -37,6 +37,14 @@
         .modal-buttons button { padding: 0.6rem 1.8rem; border-radius: 12px; border: none; cursor: pointer; font-family: inherit; font-weight: 600; }
         .btn-cancel { background: #E2E8F0; color: #475569; }
         .btn-confirm { background: #EF4444; color: white; }
+
+        @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .main { margin-right: 0 !important; padding: 1rem; }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .topbar { flex-direction: column; gap: 0.5rem; }
+    .topbar h1 { font-size: 1.2rem; }
+}
     </style>
 </head>
 <body>
