@@ -46,7 +46,7 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 //app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 //app.get('/api/auth/google/callback', passport.authenticate('google', { session: false }), (req, res) => {
     //const token = jwt.sign({ id: req.user._id, username: req.user.username }, JWT_SECRET, { expiresIn: '7d' });
-    res.redirect(`/login.html?token=${token}&username=${req.user.username}`);
+    //res.redirect(`/login.html?token=${token}&username=${req.user.username}`);
 //});
 
 // Routes
