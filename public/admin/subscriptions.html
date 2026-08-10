@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nivora | الاشتراكات</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { display: flex; min-height: 100vh; background: #0F172A; font-family: 'Cairo', sans-serif; color: white; }
+        .sidebar { width: 240px; background: #1E293B; padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; }
+        .sidebar h2 { color: #EF4444; margin-bottom: 1.5rem; }
+        .sidebar a { display: block; padding: 0.6rem 0.75rem; color: #94A3B8; text-decoration: none; border-radius: 8px; margin-bottom: 0.25rem; font-size: 0.9rem; }
+        .sidebar a:hover, .sidebar a.active { background: #334155; color: white; }
+        .main { margin-right: 240px; flex: 1; padding: 2rem; }
+        h1 { margin-bottom: 1rem; }
+        .add-form { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+        .add-form input, .add-form select { padding: 0.5rem; border-radius: 6px; background: #1E293B; color: white; border: 1px solid #334155; font-family: inherit; }
+        .add-form button { padding: 0.5rem 1rem; background: #22C55E; color: white; border: none; border-radius: 6px; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 0.75rem; border-bottom: 1px solid #334155; text-align: right; font-size: 0.85rem; }
+        th { color: #94A3B8; }
+        .badge { padding: 0.2rem 0.5rem; border-radius: 6px; font-size: 0.75rem; }
+        .badge-active { background: #22C55E; color: white; }
+        .badge-canceled { background: #EF4444; color: white; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+    <h2>🔐 Nivora Admin</h2>
+    <a href="dashboard.html">📊 لوحة القيادة</a>
+    <a href="organizations.html">🏢 المؤسسات</a>
+    <a href="subscriptions.html">💳 الاشتراكات</a>
+    <a href="users.html">👥 المستخدمون</a>
+    <a href="features.html">🚩 Feature Flags</a>
+    <a href="usage.html">📊 الاستخدام</a>
+    <a href="tickets.html">🎫 التذاكر</a>
+    <a href="health.html">🖥 صحة النظام</a>
+    <a href="#" onclick="logout()">🚪 خروج</a>
+</aside>
+
+    <div class="main">
+        <h1>💳 الاشتراكات</h1>
+        <div class="add-form">
+            <input type="text" id="orgId" placeholder="معرف المؤسسة">
+            <select id="plan">
+                <option value="free">Free</option>
+                <option value="pro">Pro</option>
+                <option value="business">Business</option>
+            </select>
+            <input type="number" id="amount" placeholder="المبلغ $">
+            <button onclick="createSubscription()">➕ إضافة</button>
+        </div>
+        <table>
+            <thead><tr><th>المؤسسة</th><th>الخطة</th><th>المبلغ</th><th>الحالة</th><th>التاريخ</th><th></th></tr></thead>
+            <tbody id="subBody"></tbody>
+        </table>
+    </div>
+
+    <script>
+        const API = 'http://localhost:3000/api';
+        const token = localStorage.getItem('adminToken');
+        if (!token) window.location.href = 'login.html';
+        function logout() { localStorage.removeItem('adminToken'); window.location.href = 'login.html'; }
+
+        async function loadSubs() {
+            const res = await fetch(`${API}/subscriptions`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const subs = await res.json();
+            document.getElementById('subBody').innerHTML = subs.map(s => `
+                <tr>
+                    <td>${s.organizationId?.name || '-'}</td>
+                    <td>${s.plan}</td>
+                    <td>$${s.amount}</td>
+                    <td><span class="badge badge-${s.status === 'active' ? 'active' : 'canceled'}">${s.status}</span></td>
+                    <td>${new Date(s.createdAt).toLocaleDateString('ar-SA')}</td>
+                    <td><button onclick="cancelSub('${s._id}')" style="background:#EF4444;color:white;border:none;padding:0.3rem 0.75rem;border-radius:6px;cursor:pointer;">إلغاء</button></td>
+                </tr>
+            `).join('') || '<tr><td colspan="6" style="text-align:center;padding:2rem;">لا توجد اشتراكات</td></tr>';
+        }
+
+        async function createSubscription() {
+            const organizationId = document.getElementById('orgId').value;
+            const plan = document.getElementById('plan').value;
+            const amount = document.getElementById('amount').value;
+            await fetch(`${API}/subscriptions`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ organizationId, plan, amount: Number(amount) })
+            });
+            loadSubs();
+        }
+
+        async function cancelSub(id) {
+            await fetch(`${API}/subscriptions/${id}/cancel`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` } });
+            loadSubs();
+        }
+
+        loadSubs();
+    </script>
+</body>
+</html>

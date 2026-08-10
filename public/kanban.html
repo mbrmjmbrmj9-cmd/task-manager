@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nivora | Kanban</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#2563EB">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body { display: flex; min-height: 100vh; background: var(--bg); }
+        .sidebar { width: 240px; background: var(--card); border-left: 1px solid var(--border); padding: 1.5rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 100; }
+        .sidebar .logo { font-size: 1.3rem; font-weight: 800; padding: 0 0.75rem; margin-bottom: 1rem; }
+        .sidebar a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text); text-decoration: none; font-weight: 500; font-size: 0.9rem; }
+        .sidebar a:hover, .sidebar a.active { background: #EFF6FF; color: var(--primary); }
+        .sidebar a svg { width: 20px; height: 20px; }
+        .main { margin-right: 240px; flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        .nav-bar { display: flex; gap: 0; padding: 1rem 2rem 0; border-bottom: 1px solid var(--border); background: var(--card); flex-shrink: 0; }
+        .nav-item { padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 600; color: var(--text-light); text-decoration: none; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+        .nav-item.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .nav-item:hover { color: var(--primary); }
+        .toolbar { display: flex; gap: 0.75rem; padding: 0.75rem 2rem; background: var(--card); border-bottom: 1px solid var(--border); align-items: center; flex-shrink: 0; flex-wrap: wrap; }
+        .toolbar input { width: 200px; height: 32px; padding: 0 0.5rem; border: 1px solid var(--border); border-radius: 6px; font-family: inherit; font-size: 0.8rem; background: var(--bg); color: var(--text); }
+        .toolbar .tool-btn { height: 32px; padding: 0 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--card); cursor: pointer; font-family: inherit; font-size: 0.8rem; display: flex; align-items: center; gap: 0.3rem; color: var(--text); }
+        .toolbar select.tool-btn { padding: 0 0.5rem; min-width: 150px; }
+        .toolbar .spacer { flex: 1; }
+        .kanban { display: flex; gap: 1rem; padding: 1.5rem 2rem; flex: 1; overflow-x: auto; }
+        .column { flex: 1; min-width: 260px; max-width: 320px; background: #F1F5F9; border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; }
+        body.dark .column { background: #1E293B; }
+        .column h3 { font-size: 0.85rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .count { background: var(--card); padding: 0.15rem 0.5rem; border-radius: 10px; font-size: 0.75rem; }
+        .task-list { flex: 1; overflow-y: auto; }
+        .task-card { background: var(--card); border-radius: 8px; padding: 0.75rem; margin-bottom: 0.5rem; border-right: 4px solid #E2E8F0; box-shadow: var(--shadow); position: relative; transition: all var(--transition); }
+        .task-card:hover { box-shadow: var(--shadow-md); }
+        .task-card .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.4rem; }
+        .task-card .task-title { font-weight: 600; font-size: 0.85rem; color: var(--text); text-decoration: none; flex: 1; }
+        .task-card .task-title:hover { color: var(--primary); }
+        .task-card .card-actions { display: flex; gap: 0.15rem; }
+        .task-card .icon-btn { background: none; border: none; cursor: pointer; font-size: 0.9rem; padding: 0.15rem; border-radius: 4px; color: var(--text-light); }
+        .task-card .icon-btn:hover { background: #F1F5F9; color: var(--text); }
+        .task-card .task-date { font-size: 0.7rem; background: #F1F5F9; padding: 0.15rem 0.5rem; border-radius: 4px; display: inline-block; margin-bottom: 0.4rem; }
+        body.dark .task-card .task-date { background: #334155; }
+        .task-card .card-footer { display: flex; gap: 0.6rem; align-items: center; font-size: 0.75rem; color: var(--text-light); }
+        .task-card .drag-handle { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); color: #CBD5E0; cursor: grab; font-size: 1.1rem; user-select: none; }
+        .task-card.priority-critical { border-right-color: #EF4444; }
+        .task-card.priority-high { border-right-color: #F97316; }
+        .task-card.priority-medium { border-right-color: #EAB308; }
+        .task-card.priority-low { border-right-color: #22C55E; }
+        .add-task-btn { margin-top: auto; padding: 0.5rem; text-align: center; border: 2px dashed var(--border); border-radius: 8px; cursor: pointer; font-size: 0.8rem; color: var(--text-light); }
+        .add-task-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .column.drag-over { background: #E2E8F0; }
+        body.dark .column.drag-over { background: #334155; }
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown-menu { position: absolute; top: 100%; left: 0; background: var(--card); border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow-md); padding: 0.5rem 0; min-width: 180px; z-index: 200; display: none; }
+        .dropdown-menu.show { display: block; }
+        .dropdown-menu button { display: block; width: 100%; padding: 0.5rem 1rem; border: none; background: none; cursor: pointer; font-family: inherit; font-size: 0.85rem; text-align: right; color: var(--text); }
+        .dropdown-menu button:hover { background: #F1F5F9; }
+        body.dark .dropdown-menu button:hover { background: #334155; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: 0.2s; }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-box { background: var(--card); border-radius: 16px; padding: 2rem; text-align: center; max-width: 380px; width: 90%; box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+        .modal-box h3 { margin-bottom: 0.5rem; }
+        .modal-box p { color: var(--text-light); font-size: 0.9rem; margin-bottom: 1.5rem; }
+        .modal-buttons { display: flex; gap: 1rem; justify-content: center; }
+        .modal-buttons button { padding: 0.6rem 1.8rem; border-radius: 12px; border: none; cursor: pointer; font-family: inherit; font-weight: 600; }
+        .btn-cancel { background: #E2E8F0; color: #475569; }
+        .btn-confirm { background: #EF4444; color: white; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo">📋 Nivora</div>
+        <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>لوحة القيادة</a>
+        <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg>المهام</a>
+        <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>المشاريع</a>
+        <a href="kanban.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg>Kanban</a>
+        <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>Gantt</a>
+        <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>التقويم</a>
+        <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>التقارير</a>
+        <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg>Workflows</a>
+        <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>القوالب</a>
+        <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>الأرشيف</a>
+        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>الفريق</a>
+    </aside>
+
+    <div class="main">
+        <div class="nav-bar">
+            <a href="tasks.html" class="nav-item">📋 قائمة</a>
+            <a href="kanban.html" class="nav-item active">📌 أعمدة</a>
+            <a href="tasks.html" class="nav-item">📊 جدول</a>
+            <a href="gantt.html" class="nav-item">📈 Gantt</a>
+            <a href="reports.html" class="nav-item">📉 إحصائيات</a>
+            <a href="calendar.html" class="nav-item">📅 تقويم</a>
+            <a href="chat.html" class="nav-item">💬 محادثة</a>
+        </div>
+
+        <div class="toolbar">
+            <select class="tool-btn" id="workflowSelect" onchange="changeWorkflow()" style="height:32px;"><option value="default">📋 افتراضي</option></select>
+            <button class="tool-btn">🤖 AI</button>
+            <div class="dropdown"><button class="tool-btn" onclick="toggleDropdown('moreMenu')">⋯ المزيد ▾</button><div class="dropdown-menu" id="moreMenu"><button onclick="refreshBoard()">🔄 تحديث</button><button onclick="exportTasks()">📥 تصدير</button><button onclick="printBoard()">🖨️ طباعة</button><button onclick="archiveDone()">📦 أرشفة المكتملة</button></div></div>
+            <div class="dropdown"><button class="tool-btn" onclick="toggleDropdown('notifMenu')">🔔 <span id="notifCount" style="background:#EF4444;color:white;border-radius:10px;padding:0 5px;font-size:0.7rem;display:none;">0</span></button><div class="dropdown-menu" id="notifMenu" style="width:280px;"><div id="notifList" style="padding:0.5rem;color:var(--text-light);font-size:0.8rem;">لا توجد إشعارات</div></div></div>
+            <input type="text" placeholder="🔍 بحث..." id="searchInput">
+            <button class="tool-btn">🏷️ وسوم</button>
+            <button class="tool-btn">👤 فلترة</button>
+            <button class="tool-btn" onclick="showSettings()">⚙️ إعدادات</button>
+            <span class="spacer"></span>
+            <button class="btn btn-outline" onclick="toggleLang()" id="langBtn" style="height:36px;">🌐 EN</button>
+            <button class="tool-btn" onclick="toggleDark()" id="darkBtn" style="height:36px;">🌙</button>
+            <button class="tool-btn" onclick="logout()">🚪 خروج</button>
+        </div>
+
+        <div class="kanban"></div>
+    </div>
+
+    <div class="modal-overlay" id="logoutModal"><div class="modal-box"><h3>🚪 تأكيد الخروج</h3><p>هل أنت متأكد من تسجيل الخروج؟</p><div class="modal-buttons"><button class="btn-cancel" onclick="closeLogoutModal()">إلغاء</button><button class="btn-confirm" onclick="confirmLogout()">خروج</button></div></div></div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'login.html';
+
+        function showToast(msg, type = 'success') { let container = document.getElementById('toastContainer'); if (!container) { container = document.createElement('div'); container.id = 'toastContainer'; container.className = 'toast-container'; document.body.appendChild(container); } const toast = document.createElement('div'); toast.className = `toast toast-${type}`; toast.textContent = msg; container.appendChild(toast); setTimeout(() => toast.remove(), 3000); }
+        function showLoading(){document.body.insertAdjacentHTML('beforeend','<div class="spinner-overlay" id="loadingOverlay"><div class="spinner"></div></div>');}
+        function hideLoading(){const e=document.getElementById('loadingOverlay');if(e)e.remove();}
+        function logout() { document.getElementById('logoutModal').classList.add('active'); }
+        function closeLogoutModal() { document.getElementById('logoutModal').classList.remove('active'); }
+        function confirmLogout() { localStorage.clear(); window.location.href = 'login.html'; }
+        function toggleDark() { document.body.classList.toggle('dark'); const isDark = document.body.classList.contains('dark'); localStorage.setItem('dark', isDark); document.getElementById('darkBtn').textContent = isDark ? '☀️' : '🌙'; }
+        if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
+        if (typeof currentLang !== 'undefined') { document.getElementById('langBtn').innerHTML = currentLang === 'ar' ? '🌐 EN' : '🌐 AR'; }
+
+        const defaultSteps = ['new', 'in-progress', 'review', 'done', 'blocked'];
+        const defaultLabels = { 'new': '📥 المهام المتاحة', 'in-progress': '🔄 قيد التنفيذ', 'review': '👁️ بانتظار المراجعة', 'done': '✅ مكتملة', 'blocked': '🚫 متعثرة' };
+
+        function buildColumns(steps, labels) { document.querySelector('.kanban').innerHTML = steps.map(step => `<div class="column" data-status="${step}"><h3>${labels[step] || step} <span class="count" id="count-${step}">0</span></h3><div class="task-list" id="tasks-${step}"></div><div class="add-task-btn" onclick="quickAdd('${step}')">+ إضافة مهمة</div></div>`).join(''); }
+        function getCurrentSteps() { return Array.from(document.querySelectorAll('.column')).map(col => col.dataset.status); }
+        async function loadWorkflows() { try { const res = await fetch(`${API_BASE}/workflows`, { headers: { 'Authorization': `Bearer ${token}` } }); const wfs = await res.json(); const select = document.getElementById('workflowSelect'); select.innerHTML = '<option value="default">📋 افتراضي</option>' + wfs.map(w => `<option value="${w._id}">${w.name}</option>`).join(''); } catch (e) {} }
+        function changeWorkflow() { const id = document.getElementById('workflowSelect').value; if (id === 'default') { buildColumns(defaultSteps, defaultLabels); } else { fetch(`${API_BASE}/workflows`, { headers: { 'Authorization': `Bearer ${token}` } }).then(res => res.json()).then(wfs => { const wf = wfs.find(w => w._id === id); if (wf) { const labels = {}; wf.steps.forEach(s => { labels[s] = s; }); buildColumns(wf.steps, labels); } }); } loadKanban(); }
+        function quickUpload(taskId) { const input = document.createElement('input'); input.type = 'file'; input.onchange = async () => { const file = input.files[0]; if (!file) return; showToast('⏳ جاري الرفع...'); const formData = new FormData(); formData.append('file', file); const res = await fetch('http://localhost:3000/api/upload', { method: 'POST', body: formData }); const data = await res.json(); if (res.ok) { await fetch(`${API_BASE}/tasks/${taskId}/attachments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(data) }); showToast('✅ تم رفع الملف'); loadKanban(); } }; input.click(); }
+        function cardMenu(id) { const action = prompt('اختر: حذف / نسخ / إلغاء'); if (action === 'حذف') { if (confirm('حذف المهمة؟')) { fetch(`${API_BASE}/tasks/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }).then(() => loadKanban()); } } }
+        async function quickAdd(status) { const title = prompt('عنوان المهمة:'); if (!title) return; await fetch(`${API_BASE}/tasks`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ title, status }) }); loadKanban(); }
+        function toggleDropdown(id) { const menu = document.getElementById(id); const isOpen = menu.classList.contains('show'); document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show')); if (!isOpen) menu.classList.add('show'); }
+        document.addEventListener('click', (e) => { if (!e.target.closest('.dropdown')) { document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show')); } });
+        function refreshBoard() { loadKanban(); toggleDropdown('moreMenu'); }
+        function exportTasks() { alert('ستتوفر قريباً'); toggleDropdown('moreMenu'); }
+        function printBoard() { window.print(); toggleDropdown('moreMenu'); }
+        async function archiveDone() { if (!confirm('أرشفة كل المهام المكتملة؟')) return; const tasks = await fetch(`${API_BASE}/tasks`, { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json()); const done = tasks.filter(t => t.status === 'done'); for (const t of done) { await fetch(`${API_BASE}/tasks/${t._id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ status: 'archived' }) }); } toggleDropdown('moreMenu'); loadKanban(); }
+        function showSettings() { const steps = getCurrentSteps(); const input = prompt('عدّل الأعمدة (مفصولة بفاصلة):', steps.join(',')); if (input) { const newSteps = input.split(',').map(s => s.trim()).filter(s => s); const labels = {}; newSteps.forEach(s => { labels[s] = s; }); buildColumns(newSteps, labels); loadKanban(); } }
+        async function loadNotifications() { const res = await fetch(`${API_BASE}/tasks`, { headers: { 'Authorization': `Bearer ${token}` } }); const tasks = await res.json(); const now = new Date(); const overdue = tasks.filter(t => t.dueDate && new Date(t.dueDate) < now && t.status !== 'done'); const list = document.getElementById('notifList'); if (overdue.length > 0) { document.getElementById('notifCount').style.display = 'inline'; document.getElementById('notifCount').textContent = overdue.length; list.innerHTML = overdue.map(t => `<button onclick="location.href='task.html?id=${t._id}'">⚠️ متأخرة: ${t.title}</button>`).join(''); } }
+
+        async function loadKanban() {
+            showLoading();
+            try {
+                const res = await fetch(`${API_BASE}/tasks`, { headers: { 'Authorization': `Bearer ${token}` } }); const tasks = await res.json(); const statuses = getCurrentSteps();
+                statuses.forEach(status => { const filtered = tasks.filter(t => t.status === status); const countEl = document.getElementById(`count-${status}`); const listEl = document.getElementById(`tasks-${status}`); if (countEl) countEl.textContent = filtered.length; if (listEl) { listEl.innerHTML = filtered.map(t => `<div class="task-card priority-${t.priority || 'medium'}" draggable="true" data-id="${t._id}"><div class="drag-handle" title="اسحب للنقل">⋮⋮</div><div class="card-header"><a href="task.html?id=${t._id}" class="task-title">${t.title}</a><div class="card-actions"><button class="icon-btn" title="تعديل" onclick="location.href='task.html?id=${t._id}'">✏️</button><button class="icon-btn" title="خيارات" onclick="cardMenu('${t._id}')">⋯</button></div></div>${t.dueDate ? '<div class="task-date">📅 ' + new Date(t.dueDate).toLocaleDateString('ar-SA') + '</div>' : ''}<div class="card-footer"><span title="تعليقات" style="cursor:pointer;" onclick="location.href='task.html?id=${t._id}&tab=comments'">💬 ${t.comments?.length || 0}</span><span title="رفع ملفات" style="cursor:pointer;" onclick="event.stopPropagation(); quickUpload('${t._id}')">📁 ${t.attachments?.length || 0}</span><span title="أولوية">${t.priority === 'critical' ? '🔴' : t.priority === 'high' ? '🟠' : t.priority === 'medium' ? '🟡' : '🟢'}</span></div></div>`).join(''); } });
+                document.querySelectorAll('.task-card').forEach(card => { card.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', card.dataset.id); card.style.opacity = '0.5'; }); card.addEventListener('dragend', e => { card.style.opacity = '1'; }); });
+                document.querySelectorAll('.column').forEach(col => { col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('drag-over'); }); col.addEventListener('dragleave', () => col.classList.remove('drag-over')); col.addEventListener('drop', async e => { e.preventDefault(); col.classList.remove('drag-over'); const id = e.dataTransfer.getData('text/plain'); await fetch(`${API_BASE}/tasks/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ status: col.dataset.status }) }); loadKanban(); }); });
+                document.getElementById('searchInput').addEventListener('input', function() { const q = this.value.toLowerCase(); document.querySelectorAll('.task-card').forEach(card => { card.style.display = card.textContent.toLowerCase().includes(q) ? 'block' : 'none'; }); });
+                loadNotifications();
+            } catch (e) {}
+            hideLoading();
+        }
+
+        buildColumns(defaultSteps, defaultLabels); loadWorkflows(); loadKanban();
+    </script>
+</body>
+</html>

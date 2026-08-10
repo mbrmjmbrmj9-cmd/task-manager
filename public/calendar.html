@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nivora | التقويم</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#2563EB">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body { display: flex; min-height: 100vh; }
+        .sidebar { width: 240px; background: var(--card); border-left: 1px solid var(--border); padding: 1.5rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 100; }
+        .sidebar .logo { font-size: 1.3rem; font-weight: 800; padding: 0 0.75rem; margin-bottom: 1rem; }
+        .sidebar a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text); text-decoration: none; font-weight: 500; font-size: 0.9rem; }
+        .sidebar a:hover, .sidebar a.active { background: #EFF6FF; color: var(--primary); }
+        .sidebar a svg { width: 20px; height: 20px; }
+        .main { margin-right: 240px; flex: 1; padding: 2rem; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .topbar h1 { font-size: 1.5rem; font-weight: 800; }
+        .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .cal-header button { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.4rem 0.8rem; cursor: pointer; font-family: inherit; color: var(--text); }
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: var(--border); border-radius: 12px; overflow: hidden; }
+        .cal-day-header { background: #F1F5F9; padding: 0.5rem; text-align: center; font-weight: 600; font-size: 0.8rem; }
+        .cal-day { background: var(--card); min-height: 90px; padding: 0.4rem; font-size: 0.8rem; transition: background var(--transition); }
+        .cal-day:hover { background: #F8FAFC; }
+        .cal-day.empty { background: #F8FAFC; }
+        .cal-day .day-num { font-weight: 600; margin-bottom: 0.25rem; }
+        .cal-day.today .day-num { background: #2563EB; color: white; padding: 0.1rem 0.4rem; border-radius: 4px; display: inline-block; }
+        .cal-task { font-size: 0.65rem; padding: 0.1rem 0.3rem; border-radius: 3px; margin-bottom: 0.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: default; }
+        .cal-task.critical { background: #FEE2E2; color: #DC2626; }
+        .cal-task.high { background: #FFF7ED; color: #EA580C; }
+        .cal-task.medium { background: #FEF9C3; color: #CA8A04; }
+        .cal-task.low { background: #F0FDF4; color: #16A34A; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: 0.2s; }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-box { background: var(--card); border-radius: 16px; padding: 2rem; text-align: center; max-width: 380px; width: 90%; box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+        .modal-box h3 { margin-bottom: 0.5rem; }
+        .modal-box p { color: var(--text-light); font-size: 0.9rem; margin-bottom: 1.5rem; }
+        .modal-buttons { display: flex; gap: 1rem; justify-content: center; }
+        .modal-buttons button { padding: 0.6rem 1.8rem; border-radius: 12px; border: none; cursor: pointer; font-family: inherit; font-weight: 600; }
+        .btn-cancel { background: #E2E8F0; color: #475569; }
+        .btn-confirm { background: #EF4444; color: white; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo">📋 Nivora</div>
+        <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>لوحة القيادة</a>
+        <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg>المهام</a>
+        <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>المشاريع</a>
+        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg>Kanban</a>
+        <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>Gantt</a>
+        <a href="calendar.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>التقويم</a>
+        <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>التقارير</a>
+        <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg>Workflows</a>
+        <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>القوالب</a>
+        <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>الأرشيف</a>
+        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>الفريق</a>
+    </aside>
+
+    <main class="main">
+        <div class="topbar">
+            <h1>التقويم</h1>
+            <div style="display:flex;gap:0.5rem;align-items:center;">
+                <button class="btn btn-outline" onclick="toggleLang()" id="langBtn" style="height:36px;">🌐 EN</button>
+                <button class="btn btn-outline" onclick="toggleDark()" style="height:36px;" id="darkBtn">🌙</button>
+                <button class="btn btn-outline" onclick="logout()">خروج</button>
+            </div>
+        </div>
+
+        <div class="cal-header">
+            <button onclick="prevMonth()">→ السابق</button>
+            <h2 id="monthTitle" style="font-size:1.1rem;"></h2>
+            <button onclick="nextMonth()">التالي ←</button>
+        </div>
+
+        <div class="cal-grid" id="calGrid"></div>
+    </main>
+
+    <div class="modal-overlay" id="logoutModal">
+        <div class="modal-box">
+            <h3>🚪 تأكيد الخروج</h3>
+            <p>هل أنت متأكد من تسجيل الخروج؟</p>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeLogoutModal()">إلغاء</button>
+                <button class="btn-confirm" onclick="confirmLogout()">خروج</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'login.html';
+
+        let currentDate = new Date();
+        let allTasks = [];
+
+        function logout() { document.getElementById('logoutModal').classList.add('active'); }
+        function closeLogoutModal() { document.getElementById('logoutModal').classList.remove('active'); }
+        function confirmLogout() { localStorage.clear(); window.location.href = 'login.html'; }
+
+        function toggleDark() {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            localStorage.setItem('dark', isDark);
+            document.getElementById('darkBtn').textContent = isDark ? '☀️' : '🌙';
+        }
+        if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
+
+        if (typeof currentLang !== 'undefined') {
+            document.getElementById('langBtn').innerHTML = currentLang === 'ar' ? '🌐 EN' : '🌐 AR';
+        }
+
+        function prevMonth() { currentDate.setMonth(currentDate.getMonth() - 1); render(); }
+        function nextMonth() { currentDate.setMonth(currentDate.getMonth() + 1); render(); }
+
+        async function loadTasks() {
+            showLoading();
+            try {
+                const res = await fetch(`${API_BASE}/tasks`, { headers: { 'Authorization': `Bearer ${token}` } });
+                allTasks = await res.json();
+                render();
+            } catch (e) {}
+            hideLoading();
+        }
+
+        function render() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            document.getElementById('monthTitle').textContent = new Intl.DateTimeFormat('ar-SA', { month: 'long', year: 'numeric' }).format(currentDate);
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+            const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+            const dayNames = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+            let html = dayNames.map(d => `<div class="cal-day-header">${d}</div>`).join('');
+            for (let i = 0; i < firstDay; i++) { html += '<div class="cal-day empty"></div>'; }
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+                const isToday = dateStr === todayStr;
+                const dayTasks = allTasks.filter(t => { if (!t.dueDate) return false; return new Date(t.dueDate).toISOString().split('T')[0] === dateStr; });
+                html += `<div class="cal-day ${isToday ? 'today' : ''}"><div class="day-num">${day}</div>${dayTasks.map(t => `<div class="cal-task ${t.priority}">${t.title}</div>`).join('')}</div>`;
+            }
+            document.getElementById('calGrid').innerHTML = html;
+        }
+
+        function showLoading(){document.body.insertAdjacentHTML('beforeend','<div class="spinner-overlay" id="loadingOverlay"><div class="spinner"></div></div>');}
+        function hideLoading(){const e=document.getElementById('loadingOverlay');if(e)e.remove();}
+
+        loadTasks();
+    </script>
+</body>
+</html>

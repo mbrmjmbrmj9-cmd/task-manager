@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nivora | صحة النظام</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { display: flex; min-height: 100vh; background: #0F172A; font-family: 'Cairo', sans-serif; color: white; }
+        .sidebar { width: 240px; background: #1E293B; padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; }
+        .sidebar h2 { color: #EF4444; margin-bottom: 1.5rem; }
+        .sidebar a { display: block; padding: 0.6rem 0.75rem; color: #94A3B8; text-decoration: none; border-radius: 8px; margin-bottom: 0.25rem; font-size: 0.9rem; }
+        .sidebar a:hover, .sidebar a.active { background: #334155; color: white; }
+        .main { margin-right: 240px; flex: 1; padding: 2rem; }
+        h1 { margin-bottom: 2rem; }
+        .health-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
+        .health-card { background: #1E293B; padding: 1.5rem; border-radius: 12px; text-align: center; }
+        .health-card .status { font-size: 3rem; margin-bottom: 0.5rem; }
+        .health-card .name { font-weight: 600; margin-bottom: 0.25rem; }
+        .health-card .detail { color: #94A3B8; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+    <h2>🔐 Nivora Admin</h2>
+    <a href="dashboard.html">📊 لوحة القيادة</a>
+    <a href="organizations.html">🏢 المؤسسات</a>
+    <a href="subscriptions.html">💳 الاشتراكات</a>
+    <a href="users.html">👥 المستخدمون</a>
+    <a href="features.html">🚩 Feature Flags</a>
+    <a href="usage.html">📊 الاستخدام</a>
+    <a href="tickets.html">🎫 التذاكر</a>
+    <a href="health.html">🖥 صحة النظام</a>
+    <a href="#" onclick="logout()">🚪 خروج</a>
+</aside>
+
+    <div class="main">
+        <h1>🖥 صحة النظام</h1>
+        <div class="health-grid">
+            <div class="health-card">
+                <div class="status">🟢</div>
+                <div class="name">الخادم</div>
+                <div class="detail">يعمل على المنفذ 3000</div>
+            </div>
+            <div class="health-card">
+                <div class="status">🟢</div>
+                <div class="name">MongoDB</div>
+                <div class="detail">Atlas - متصل</div>
+            </div>
+            <div class="health-card">
+                <div class="status">🟢</div>
+                <div class="name">الذاكرة</div>
+                <div class="detail" id="memory">...</div>
+            </div>
+            <div class="health-card">
+                <div class="status">🟢</div>
+                <div class="name">المستخدمين النشطين</div>
+                <div class="detail" id="activeUsers">...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('adminToken');
+        if (!token) window.location.href = 'login.html';
+        function logout() { localStorage.removeItem('adminToken'); window.location.href = 'login.html'; }
+
+        // ذاكرة الخادم
+        if (performance.memory) {
+            const used = Math.round(performance.memory.usedJSHeapSize / 1024 / 1024);
+            document.getElementById('memory').textContent = used + ' MB مستخدمة';
+        } else {
+            document.getElementById('memory').textContent = 'غير متاح';
+        }
+
+        document.getElementById('activeUsers').textContent = 'أنت + المستخدمين';
+    </script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nivora | لوحة المدير</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { display: flex; min-height: 100vh; background: #0F172A; font-family: 'Cairo', sans-serif; color: white; }
+        .sidebar { width: 240px; background: #1E293B; padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; }
+        .sidebar h2 { color: #EF4444; margin-bottom: 1.5rem; }
+        .sidebar a { display: block; padding: 0.6rem 0.75rem; color: #94A3B8; text-decoration: none; border-radius: 8px; margin-bottom: 0.25rem; font-size: 0.9rem; }
+        .sidebar a:hover, .sidebar a.active { background: #334155; color: white; }
+        .main { margin-right: 240px; flex: 1; padding: 2rem; }
+        h1 { margin-bottom: 2rem; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: #1E293B; padding: 1.5rem; border-radius: 12px; }
+        .stat-card .value { font-size: 2rem; font-weight: 800; }
+        .stat-card .label { color: #94A3B8; font-size: 0.85rem; margin-top: 0.25rem; }
+        .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 0.75rem; border-bottom: 1px solid #334155; text-align: right; font-size: 0.85rem; }
+        th { color: #94A3B8; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+    <h2>🔐 Nivora Admin</h2>
+    <a href="dashboard.html">📊 لوحة القيادة</a>
+    <a href="organizations.html">🏢 المؤسسات</a>
+    <a href="subscriptions.html">💳 الاشتراكات</a>
+    <a href="users.html">👥 المستخدمون</a>
+    <a href="features.html">🚩 Feature Flags</a>
+    <a href="usage.html">📊 الاستخدام</a>
+    <a href="tickets.html">🎫 التذاكر</a>
+    <a href="health.html">🖥 صحة النظام</a>
+    <a href="#" onclick="logout()">🚪 خروج</a>
+</aside>
+
+    <div class="main">
+        <h1>📊 لوحة القيادة</h1>
+        <div id="alertsContainer" style="margin-bottom:1.5rem;"></div>
+
+        <div class="stats">
+            <div class="stat-card"><div class="value" id="totalOrgs" style="color:#3B82F6;">0</div><div class="label">المؤسسات</div></div>
+            <div class="stat-card"><div class="value" id="totalUsers" style="color:#22C55E;">0</div><div class="label">المستخدمين</div></div>
+            <div class="stat-card"><div class="value" id="totalRevenue" style="color:#F59E0B;">$0</div><div class="label">إجمالي الإيرادات</div></div>
+            <div class="stat-card"><div class="value" id="activeSubs" style="color:#8B5CF6;">0</div><div class="label">اشتراكات نشطة</div></div>
+            <div class="stat-card"><div class="value" id="revenueThisMonth" style="color:#EC4899;">$0</div><div class="label">إيرادات الشهر</div></div>
+            <div class="stat-card"><div class="value" id="newSubs" style="color:#14B8A6;">0</div><div class="label">اشتراكات جديدة</div></div>
+        </div>
+
+        <h2 style="margin-bottom:1rem;">📋 آخر النشاطات</h2>
+        <table>
+            <thead><tr><th>المستخدم</th><th>الإجراء</th><th>التفاصيل</th><th>الوقت</th></tr></thead>
+            <tbody id="auditBody"></tbody>
+        </table>
+    </div>
+
+    <script>
+        const API = 'http://localhost:3000/api/admin';
+        const token = localStorage.getItem('adminToken');
+        if (!token) window.location.href = 'login.html';
+        function logout() { localStorage.removeItem('adminToken'); window.location.href = 'login.html'; }
+
+        async function loadDashboard() {
+            const [stats, logs] = await Promise.all([
+                fetch(`${API}/advanced-stats`, { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json()),
+                fetch(`${API}/audit-logs`, { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json())
+            ]);
+
+            document.getElementById('totalOrgs').textContent = stats.totalOrgs;
+            document.getElementById('totalUsers').textContent = stats.totalUsers;
+            document.getElementById('totalRevenue').textContent = '$' + stats.totalRevenue;
+            document.getElementById('activeSubs').textContent = stats.activeSubs;
+            document.getElementById('revenueThisMonth').textContent = '$' + stats.revenueThisMonth;
+            document.getElementById('newSubs').textContent = stats.newSubsThisMonth;
+
+            document.getElementById('auditBody').innerHTML = logs.map(l => `
+                <tr><td>${l.username || '-'}</td><td>${l.action}</td><td>${l.details || '-'}</td><td>${new Date(l.createdAt).toLocaleString('ar-SA')}</td></tr>
+            `).join('') || '<tr><td colspan="4" style="text-align:center;padding:2rem;">لا توجد سجلات</td></tr>';
+        }
+
+async function loadAlerts() {
+    const res = await fetch(`${API}/alerts`, { headers: { 'Authorization': `Bearer ${token}` } });
+    const alerts = await res.json();
+    const colors = { warning: '#FEF3C7', danger: '#FEE2E2', info: '#EFF6FF' };
+    const textColors = { warning: '#92400E', danger: '#DC2626', info: '#2563EB' };
+    document.getElementById('alertsContainer').innerHTML = alerts.map(a => `
+        <div style="background:${colors[a.type]};color:${textColors[a.type]};padding:0.75rem 1rem;border-radius:8px;margin-bottom:0.5rem;font-size:0.9rem;">
+            ${a.type === 'danger' ? '🔴' : a.type === 'warning' ? '🟡' : '🔵'} ${a.text}
+        </div>
+    `).join('');
+}
+        loadAlerts();
+        loadDashboard();
+    </script>
+</body>
+</html>

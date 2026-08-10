@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nivora | المستخدمون</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { display: flex; min-height: 100vh; background: #0F172A; font-family: 'Cairo', sans-serif; color: white; }
+        .sidebar { width: 240px; background: #1E293B; padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; }
+        .sidebar h2 { color: #EF4444; margin-bottom: 1.5rem; }
+        .sidebar a { display: block; padding: 0.6rem 0.75rem; color: #94A3B8; text-decoration: none; border-radius: 8px; margin-bottom: 0.25rem; font-size: 0.9rem; }
+        .sidebar a:hover, .sidebar a.active { background: #334155; color: white; }
+        .main { margin-right: 240px; flex: 1; padding: 2rem; }
+        h1 { margin-bottom: 2rem; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 0.75rem; border-bottom: 1px solid #334155; text-align: right; font-size: 0.85rem; }
+        th { color: #94A3B8; }
+        .badge { padding: 0.2rem 0.5rem; border-radius: 6px; font-size: 0.75rem; }
+        .badge-admin { background: #EF4444; color: white; }
+        .badge-user { background: #3B82F6; color: white; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+    <h2>🔐 Nivora Admin</h2>
+    <a href="dashboard.html">📊 لوحة القيادة</a>
+    <a href="organizations.html">🏢 المؤسسات</a>
+    <a href="subscriptions.html">💳 الاشتراكات</a>
+    <a href="users.html">👥 المستخدمون</a>
+    <a href="features.html">🚩 Feature Flags</a>
+    <a href="usage.html">📊 الاستخدام</a>
+    <a href="tickets.html">🎫 التذاكر</a>
+    <a href="health.html">🖥 صحة النظام</a>
+    <a href="#" onclick="logout()">🚪 خروج</a>
+</aside>
+
+    <div class="main">
+        <h1>👥 المستخدمون</h1>
+        <table>
+            <thead><tr><th>اسم المستخدم</th><th>البريد</th><th>الدور</th><th>تاريخ التسجيل</th></tr></thead>
+            <tbody id="userBody"></tbody>
+        </table>
+    </div>
+
+    <script>
+        const API = 'http://localhost:3000/api/admin';
+        const token = localStorage.getItem('adminToken');
+        if (!token) window.location.href = 'login.html';
+        function logout() { localStorage.removeItem('adminToken'); window.location.href = 'login.html'; }
+
+        async function loadUsers() {
+            const res = await fetch(`${API}/users`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const users = await res.json();
+            document.getElementById('userBody').innerHTML = users.map(u => `
+                <tr>
+                    <td>${u.username}</td>
+                    <td>${u.email || '-'}</td>
+                    <td><span class="badge ${u.role === 'super_admin' ? 'badge-admin' : 'badge-user'}">${u.role}</span></td>
+                    <td>${new Date(u.createdAt).toLocaleDateString('ar-SA')}</td>
+                </tr>
+            `).join('');
+        }
+
+        loadUsers();
+    </script>
+</body>
+</html>

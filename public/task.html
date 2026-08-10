@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nivora | تفاصيل المهمة</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#2563EB">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body { display: flex; min-height: 100vh; background: var(--bg); }
+        .sidebar { width: 240px; background: var(--card); border-left: 1px solid var(--border); padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 100; }
+        .sidebar .logo { font-size: 1.3rem; font-weight: 800; margin-bottom: 1rem; }
+        .sidebar a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text); text-decoration: none; font-weight: 500; font-size: 0.9rem; }
+        .sidebar a:hover, .sidebar a.active { background: #EFF6FF; color: var(--primary); }
+        .sidebar a svg { width: 20px; height: 20px; }
+        .main { margin-right: 240px; flex: 1; padding: 2rem; }
+        .back-link { color: var(--primary); text-decoration: none; font-size: 0.9rem; margin-bottom: 1rem; display: inline-block; }
+        .task-header { margin-bottom: 1.5rem; }
+        .task-header h1 { font-size: 1.5rem; font-weight: 800; }
+        .task-header .meta { display: flex; gap: 1rem; font-size: 0.85rem; color: var(--text-light); margin-top: 0.5rem; flex-wrap: wrap; }
+        .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .tab { padding: 0.6rem 1rem; cursor: pointer; font-weight: 600; font-size: 0.85rem; color: var(--text-light); border-bottom: 2px solid transparent; margin-bottom: -2px; }
+        .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .checklist-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+        .checklist-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+        .checklist-item.done span { text-decoration: line-through; color: var(--text-light); }
+        .comment { padding: 0.75rem; border-radius: 8px; background: #F8FAFC; margin-bottom: 0.5rem; }
+        body.dark .comment { background: #0F172A; }
+        .comment .comment-user { font-weight: 700; font-size: 0.85rem; }
+        .comment .comment-text { font-size: 0.9rem; margin-top: 0.25rem; }
+        .comment .comment-time { font-size: 0.7rem; color: var(--text-light); margin-top: 0.25rem; }
+        .activity-item { padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+        .attachment-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+        .attachment-item a { color: var(--primary); text-decoration: none; font-size: 0.9rem; }
+        .followers-list { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .follower-tag { display: flex; align-items: center; gap: 0.25rem; background: #EFF6FF; padding: 0.25rem 0.6rem; border-radius: 20px; font-size: 0.8rem; font-weight: 500; }
+        .follower-tag button { background: none; border: none; cursor: pointer; color: #EF4444; font-size: 0.9rem; padding: 0; line-height: 1; }
+        .add-row { display: flex; gap: 0.5rem; margin-top: 1rem; }
+        .add-row input { flex: 1; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo">📋 Nivora</div>
+        <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>لوحة القيادة</a>
+        <a href="tasks.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg>المهام</a>
+        <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>المشاريع</a>
+        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg>Kanban</a>
+        <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>Gantt</a>
+        <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>التقويم</a>
+        <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>التقارير</a>
+        <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg>Workflows</a>
+        <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>القوالب</a>
+        <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>الأرشيف</a>
+        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>الفريق</a>
+    </aside>
+
+    <main class="main">
+        <a href="tasks.html" class="back-link">← العودة للمهام</a>
+
+        <div class="task-header"><h1 id="taskTitle">...</h1><div class="meta"><span id="taskStatus"></span><span id="taskPriority"></span><span id="taskProject"></span><span id="taskDueDate"></span><span id="taskProgress"></span></div></div>
+
+        <div class="tabs">
+            <div class="tab active" data-tab="overview">📋 نظرة عامة</div>
+            <div class="tab" data-tab="checklist">✅ مهام فرعية</div>
+            <div class="tab" data-tab="attachments">📎 مرفقات</div>
+            <div class="tab" data-tab="comments">💬 تعليقات</div>
+            <div class="tab" data-tab="discussion">💬 مناقشة</div>
+            <div class="tab" data-tab="followers">👥 متابعون</div>
+            <div class="tab" data-tab="dependencies">🔗 تبعية</div>
+            <div class="tab" data-tab="activity">📜 النشاط</div>
+        </div>
+
+        <div class="tab-content active" id="tab-overview"><div class="card"><p id="taskDesc" style="color:var(--text-light);">...</p></div></div>
+        <div class="tab-content" id="tab-checklist"><div class="card"><div id="checklistItems"></div><div class="add-row"><input type="text" class="input" id="checklistInput" placeholder="أضف بنداً..."><button class="btn btn-primary" onclick="addChecklistItem()">➕</button></div></div></div>
+        <div class="tab-content" id="tab-attachments"><div class="card"><div id="attachmentsList"></div><div class="add-row" style="margin-top:1rem;flex-wrap:wrap;"><input type="file" id="fileInput" style="display:none;" onchange="uploadFile()"><button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">📁 رفع ملف</button><span id="uploadStatus" style="font-size:0.8rem;color:var(--text-light);"></span></div></div></div>
+        <div class="tab-content" id="tab-comments"><div class="card"><div id="commentsList"></div><div class="add-row"><input type="text" class="input" id="commentInput" placeholder="اكتب تعليقاً..."><button class="btn btn-primary" onclick="addComment()">💬</button></div></div></div>
+        <div class="tab-content" id="tab-discussion"><div class="card"><div id="discussionMessages" style="max-height:300px;overflow-y:auto;margin-bottom:1rem;"></div><div class="add-row"><input type="text" class="input" id="discussionInput" placeholder="اكتب في المناقشة..."><button class="btn btn-primary" onclick="sendDiscussion()">💬</button></div></div></div>
+        <div class="tab-content" id="tab-followers"><div class="card"><div id="followersList"></div><div class="add-row" style="margin-top:1rem;"><input type="text" class="input" id="followerInput" placeholder="اسم المتابع..."><button class="btn btn-primary" onclick="addFollower()">➕</button></div></div></div>
+        <div class="tab-content" id="tab-dependencies"><div class="card"><div id="dependenciesList"></div><div class="add-row" style="margin-top:1rem;"><select class="input" id="depTaskSelect" style="flex:1;"><option value="">اختر مهمة...</option></select><select class="input" id="depType" style="width:auto;"><option value="finish-to-start">Finish → Start</option><option value="start-to-start">Start → Start</option><option value="finish-to-finish">Finish → Finish</option></select><button class="btn btn-primary" onclick="addDependency()">🔗</button></div></div></div>
+        <div class="tab-content" id="tab-activity"><div class="card"><div id="activityList"></div></div></div>
+    </main>
+
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'login.html';
+        const params = new URLSearchParams(window.location.search);
+        const taskId = params.get('id');
+        if (!taskId) window.location.href = 'tasks.html';
+        let taskData = null;
+
+        document.querySelectorAll('.tab').forEach(tab => { tab.addEventListener('click', () => { document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); tab.classList.add('active'); document.getElementById('tab-' + tab.dataset.tab).classList.add('active'); }); });
+
+        async function loadTask() {
+            const res = await fetch(`${API_BASE}/tasks/${taskId}`, { headers: { 'Authorization': `Bearer ${token}` } }); taskData = await res.json();
+            document.getElementById('taskTitle').textContent = taskData.title; document.getElementById('taskDesc').textContent = taskData.description || 'لا يوجد وصف';
+            document.getElementById('taskStatus').innerHTML = '📌 ' + taskData.status;
+            document.getElementById('taskPriority').innerHTML = taskData.priority === 'critical' ? '🔴 حرجة' : taskData.priority === 'high' ? '🟠 عالية' : taskData.priority === 'medium' ? '🟡 متوسطة' : '🟢 منخفضة';
+            document.getElementById('taskProject').textContent = '📁 ' + (taskData.project || 'بدون مشروع');
+            document.getElementById('taskDueDate').textContent = '📅 ' + (taskData.dueDate ? new Date(taskData.dueDate).toLocaleDateString('ar-SA') : 'بدون تاريخ');
+            document.getElementById('taskProgress').textContent = '📊 ' + taskData.progress + '%';
+            renderChecklist(); renderAttachments(); renderComments(); renderFollowers(); renderDependencies(); renderActivity(); loadDiscussion();
+        }
+
+        function renderChecklist() { document.getElementById('checklistItems').innerHTML = taskData.checklist.map(item => `<div class="checklist-item ${item.done ? 'done' : ''}"><input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleChecklistItem('${item._id}', this.checked)"><span>${item.text}</span></div>`).join('') || '<p style="color:var(--text-light);">لا توجد بنود</p>'; }
+        function renderAttachments() { document.getElementById('attachmentsList').innerHTML = taskData.attachments.map(a => `<div class="attachment-item"><span>📎</span><a href="${a.url}" target="_blank">${a.name}</a><button class="btn btn-outline" style="height:24px;font-size:0.7rem;margin-right:auto;" onclick="deleteAttachment('${a._id}')">🗑️</button></div>`).join('') || '<p style="color:var(--text-light);">لا توجد مرفقات</p>'; }
+        function renderComments() { document.getElementById('commentsList').innerHTML = taskData.comments.map(c => `<div class="comment"><div class="comment-user">${c.username}</div><div class="comment-text">${c.text}</div><div class="comment-time">${new Date(c.createdAt).toLocaleString('ar-SA')}</div></div>`).join('') || '<p style="color:var(--text-light);">لا توجد تعليقات</p>'; }
+        function renderFollowers() { document.getElementById('followersList').innerHTML = (taskData.followers || []).map((f, i) => `<span class="follower-tag">👤 ${f}<button onclick="removeFollower(${i})">✕</button></span>`).join('') || '<p style="color:var(--text-light);">لا يوجد متابعون</p>'; }
+        async function renderDependencies() { const allTasks = await fetch(`${API_BASE}/tasks`, { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json()); document.getElementById('dependenciesList').innerHTML = (taskData.dependencies || []).map(d => { const linked = allTasks.find(t => t._id === d.taskId); return `<div class="attachment-item"><span>🔗</span><span>${linked ? linked.title : d.taskId}</span><span style="font-size:0.75rem;color:var(--text-light);">${d.type}</span><button class="btn btn-outline" style="height:24px;font-size:0.7rem;margin-right:auto;" onclick="deleteDependency('${d._id}')">🗑️</button></div>`; }).join('') || '<p style="color:var(--text-light);">لا توجد تبعيات</p>'; document.getElementById('depTaskSelect').innerHTML = '<option value="">اختر مهمة...</option>' + allTasks.filter(t => t._id !== taskData._id).map(t => `<option value="${t._id}">${t.title}</option>`).join(''); }
+        function renderActivity() { document.getElementById('activityList').innerHTML = taskData.activity.reverse().map(a => `<div class="activity-item"><strong>${a.username}</strong> - ${a.action} - ${a.details}<br><small>${new Date(a.createdAt).toLocaleString('ar-SA')}</small></div>`).join('') || '<p style="color:var(--text-light);">لا يوجد نشاط</p>'; }
+        async function loadDiscussion() { const res = await fetch(`${API_BASE}/chat?taskId=${taskId}`, { headers: { 'Authorization': `Bearer ${token}` } }); const messages = await res.json(); document.getElementById('discussionMessages').innerHTML = messages.map(m => `<div style="margin-bottom:0.5rem;padding:0.5rem;border-radius:8px;background:#F1F5F9;"><strong>${m.username}</strong>: ${m.text}<small style="color:var(--text-light);display:block;">${new Date(m.createdAt).toLocaleTimeString('ar-SA')}</small></div>`).join('') || '<p style="color:var(--text-light);">لا توجد مناقشات</p>'; }
+        async function sendDiscussion() { const input = document.getElementById('discussionInput'); const text = input.value.trim(); if (!text) return; await fetch(`${API_BASE}/chat`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ text, taskId, channel: 'discussion' }) }); input.value = ''; loadDiscussion(); }
+        async function addChecklistItem() { const input = document.getElementById('checklistInput'); const text = input.value.trim(); if (!text) return; await fetch(`${API_BASE}/tasks/${taskId}/checklist`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ text }) }); input.value = ''; loadTask(); }
+        async function toggleChecklistItem(itemId, done) { await fetch(`${API_BASE}/tasks/${taskId}/checklist/${itemId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ done }) }); loadTask(); }
+        async function uploadFile() { const file = document.getElementById('fileInput').files[0]; if (!file) return; document.getElementById('uploadStatus').textContent = '⏳...'; const formData = new FormData(); formData.append('file', file); const res = await fetch('http://localhost:3000/api/upload', { method: 'POST', body: formData }); const data = await res.json(); if (res.ok) { await fetch(`${API_BASE}/tasks/${taskId}/attachments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(data) }); document.getElementById('uploadStatus').textContent = '✅ تم'; loadTask(); } }
+        async function deleteAttachment(attId) { await fetch(`${API_BASE}/tasks/${taskId}/attachments/${attId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); loadTask(); }
+        async function addComment() { const input = document.getElementById('commentInput'); const text = input.value.trim(); if (!text) return; await fetch(`${API_BASE}/tasks/${taskId}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ text }) }); input.value = ''; loadTask(); }
+        async function addFollower() { const input = document.getElementById('followerInput'); const name = input.value.trim(); if (!name) return; const followers = [...(taskData.followers || []), name]; await fetch(`${API_BASE}/tasks/${taskId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ followers }) }); input.value = ''; loadTask(); }
+        async function removeFollower(index) { const followers = [...taskData.followers]; followers.splice(index, 1); await fetch(`${API_BASE}/tasks/${taskId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ followers }) }); loadTask(); }
+        async function addDependency() { const depTaskId = document.getElementById('depTaskSelect').value; const type = document.getElementById('depType').value; if (!depTaskId) return; await fetch(`${API_BASE}/tasks/${taskId}/dependencies`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ taskId: depTaskId, type }) }); loadTask(); }
+        async function deleteDependency(depId) { await fetch(`${API_BASE}/tasks/${taskId}/dependencies/${depId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); loadTask(); }
+
+        const activeTab = params.get('tab');
+        if (activeTab) { document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); const targetTab = document.querySelector(`.tab[data-tab="${activeTab}"]`); const targetContent = document.getElementById(`tab-${activeTab}`); if (targetTab) targetTab.classList.add('active'); if (targetContent) targetContent.classList.add('active'); }
+
+        loadTask();
+    </script>
+</body>
+</html>

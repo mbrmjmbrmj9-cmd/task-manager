@@ -1,0 +1,153 @@
+/* ========== متغيرات ========== */
+:root {
+    --primary: #2563EB;
+    --primary-hover: #1D4ED8;
+    --success: #22C55E;
+    --danger: #EF4444;
+    --warning: #F97316;
+    --bg: #F8FAFC;
+    --card: #FFFFFF;
+    --text: #1E293B;
+    --text-light: #64748B;
+    --border: #E2E8F0;
+    --radius-sm: 8px;
+    --radius: 12px;
+    --radius-lg: 16px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.04);
+    --transition: 0.2s ease;
+}
+
+/* ========== أساسيات ========== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Cairo', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ========== أزرار ========== */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 42px;
+    padding: 0 1.25rem;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all var(--transition);
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+.btn-primary:hover { background: var(--primary-hover); }
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+}
+.btn-danger:hover { background: #DC2626; }
+
+.btn-outline {
+    background: var(--card);
+    border-color: var(--border);
+    color: var(--text);
+}
+.btn-outline:hover { background: #F1F5F9; }
+
+/* ========== بطاقات ========== */
+.card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+}
+
+/* ========== حقول ========== */
+.input {
+    width: 100%;
+    height: 42px;
+    padding: 0 0.75rem;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    font-family: inherit;
+    font-size: 0.9rem;
+    background: var(--card);
+    color: var(--text);
+    transition: all var(--transition);
+}
+.input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+.input::placeholder { color: #94A3B8; }
+
+/* ========== نصوص ========== */
+.text-light { color: var(--text-light); }
+.text-sm { font-size: 0.85rem; }
+.text-center { text-align: center; }
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+
+/* ========== إخفاء ========== */
+.hidden { display: none !important; }
+/* ========== الوضع الليلي ========== */
+body.dark {
+    --bg: #0F172A;
+    --card: #1E293B;
+    --text: #F8FAFC;
+    --text-light: #94A3B8;
+    --border: #334155;
+    --shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+body.dark .sidebar a:hover,
+body.dark .sidebar a.active { background: #1E3A5F; }
+body.dark .column { background: #1E293B; }
+body.dark .cal-day-header { background: #1E293B; }
+body.dark .cal-day.empty { background: #1E293B; }
+body.dark .cal-day:hover { background: #0F172A; }
+/* ========== Loading Spinner ========== */
+.spinner {
+    width: 40px; height: 40px; border: 3px solid #E2E8F0;
+    border-top-color: #2563EB; border-radius: 50%;
+    animation: spin 0.6s linear infinite; margin: 2rem auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.spinner-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255,255,255,0.7); display: flex;
+    align-items: center; justify-content: center; z-index: 9999;
+}
+body.dark .spinner-overlay { background: rgba(15,23,42,0.7); }
+body.dark .spinner { border-color: #334155; border-top-color: #2563EB; }
+/* ========== Toast Notifications ========== */
+.toast-container {
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+    z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem;
+}
+.toast {
+    padding: 0.75rem 1.5rem; border-radius: 12px; color: white; font-weight: 600;
+    font-size: 0.9rem; box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    animation: toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards;
+    text-align: center; white-space: nowrap;
+}
+.toast-success { background: #22C55E; }
+.toast-error { background: #EF4444; }
+.toast-warning { background: #F97316; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-20px); } }

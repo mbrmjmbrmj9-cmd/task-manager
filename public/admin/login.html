@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nivora | دخول المدير</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #0F172A; font-family: 'Cairo', sans-serif; }
+        .card { background: #1E293B; padding: 2.5rem 2rem; border-radius: 24px; width: 380px; text-align: center; color: white; }
+        .card h1 { color: #EF4444; margin-bottom: 0.5rem; }
+        .card p { color: #94A3B8; margin-bottom: 1.5rem; font-size: 0.9rem; }
+        input { width: 100%; height: 48px; border-radius: 12px; border: 1px solid #334155; background: #0F172A; color: white; padding: 0 1rem; margin-bottom: 1rem; font-family: inherit; }
+        button { width: 100%; height: 48px; border-radius: 12px; background: #EF4444; color: white; border: none; font-family: inherit; font-weight: 700; font-size: 1rem; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🔐 Nivora Admin</h1>
+        <p>لوحة تحكم المدير</p>
+        <input type="email" id="email" placeholder="البريد الإلكتروني">
+        <input type="password" id="password" placeholder="كلمة المرور">
+        <button onclick="login()">دخول</button>
+        <p id="error" style="color:#EF4444;margin-top:1rem;display:none;"></p>
+    </div>
+    <script>
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const res = await fetch('http://localhost:3000/api/admin/login', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email, password })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                localStorage.setItem('adminToken', data.token);
+                window.location.href = 'dashboard.html';
+            } else {
+                document.getElementById('error').textContent = data.error;
+                document.getElementById('error').style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>

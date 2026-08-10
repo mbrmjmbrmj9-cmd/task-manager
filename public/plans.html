@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nivora | الخطط</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#2563EB">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body { background: #F1F5F9; font-family: 'Cairo', sans-serif; padding: 2rem; }
+        .header { text-align: center; margin-bottom: 2rem; }
+        .header h1 { font-size: 2rem; font-weight: 800; color: #1E293B; }
+        .header p { color: #64748B; margin-top: 0.5rem; }
+        .plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; max-width: 1100px; margin: 0 auto; }
+        .plan-card { background: #FFFFFF; border-radius: 20px; padding: 2rem 1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.04); text-align: center; border: 2px solid transparent; transition: all 0.25s; position: relative; }
+        .plan-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.08); }
+        .plan-card.featured { border-color: #2563EB; }
+        .plan-card.featured::before { content: 'الأكثر شيوعاً'; position: absolute; top: -12px; right: 50%; transform: translateX(50%); background: #2563EB; color: white; padding: 0.25rem 1rem; border-radius: 20px; font-size: 0.75rem; }
+        .plan-name { font-size: 1.2rem; font-weight: 800; color: #1E293B; }
+        .plan-price { font-size: 2.5rem; font-weight: 800; margin: 1rem 0; }
+        .plan-price span { font-size: 0.9rem; color: #64748B; }
+        .plan-features { list-style: none; margin: 1.5rem 0; text-align: right; }
+        .plan-features li { padding: 0.4rem 0; font-size: 0.9rem; color: #64748B; }
+        .plan-features li::before { content: '✅ '; }
+        .btn-full { width: 100%; height: 48px; border-radius: 12px; font-family: inherit; font-size: 1rem; cursor: pointer; font-weight: 700; }
+        .btn-primary { background: #2563EB; color: white; border: none; }
+        .btn-outline { background: white; color: #2563EB; border: 2px solid #2563EB; }
+    </style>
+</head>
+<body>
+    <a href="index.html" style="display:inline-block;margin-bottom:1rem;color:#2563EB;text-decoration:none;">← العودة</a>
+    <div class="header"><h1>اختر الخطة المناسبة</h1><p>جميع الخطط تشمل مهام غير محدودة</p></div>
+
+    <div class="plans">
+        <div class="plan-card">
+            <div class="plan-name">🆓 مجاني</div>
+            <div class="plan-price">$0<span>/شهرياً</span></div>
+            <ul class="plan-features"><li>3 مستخدمين</li><li>5 مشاريع</li><li>مهام غير محدودة</li><li>Kanban Board</li><li>تقويم</li></ul>
+            <button class="btn-full btn-outline" onclick="subscribe('free')">ابدأ مجاناً</button>
+        </div>
+        <div class="plan-card featured">
+            <div class="plan-name">⭐ Pro</div>
+            <div class="plan-price">$29<span>/شهرياً</span></div>
+            <ul class="plan-features"><li>20 مستخدم</li><li>100 مشروع</li><li>Gantt Chart</li><li>Workflows مخصصة</li><li>Chat + مرفقات</li><li>تقارير متقدمة</li></ul>
+            <button class="btn-full btn-primary" onclick="subscribe('pro')">اشتراك Pro</button>
+        </div>
+        <div class="plan-card">
+            <div class="plan-name">🚀 Business</div>
+            <div class="plan-price">$99<span>/شهرياً</span></div>
+            <ul class="plan-features"><li>100 مستخدم</li><li>مشاريع غير محدودة</li><li>كل مميزات Pro</li><li>API Access</li><li>دعم 24/7</li><li>AI Assistant</li></ul>
+            <button class="btn-full btn-primary" onclick="subscribe('business')">اشتراك Business</button>
+        </div>
+    </div>
+
+    <script>
+        const API = 'http://localhost:3000/api';
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'login.html';
+
+        async function subscribe(plan) {
+            const wsId = localStorage.getItem('workspaceId');
+            if (!wsId) return alert('أنشئ مساحة عمل أولاً');
+            const amount = plan === 'free' ? 0 : plan === 'pro' ? 29 : 99;
+            if (plan === 'free') {
+                await fetch(`${API}/subscriptions`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ organizationId: wsId, plan, amount: 0 }) });
+                alert('✅ تم تفعيل الخطة المجانية'); window.location.href = 'index.html';
+            } else {
+                if (confirm(`سيتم تحويلك لبوابة الدفع لدفع $${amount}. موافق؟`)) {
+                    const res = await fetch(`${API}/subscriptions`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ organizationId: wsId, plan, amount }) });
+                    if (res.ok) { alert('✅ تم الاشتراك بنجاح!'); window.location.href = 'index.html'; }
+                }
+            }
+        }
+    </script>
+</body>
+</html>

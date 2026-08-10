@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nivora | Feature Flags</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { display: flex; min-height: 100vh; background: #0F172A; font-family: 'Cairo', sans-serif; color: white; }
+        .sidebar { width: 240px; background: #1E293B; padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; }
+        .sidebar h2 { color: #EF4444; margin-bottom: 1.5rem; }
+        .sidebar a { display: block; padding: 0.6rem 0.75rem; color: #94A3B8; text-decoration: none; border-radius: 8px; margin-bottom: 0.25rem; font-size: 0.9rem; }
+        .sidebar a:hover, .sidebar a.active { background: #334155; color: white; }
+        .main { margin-right: 240px; flex: 1; padding: 2rem; }
+        h1 { margin-bottom: 1rem; }
+        .add-form { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+        .add-form input { padding: 0.5rem; border-radius: 6px; background: #1E293B; color: white; border: 1px solid #334155; font-family: inherit; flex: 1; }
+        .add-form button { padding: 0.5rem 1rem; background: #22C55E; color: white; border: none; border-radius: 6px; cursor: pointer; }
+        .flag-row { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem; background: #1E293B; border-radius: 8px; margin-bottom: 0.5rem; }
+        .flag-row .name { font-weight: 600; }
+        .flag-row .desc { color: #94A3B8; font-size: 0.8rem; }
+        .toggle { width: 50px; height: 26px; background: #334155; border-radius: 13px; cursor: pointer; position: relative; }
+        .toggle.on { background: #22C55E; }
+        .toggle::after { content: ''; position: absolute; top: 3px; right: 3px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: 0.2s; }
+        .toggle.on::after { right: 27px; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+    <h2>🔐 Nivora Admin</h2>
+    <a href="dashboard.html">📊 لوحة القيادة</a>
+    <a href="organizations.html">🏢 المؤسسات</a>
+    <a href="subscriptions.html">💳 الاشتراكات</a>
+    <a href="users.html">👥 المستخدمون</a>
+    <a href="features.html">🚩 Feature Flags</a>
+    <a href="usage.html">📊 الاستخدام</a>
+    <a href="tickets.html">🎫 التذاكر</a>
+    <a href="health.html">🖥 صحة النظام</a>
+    <a href="#" onclick="logout()">🚪 خروج</a>
+</aside>
+
+    <div class="main">
+        <h1>🚩 Feature Flags</h1>
+        <div class="add-form">
+            <input type="text" id="flagName" placeholder="اسم الميزة">
+            <input type="text" id="flagDesc" placeholder="الوصف">
+            <button onclick="addFlag()">➕ إضافة</button>
+        </div>
+        <div id="flagsList"></div>
+    </div>
+
+    <script>
+        const API = 'http://localhost:3000/api/admin';
+        const token = localStorage.getItem('adminToken');
+        if (!token) window.location.href = 'login.html';
+        function logout() { localStorage.removeItem('adminToken'); window.location.href = 'login.html'; }
+
+        async function loadFlags() {
+            const res = await fetch(`${API}/feature-flags`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const flags = await res.json();
+            document.getElementById('flagsList').innerHTML = flags.map(f => `
+                <div class="flag-row">
+                    <div><div class="name">${f.name}</div><div class="desc">${f.description || ''}</div></div>
+                    <div class="toggle ${f.enabled ? 'on' : ''}" onclick="toggleFlag('${f.name}', ${!f.enabled})"></div>
+                </div>
+            `).join('');
+        }
+
+        async function addFlag() {
+            const name = document.getElementById('flagName').value.trim();
+            const description = document.getElementById('flagDesc').value.trim();
+            if (!name) return;
+            await fetch(`${API}/feature-flags`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ name, enabled: false, description })
+            });
+            document.getElementById('flagName').value = '';
+            document.getElementById('flagDesc').value = '';
+            loadFlags();
+        }
+
+        async function toggleFlag(name, enabled) {
+            await fetch(`${API}/feature-flags`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ name, enabled })
+            });
+            loadFlags();
+        }
+
+        loadFlags();
+    </script>
+</body>
+</html>

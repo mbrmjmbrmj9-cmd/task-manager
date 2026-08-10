@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nivora | منصة إدارة العمل</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#2563EB">
+    <meta name="description" content="Nivora - نظّم مهامك، أدر فريقك، وأنجز أكثر. منصة سحابية لإدارة المشاريع والفرق.">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Cairo', sans-serif; }
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 4rem; background: white; }
+        nav .logo { font-size: 1.5rem; font-weight: 800; color: #2563EB; }
+        nav a { margin: 0 0.75rem; text-decoration: none; color: #64748B; font-weight: 600; }
+        nav .btn { background: #2563EB; color: white; padding: 0.5rem 1.5rem; border-radius: 8px; }
+        .hero { text-align: center; padding: 6rem 2rem; background: linear-gradient(135deg, #EFF6FF, #DBEAFE); }
+        .hero h1 { font-size: 3rem; font-weight: 800; color: #1E293B; }
+        .hero p { font-size: 1.2rem; color: #64748B; margin: 1rem 0 2rem; }
+        .hero .btn { background: #2563EB; color: white; padding: 0.75rem 2rem; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 1.1rem; }
+        .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; padding: 4rem; max-width: 1100px; margin: 0 auto; }
+        .feature { text-align: center; }
+        .feature .icon { font-size: 2.5rem; margin-bottom: 1rem; }
+        .feature h3 { margin-bottom: 0.5rem; }
+        .feature p { color: #64748B; }
+        footer { text-align: center; padding: 2rem; background: #1E293B; color: white; }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">Nivora</div>
+        <div>
+            <a href="#features">المميزات</a>
+            <a href="login.html" class="btn">تسجيل الدخول</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <h1>نظّم مهامك، أدر فريقك، وأنجز أكثر</h1>
+        <p>منصة سحابية متكاملة لإدارة المشاريع والفرق. Kanban، Gantt، Chat، تقارير، والمزيد.</p>
+        <a href="login.html" class="btn">ابدأ مجاناً</a>
+    </section>
+
+    <section class="features" id="features">
+        <div class="feature"><div class="icon">📋</div><h3>Kanban Board</h3><p>اسحب وأفلت المهام بين الأعمدة</p></div>
+        <div class="feature"><div class="icon">📈</div><h3>Gantt Chart</h3><p>مخطط زمني مع تبعيات وCritical Path</p></div>
+        <div class="feature"><div class="icon">💬</div><h3>Chat فوري</h3><p>تواصل مع فريقك في الوقت الحقيقي</p></div>
+        <div class="feature"><div class="icon">📊</div><h3>تقارير</h3><p>إحصائيات ورسوم بيانية لأداء الفريق</p></div>
+    </section>
+
+    <footer>
+        <p>© 2026 Nivora. جميع الحقوق محفوظة.</p>
+    </footer>
+</body>
+</html>

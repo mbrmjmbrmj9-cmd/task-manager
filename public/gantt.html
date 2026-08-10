@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nivora | Gantt Chart</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#2563EB">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body { display: flex; min-height: 100vh; background: var(--bg); }
+        .sidebar { width: 240px; background: var(--card); border-left: 1px solid var(--border); padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 100; }
+        .sidebar .logo { font-size: 1.3rem; font-weight: 800; margin-bottom: 1rem; }
+        .sidebar a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text); text-decoration: none; font-weight: 500; font-size: 0.9rem; }
+        .sidebar a:hover, .sidebar a.active { background: #EFF6FF; color: var(--primary); }
+        .sidebar a svg { width: 20px; height: 20px; }
+        .main { margin-right: 240px; flex: 1; padding: 1.5rem; overflow: hidden; display: flex; flex-direction: column; height: 100vh; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .topbar h1 { font-size: 1.5rem; font-weight: 800; }
+        .toolbar { display: flex; gap: 0.5rem; margin-bottom: 1rem; align-items: center; flex-wrap: wrap; }
+        .toolbar button { height: 32px; font-size: 0.8rem; padding: 0 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--card); cursor: pointer; font-family: inherit; }
+        .toolbar button.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .gantt-container { flex: 1; overflow: auto; border: 1px solid var(--border); border-radius: 12px; }
+        .gantt-table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        .gantt-table th, .gantt-table td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+        .gantt-table th { background: #F1F5F9; font-weight: 700; color: var(--text); position: sticky; top: 0; z-index: 3; white-space: nowrap; }
+        body.dark .gantt-table th { background: #1E293B; }
+        .task-name { font-weight: 600; }
+        .task-name.sub { padding-right: 1.5rem; font-size: 0.8rem; }
+        .task-name.milestone { color: #7C3AED; }
+        .gantt-bar-wrap { position: relative; height: 30px; }
+        .gantt-bar { position: absolute; top: 5px; height: 20px; border-radius: 4px; min-width: 4px; display: flex; align-items: center; padding: 0 0.4rem; font-size: 0.65rem; color: white; white-space: nowrap; cursor: grab; transition: box-shadow 0.2s; }
+        .gantt-bar:hover { box-shadow: 0 0 0 2px rgba(0,0,0,0.2); }
+        .gantt-bar.done { background: #22C55E; }
+        .gantt-bar.progress { background: #2563EB; }
+        .gantt-bar.new { background: #E2E8F0; color: #64748B; }
+        .gantt-bar.overdue { background: #EF4444; }
+        .gantt-bar.milestone { background: #7C3AED; width: 14px; height: 14px; border-radius: 50%; top: 8px; cursor: grab; }
+        .gantt-bar.critical { box-shadow: 0 0 0 3px #EF4444 !important; }
+        .today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: #EF4444; z-index: 2; pointer-events: none; }
+        .dep-line { position: absolute; height: 2px; background: #94A3B8; z-index: 1; pointer-events: none; }
+        .resize-handle { position: absolute; right: 0; top: 0; bottom: 0; width: 6px; cursor: e-resize; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo">📋 Nivora</div>
+        <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>لوحة القيادة</a>
+        <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg>المهام</a>
+        <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>المشاريع</a>
+        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg>Kanban</a>
+        <a href="gantt.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>Gantt</a>
+        <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>التقويم</a>
+        <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>التقارير</a>
+        <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg>Workflows</a>
+        <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>القوالب</a>
+        <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>الأرشيف</a>
+        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>الفريق</a>
+    </aside>
+
+    <div class="main">
+        <div class="topbar">
+            <div style="display:flex;align-items:center;gap:1rem;">
+                <a href="kanban.html" style="color:var(--primary);text-decoration:none;font-size:1.5rem;">←</a>
+                <h1>📈 Gantt Chart</h1>
+            </div>
+            <div style="display:flex;gap:0.5rem;">
+                <button class="btn btn-outline" onclick="toggleLang()" id="langBtn" style="height:36px;">🌐 EN</button>
+                <button class="btn btn-outline" onclick="toggleDark()" id="darkBtn" style="height:36px;">🌙</button>
+                <button class="btn btn-outline" onclick="exportPDF()">📥 PDF</button>
+                <button class="btn btn-outline" onclick="logout()">خروج</button>
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <button onclick="setZoom(20)" id="zoomDay">يوم</button>
+            <button onclick="setZoom(28)" class="active" id="zoomWeek">أسبوع</button>
+            <button onclick="setZoom(40)" id="zoomMonth">شهر</button>
+            <span style="flex:1;"></span>
+            <button onclick="location.reload()">🔄 تحديث</button>
+        </div>
+
+        <div class="gantt-container">
+            <table class="gantt-table">
+                <thead id="ganttHead"></thead>
+                <tbody id="ganttBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const API = 'http://localhost:3000/api';
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'login.html';
+        function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+
+        let DAY_WIDTH = 28;
+        let allTasks = [];
+        let minDate, maxDate, totalDays;
+
+        function setZoom(width) {
+            DAY_WIDTH = width;
+            document.querySelectorAll('.toolbar button').forEach(b => b.classList.remove('active'));
+            if (width === 20) document.getElementById('zoomDay').classList.add('active');
+            if (width === 28) document.getElementById('zoomWeek').classList.add('active');
+            if (width === 40) document.getElementById('zoomMonth').classList.add('active');
+            renderGantt();
+        }
+
+        function calculateCriticalPath() {
+            const tasksWithDates = allTasks.filter(t => t.dueDate || t.startDate);
+            if (tasksWithDates.length === 0) return [];
+            const depMap = {};
+            tasksWithDates.forEach(t => { if (t.dependencies && t.dependencies.length > 0) { t.dependencies.forEach(d => { if (!depMap[d.taskId]) depMap[d.taskId] = []; depMap[d.taskId].push(t._id); }); } });
+            let criticalPath = [];
+            tasksWithDates.forEach(t => { const path = findLongestPath(t._id, depMap, [t._id]); if (path.length > criticalPath.length) criticalPath = path; });
+            return criticalPath;
+        }
+
+        function findLongestPath(currentId, depMap, visited) {
+            if (!depMap[currentId]) return visited;
+            let longest = visited;
+            depMap[currentId].forEach(nextId => { if (!visited.includes(nextId)) { const path = findLongestPath(nextId, depMap, [...visited, nextId]); if (path.length > longest.length) longest = path; } });
+            return longest;
+        }
+
+        async function loadGantt() {
+            const res = await fetch(`${API}/tasks`, { headers: { 'Authorization': `Bearer ${token}` } });
+            allTasks = await res.json();
+            renderGantt();
+        }
+
+        function renderGantt() {
+            const tasksWithDates = allTasks.filter(t => t.dueDate || t.startDate);
+            if (tasksWithDates.length === 0) { document.getElementById('ganttHead').innerHTML = ''; document.getElementById('ganttBody').innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;">لا توجد مهام بتواريخ</td></tr>'; return; }
+            const allDates = []; tasksWithDates.forEach(t => { if (t.startDate) allDates.push(new Date(t.startDate)); if (t.dueDate) allDates.push(new Date(t.dueDate)); });
+            minDate = new Date(Math.min(...allDates)); maxDate = new Date(Math.max(...allDates));
+            minDate.setDate(minDate.getDate() - 1); maxDate.setDate(maxDate.getDate() + 2);
+            totalDays = Math.ceil((maxDate - minDate) / (1000 * 60 * 60 * 24)); const today = new Date();
+            let headHtml = '<tr><th style="width:180px;">المهمة</th><th style="width:80px;">المسؤول</th><th style="width:60px;">الحالة</th>';
+            for (let i = 0; i < totalDays; i++) { const d = new Date(minDate); d.setDate(d.getDate() + i); headHtml += `<th style="width:${DAY_WIDTH}px;text-align:center;font-size:0.65rem;">${d.getDate()}/${d.getMonth()+1}</th>`; }
+            headHtml += '</tr>'; document.getElementById('ganttHead').innerHTML = headHtml;
+            const criticalPath = calculateCriticalPath();
+            let bodyHtml = '';
+            tasksWithDates.forEach(t => {
+                const start = t.startDate ? new Date(t.startDate) : new Date(t.createdAt); const end = new Date(t.dueDate);
+                const daysFromStart = Math.floor((start - minDate) / (1000 * 60 * 60 * 24)); const duration = Math.max(Math.ceil((end - start) / (1000 * 60 * 60 * 24)), 1);
+                const barWidth = duration * DAY_WIDTH; const barLeft = daysFromStart * DAY_WIDTH;
+                const isOverdue = t.status !== 'done' && new Date(t.dueDate) < today;
+                const barClass = t.isMilestone ? 'milestone' : t.status === 'done' ? 'done' : t.status === 'in-progress' ? 'progress' : isOverdue ? 'overdue' : 'new';
+                const isCritical = criticalPath.includes(t._id);
+                bodyHtml += `<tr><td class="task-name ${t.parentTask ? 'sub' : ''} ${t.isMilestone ? 'milestone' : ''}">${t.isMilestone ? '◆ ' : ''}${t.title}</td><td>${t.assignee || '-'}</td><td>${t.status === 'done' ? '✅' : '🔄'}</td><td colspan="${totalDays}" style="position:relative;padding:0;"><div class="gantt-bar-wrap">${t.isMilestone ? `<div class="gantt-bar milestone ${isCritical ? 'critical' : ''}" style="left:${barLeft}px;" data-id="${t._id}" title="${t.title}"></div>` : `<div class="gantt-bar ${barClass} ${isCritical ? 'critical' : ''}" style="left:${barLeft}px;width:${barWidth}px;" data-id="${t._id}" data-start="${t.startDate || t.createdAt}" data-due="${t.dueDate}" title="${t.title} (${t.progress}%)">${t.progress > 0 ? t.progress + '%' : ''}<div class="resize-handle"></div></div>`}</div></td></tr>`;
+                if (t.dependencies && t.dependencies.length > 0) { t.dependencies.forEach(dep => { const parentTask = tasksWithDates.find(pt => pt._id === dep.taskId); if (parentTask && parentTask.dueDate) { const parentEnd = new Date(parentTask.dueDate); const parentDays = Math.floor((parentEnd - minDate) / (1000 * 60 * 60 * 24)); const depLeft = parentDays * DAY_WIDTH; if (barLeft - depLeft > 0) { bodyHtml += `<tr><td colspan="3" style="font-size:0.7rem;color:var(--text-light);">↳ ${dep.type}</td><td colspan="${totalDays}" style="position:relative;padding:0;"><div class="dep-line" style="left:${depLeft}px;top:50%;width:${barLeft - depLeft}px;"></div></td></tr>`; } } }); }
+            });
+            document.getElementById('ganttBody').innerHTML = bodyHtml;
+            const todayDaysFromStart = Math.floor((today - minDate) / (1000 * 60 * 60 * 24));
+            if (todayDaysFromStart >= 0 && todayDaysFromStart < totalDays) { document.querySelectorAll('.gantt-bar-wrap').forEach(wrap => { const line = document.createElement('div'); line.className = 'today-line'; line.style.left = (todayDaysFromStart * DAY_WIDTH) + 'px'; wrap.appendChild(line); }); }
+            document.querySelectorAll('.gantt-bar:not(.milestone)').forEach(bar => { let startX, startLeft; bar.addEventListener('mousedown', (e) => { if (e.target.classList.contains('resize-handle')) return; startX = e.clientX; startLeft = parseInt(bar.style.left); document.addEventListener('mousemove', onDrag); document.addEventListener('mouseup', onDrop); }); function onDrag(e) { bar.style.left = (startLeft + e.clientX - startX) + 'px'; } async function onDrop(e) { document.removeEventListener('mousemove', onDrag); document.removeEventListener('mouseup', onDrop); const daysShift = Math.round((e.clientX - startX) / DAY_WIDTH); if (daysShift !== 0) { const id = bar.dataset.id; const task = allTasks.find(t => t._id === id); if (task) { const newStart = new Date(task.startDate || task.createdAt); newStart.setDate(newStart.getDate() + daysShift); const newDue = new Date(task.dueDate); newDue.setDate(newDue.getDate() + daysShift); await fetch(`${API}/tasks/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ startDate: newStart, dueDate: newDue }) }); loadGantt(); } } } });
+        }
+
+        function exportPDF() { window.print(); }
+
+        function toggleDark() { document.body.classList.toggle('dark'); const isDark = document.body.classList.contains('dark'); localStorage.setItem('dark', isDark); document.getElementById('darkBtn').textContent = isDark ? '☀️' : '🌙'; }
+        if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
+        if (typeof currentLang !== 'undefined') { document.getElementById('langBtn').innerHTML = currentLang === 'ar' ? '🌐 EN' : '🌐 AR'; }
+
+        loadGantt();
+    </script>
+</body>
+</html>

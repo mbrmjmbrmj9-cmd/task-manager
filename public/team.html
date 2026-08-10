@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nivora | الفريق</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#2563EB">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body { display: flex; min-height: 100vh; background: var(--bg); }
+        .sidebar { width: 240px; background: var(--card); border-left: 1px solid var(--border); padding: 1.5rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 100; }
+        .sidebar .logo { font-size: 1.3rem; font-weight: 800; padding: 0 0.75rem; margin-bottom: 1rem; }
+        .sidebar a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text); text-decoration: none; font-weight: 500; font-size: 0.9rem; }
+        .sidebar a:hover, .sidebar a.active { background: #EFF6FF; color: var(--primary); }
+        .sidebar a svg { width: 20px; height: 20px; }
+        .main { margin-right: 240px; flex: 1; padding: 2rem; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .topbar h1 { font-size: 1.5rem; font-weight: 800; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 0.75rem 1rem; text-align: right; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        th { color: var(--text-light); font-weight: 600; }
+        .role-badge { padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .role-owner { background: #FEF3C7; color: #92400E; }
+        .role-admin { background: #EFF6FF; color: #2563EB; }
+        .role-member { background: #F1F5F9; color: #64748B; }
+        select.role-select { padding: 0.3rem 0.5rem; border-radius: 6px; border: 1px solid var(--border); font-family: inherit; font-size: 0.8rem; }
+        .invite-code-box { background: #EFF6FF; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 800; letter-spacing: 2px; display: inline-block; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; pointer-events: none; transition: 0.2s; }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-box { background: var(--card); border-radius: 16px; padding: 2rem; text-align: center; max-width: 380px; width: 90%; box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+        .modal-box h3 { margin-bottom: 0.5rem; }
+        .modal-box p { color: var(--text-light); font-size: 0.9rem; margin-bottom: 1.5rem; }
+        .modal-buttons { display: flex; gap: 1rem; justify-content: center; }
+        .modal-buttons button { padding: 0.6rem 1.8rem; border-radius: 12px; border: none; cursor: pointer; font-family: inherit; font-weight: 600; }
+        .btn-cancel { background: #E2E8F0; color: #475569; }
+        .btn-confirm { background: #EF4444; color: white; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo">📋 Nivora</div>
+        <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>لوحة القيادة</a>
+        <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg>المهام</a>
+        <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>المشاريع</a>
+        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg>Kanban</a>
+        <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>Gantt</a>
+        <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>التقويم</a>
+        <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>التقارير</a>
+        <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg>Workflows</a>
+        <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>القوالب</a>
+        <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>الأرشيف</a>
+        <a href="team.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>الفريق</a>
+    </aside>
+
+    <main class="main">
+        <div class="topbar"><h1>👥 إدارة الفريق</h1><div style="display:flex;gap:0.5rem;"><a href="teams.html" class="btn btn-outline" style="height:36px;">🏢 فرق العمل</a><button class="btn btn-outline" onclick="toggleLang()" id="langBtn" style="height:36px;">🌐 EN</button><button class="btn btn-outline" onclick="toggleDark()" id="darkBtn" style="height:36px;">🌙</button><button class="btn btn-outline" onclick="logout()">خروج</button></div></div>
+
+        <div class="card" style="margin-bottom:1.5rem;"><span style="color:var(--text-light);">رمز الدعوة:</span> <span class="invite-code-box" id="inviteCodeDisplay">---</span></div>
+        <div class="card"><h2 style="margin-bottom:1rem;">الأعضاء</h2><table><thead><tr><th>المستخدم</th><th>الدور</th><th>تاريخ الانضمام</th><th>إجراءات</th></tr></thead><tbody id="membersBody"></tbody></table></div>
+    </main>
+
+    <div class="modal-overlay" id="logoutModal"><div class="modal-box"><h3>🚪 تأكيد الخروج</h3><p>هل أنت متأكد من تسجيل الخروج؟</p><div class="modal-buttons"><button class="btn-cancel" onclick="closeLogoutModal()">إلغاء</button><button class="btn-confirm" onclick="confirmLogout()">خروج</button></div></div></div>
+
+    <script>
+        const API = 'http://localhost:3000/api';
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'login.html';
+        function showToast(msg, type = 'success') { let container = document.getElementById('toastContainer'); if (!container) { container = document.createElement('div'); container.id = 'toastContainer'; container.className = 'toast-container'; document.body.appendChild(container); } const toast = document.createElement('div'); toast.className = `toast toast-${type}`; toast.textContent = msg; container.appendChild(toast); setTimeout(() => toast.remove(), 3000); }
+        function showLoading(){document.body.insertAdjacentHTML('beforeend','<div class="spinner-overlay" id="loadingOverlay"><div class="spinner"></div></div>');}
+        function hideLoading(){const e=document.getElementById('loadingOverlay');if(e)e.remove();}
+        function logout() { document.getElementById('logoutModal').classList.add('active'); }
+        function closeLogoutModal() { document.getElementById('logoutModal').classList.remove('active'); }
+        function confirmLogout() { localStorage.clear(); window.location.href = 'login.html'; }
+        function toggleDark() { document.body.classList.toggle('dark'); const isDark = document.body.classList.contains('dark'); localStorage.setItem('dark', isDark); document.getElementById('darkBtn').textContent = isDark ? '☀️' : '🌙'; }
+        if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
+        if (typeof currentLang !== 'undefined') { document.getElementById('langBtn').innerHTML = currentLang === 'ar' ? '🌐 EN' : '🌐 AR'; }
+
+        async function getUserRole() {
+            const wsId = localStorage.getItem('workspaceId');
+            if (!wsId) return 'member';
+            try {
+                const res = await fetch(`${API}/workspaces/${wsId}/members`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!res.ok) return 'member';
+                const members = await res.json();
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                const current = members.find(m => (m.userId?._id || m.userId) === user.id);
+                return current?.role || 'member';
+            } catch (e) { return 'member'; }
+        }
+
+        let wsId = localStorage.getItem('workspaceId');
+
+        async function loadMembers() {
+            showLoading();
+            try {
+                document.getElementById('inviteCodeDisplay').textContent = localStorage.getItem('inviteCode') || '---';
+                const res = await fetch(`${API}/workspaces/${wsId}/members`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const members = await res.json();
+                if (members.length === 0) { document.getElementById('membersBody').innerHTML = `<tr><td colspan="4" style="text-align:center;padding:3rem;color:var(--text-light);"><div style="font-size:3rem;margin-bottom:1rem;">👥</div><h3 style="color:var(--text);">لا يوجد أعضاء بعد</h3><p>شارك رمز الدعوة مع فريقك</p></td></tr>`; hideLoading(); return; }
+                
+                const role = await getUserRole();
+                const isOwner = role === 'owner';
+                const isAdmin = role === 'owner' || role === 'admin';
+                
+                document.getElementById('membersBody').innerHTML = members.map(m => {
+                    const memberId = m.userId?._id || m.userId;
+                    return `<tr><td>${m.userId?.username || m.userId?.email || 'مستخدم'}</td><td>${m.role === 'owner' ? '<span class="role-badge role-owner">مالك</span>' : isOwner ? `<select class="role-select" onchange="changeRole('${memberId}', this.value)"><option value="admin" ${m.role === 'admin' ? 'selected' : ''}>مدير</option><option value="member" ${m.role === 'member' ? 'selected' : ''}>عضو</option></select>` : `<span class="role-badge role-${m.role}">${m.role === 'admin' ? 'مدير' : 'عضو'}</span>`}</td><td>${new Date(m.joinedAt).toLocaleDateString('ar-SA')}</td><td>${m.role !== 'owner' && isAdmin ? `<button class="btn btn-outline" style="height:28px;font-size:0.7rem;" onclick="removeMember('${memberId}')">✕</button>` : ''}</td></tr>`;
+                }).join('');
+            } catch (e) {}
+            hideLoading();
+        }
+
+        async function changeRole(userId, role) { await fetch(`${API}/workspaces/${wsId}/members/${userId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ role }) }); loadMembers(); }
+        async function removeMember(userId) { if (!confirm('إزالة العضو؟')) return; await fetch(`${API}/workspaces/${wsId}/members/${userId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); loadMembers(); }
+
+        if (!wsId || wsId === 'null') { fetch(`${API}/workspaces`, { headers: { 'Authorization': `Bearer ${token}` } }).then(res => res.json()).then(wss => { if (wss.length > 0) { localStorage.setItem('workspaceId', wss[0]._id); localStorage.setItem('inviteCode', wss[0].inviteCode); wsId = wss[0]._id; loadMembers(); } else { window.location.href = 'workspace.html'; } }); }
+        else { loadMembers(); }
+    </script>
+</body>
+</html>
