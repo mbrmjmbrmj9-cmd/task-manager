@@ -22,14 +22,10 @@
         .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; flex-wrap: wrap; gap: 0.5rem; }
         .topbar h1 { font-size: 1.5rem; font-weight: 800; }
         .project-title { font-size: 0.85rem; color: var(--text-light); }
-
-        /* View Navigation */
         .view-nav { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 0.75rem; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .view-nav a { padding: 0.5rem 0.85rem; font-size: 0.8rem; font-weight: 600; color: var(--text-light); text-decoration: none; border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; transition: all 0.15s; }
         .view-nav a:hover { color: var(--primary); }
         .view-nav a.active { color: var(--primary); border-bottom-color: var(--primary); }
-
-        /* Toolbar */
         .toolbar { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
         .toolbar input, .toolbar select { height: 36px; border-radius: 8px; border: 1px solid var(--border); padding: 0 0.5rem; font-family: inherit; font-size: 0.8rem; background: var(--card); color: var(--text); }
         .toolbar input { flex: 1; min-width: 150px; }
@@ -40,7 +36,7 @@
         body.dark .column { background: #1E293B; }
         .column-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; padding: 0 0.25rem; }
         .column-header h3 { font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
-        .col-count { background: var(--card); padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 700; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+        .col-count { background: var(--card); padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 700; }
         .task-list { flex: 1; overflow-y: auto; padding: 0 0.25rem; min-height: 60px; }
         .task-list::-webkit-scrollbar { width: 4px; }
         .task-list::-webkit-scrollbar-thumb { background: #CBD5E0; border-radius: 4px; }
@@ -51,13 +47,10 @@
         body.dark .column.drag-over { background: #1E3A5F; }
 
         /* Task Card */
-        .task-card { background: #FFFFFF; border-radius: 10px; padding: 0.7rem 0.75rem; margin-bottom: 0.5rem; border: 1px solid #E2E8F0; cursor: default; position: relative; transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.03); user-select: none; }
+        .task-card { background: #FFFFFF; border-radius: 10px; padding: 0.7rem 0.75rem; margin-bottom: 0.5rem; border: 1px solid #E2E8F0; cursor: pointer; position: relative; transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.03); user-select: none; }
         body.dark .task-card { background: #1E293B; border-color: #334155; }
         .task-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
         .task-card.dragging { opacity: 0.5; transform: rotate(1.5deg); box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
-        .task-card.drag-placeholder { border: 2px dashed #2563EB; background: #EFF6FF; min-height: 80px; }
-        body.dark .task-card.drag-placeholder { background: #1E3A5F; }
-
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; }
         .card-header-left { display: flex; align-items: center; gap: 0.35rem; }
         .card-header-right { display: flex; align-items: center; gap: 0.35rem; }
@@ -71,15 +64,11 @@
         .status-review .status-dot-sm { background: #8B5CF6; }
         .status-done .status-dot-sm { background: #22C55E; }
         .status-blocked .status-dot-sm { background: #EF4444; }
-
-        .card-title { font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem; line-height: 1.45; color: #1E293B; cursor: pointer; }
+        .card-title { font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem; line-height: 1.45; color: #1E293B; }
         body.dark .card-title { color: #F1F5F9; }
-        .card-title:hover { color: #2563EB; }
-
         .date-badge { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.68rem; padding: 0.2rem 0.5rem; border-radius: 6px; border: 1px solid #E2E8F0; color: #64748B; margin-bottom: 0.45rem; background: #F8FAFC; }
         body.dark .date-badge { border-color: #334155; color: #94A3B8; background: #0F172A; }
         .date-badge.overdue { border-color: #FECACA; color: #DC2626; background: #FFF5F5; }
-
         .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 0.3rem; }
         .card-footer-left { display: flex; align-items: center; gap: 0.25rem; }
         .card-footer-right { display: flex; align-items: center; gap: 0.4rem; }
@@ -93,38 +82,48 @@
         body.dark .ind-btn:hover { background: #334155; color: #CBD5E0; }
         .pri-btn { font-size: 0.8rem; background: none; border: none; cursor: pointer; padding: 0.1rem 0.25rem; border-radius: 4px; transition: all 0.15s; }
         .pri-btn:hover { background: #F1F5F9; }
-        .pri-critical { color: #EF4444; }
-        .pri-high { color: #F97316; }
-        .pri-medium { color: #EAB308; }
-        .pri-low { color: #22C55E; }
+        .pri-critical { color: #EF4444; } .pri-high { color: #F97316; } .pri-medium { color: #EAB308; } .pri-low { color: #22C55E; }
         .stat-btn { background: none; border: none; cursor: pointer; padding: 0.1rem; border-radius: 50%; transition: all 0.15s; display: flex; }
         .stat-btn:hover { background: #F1F5F9; }
-
         .add-task-btn { margin-top: auto; padding: 0.5rem; text-align: center; border: 2px dashed #E2E8F0; border-radius: 10px; cursor: pointer; font-size: 0.8rem; color: #94A3B8; font-weight: 500; transition: all 0.2s; }
         .add-task-btn:hover { border-color: #2563EB; color: #2563EB; background: #EFF6FF; }
 
-        /* Modals */
+        /* Details Modal */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(2px); }
         .modal-overlay.show { display: flex; }
-        .modal-content { background: var(--card); border-radius: 20px; width: 100%; max-width: 600px; max-height: 85vh; overflow-y: auto; box-shadow: 0 30px 60px rgba(0,0,0,0.2); animation: modalIn 0.2s ease; }
+        .modal-content { background: var(--card); border-radius: 20px; width: 100%; max-width: 650px; max-height: 90vh; overflow-y: auto; box-shadow: 0 30px 60px rgba(0,0,0,0.2); animation: modalIn 0.2s ease; }
         @keyframes modalIn { from { opacity: 0; transform: translateY(30px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); }
-        .modal-header h2 { font-size: 1.1rem; font-weight: 800; }
-        .modal-close { background: #F1F5F9; border: none; font-size: 1rem; cursor: pointer; color: #64748B; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .modal-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 1.5rem 1.5rem 0.75rem; }
+        .modal-header h2 { font-size: 1.15rem; font-weight: 800; flex: 1; line-height: 1.5; }
+        .modal-close { background: #F1F5F9; border: none; font-size: 1rem; cursor: pointer; color: #64748B; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .modal-close:hover { background: #E2E8F0; }
-        .modal-body { padding: 1.25rem 1.5rem; }
+        .modal-body { padding: 0.75rem 1.5rem 1.5rem; }
+        .detail-section { margin-bottom: 1.25rem; }
+        .detail-section label { display: block; font-size: 0.75rem; font-weight: 700; color: #64748B; margin-bottom: 0.4rem; }
+        .detail-section input, .detail-section textarea { width: 100%; border-radius: 8px; border: 1px solid var(--border); padding: 0.6rem 0.75rem; font-family: inherit; font-size: 0.88rem; background: var(--bg); color: var(--text); }
+        .detail-section textarea { resize: vertical; min-height: 70px; }
+        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+        .detail-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
+        .opt-group { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+        .opt-btn { padding: 0.45rem 0.75rem; border-radius: 8px; border: 2px solid var(--border); cursor: pointer; font-size: 0.82rem; background: none; font-family: inherit; transition: all 0.15s; }
+        .opt-btn:hover { border-color: var(--primary); }
+        .opt-btn.sel { border-color: var(--primary); background: #EFF6FF; }
+        .toggle-row { display: flex; align-items: center; justify-content: space-between; }
+        .toggle-sw { width: 46px; height: 26px; background: #CBD5E0; border-radius: 13px; cursor: pointer; position: relative; transition: background 0.3s; }
+        .toggle-sw.on { background: #2563EB; }
+        .toggle-sw::after { content: ''; position: absolute; top: 3px; right: 3px; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: right 0.3s; }
+        .toggle-sw.on::after { right: 23px; }
+
         .comment-item { background: #F8FAFC; padding: 0.75rem; border-radius: 10px; margin-bottom: 0.5rem; }
         body.dark .comment-item { background: #0F172A; }
         .comment-item .cu { font-weight: 700; font-size: 0.8rem; }
         .comment-item .ct { font-size: 0.85rem; margin-top: 0.25rem; }
         .comment-item .ctm { font-size: 0.65rem; color: #94A3B8; margin-top: 0.25rem; }
-        .comment-row { display: flex; gap: 0.5rem; margin-top: 1rem; }
+        .comment-row { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
         .comment-row input { flex: 1; height: 40px; border-radius: 8px; border: 1px solid var(--border); padding: 0 0.75rem; font-family: inherit; font-size: 0.85rem; background: var(--bg); color: var(--text); }
         .file-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
-        .opt-group { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-        .opt-btn { padding: 0.5rem 0.85rem; border-radius: 8px; border: 2px solid var(--border); cursor: pointer; font-size: 0.85rem; background: none; font-family: inherit; transition: all 0.15s; }
-        .opt-btn:hover { border-color: var(--primary); }
-        .opt-btn.sel { border-color: var(--primary); background: #EFF6FF; }
+        .drop-area { border: 2px dashed #CBD5E0; border-radius: 12px; padding: 2rem; text-align: center; color: #94A3B8; font-size: 0.85rem; margin-top: 0.75rem; transition: all 0.2s; }
+        .drop-area:hover { border-color: #2563EB; color: #2563EB; }
 
         .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #16A34A; color: #fff; padding: 0.75rem 1.5rem; border-radius: 12px; z-index: 9999; font-weight: 600; font-size: 0.9rem; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards; }
         @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(-20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
@@ -136,7 +135,7 @@
         .bottom-nav a svg { width: 22px; height: 22px; }
 
         @media (max-width: 1024px) { :root { --sidebar-w: 72px; } .sidebar { padding: 1rem 0.5rem; } .sidebar .logo { font-size: 1rem; text-align: center; } .sidebar .label, .sidebar .logo span { display: none; } .sidebar a { justify-content: center; padding: 0.5rem; } }
-        @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 1rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } .kanban { flex-direction: column; } .column { min-width: auto; max-height: none; } .view-nav { font-size: 0.7rem; } .view-nav a { padding: 0.4rem 0.5rem; } }
+        @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 1rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } .kanban { flex-direction: column; } .column { min-width: auto; max-height: none; } .detail-grid, .detail-grid-3 { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -154,31 +153,11 @@
     </aside>
 
     <main class="main">
-        <div class="topbar">
-            <div><h1>📌 Kanban</h1><p class="project-title" id="projectTitle"></p></div>
-            <div style="display:flex;gap:0.5rem;">
-                <select id="projectFilter" onchange="loadKanban()" style="height:36px;border-radius:8px;border:1px solid var(--border);padding:0 0.5rem;font-family:inherit;font-size:0.8rem;background:var(--card);color:var(--text);"><option value="">كل المشاريع</option></select>
-                <button class="btn btn-outline" onclick="toggleDark()" id="darkBtn" style="height:36px;">🌙</button>
-                <button class="btn btn-outline" onclick="logout()" style="height:36px;">خروج</button>
-            </div>
+        <div class="topbar"><div><h1>📌 Kanban</h1><p class="project-title" id="projectTitle"></p></div>
+            <div style="display:flex;gap:0.5rem;"><select id="projectFilter" onchange="loadKanban()" style="height:36px;border-radius:8px;border:1px solid var(--border);padding:0 0.5rem;font-family:inherit;font-size:0.8rem;background:var(--card);color:var(--text);"><option value="">كل المشاريع</option></select><button class="btn btn-outline" onclick="toggleDark()" id="darkBtn" style="height:36px;">🌙</button><button class="btn btn-outline" onclick="logout()" style="height:36px;">خروج</button></div>
         </div>
-
-        <div class="view-nav">
-            <a href="tasks.html">📋 قائمة</a>
-            <a href="kanban.html" class="active">📌 أعمدة</a>
-            <a href="tasks.html">📊 جدول</a>
-            <a href="gantt.html">📈 Gantt</a>
-            <a href="calendar.html">📅 تقويم</a>
-            <a href="reports.html">📉 إحصائيات</a>
-            <a href="chat.html">💬 محادثة</a>
-        </div>
-
-        <div class="toolbar">
-            <input type="text" id="searchInput" placeholder="🔍 بحث..." oninput="filterCards()">
-            <select id="assigneeFilter" onchange="filterCards()"><option value="">👤 الكل</option></select>
-            <button class="btn btn-outline" onclick="loadKanban()" style="height:36px;">🔄 تحديث</button>
-        </div>
-
+        <div class="view-nav"><a href="tasks.html">📋 قائمة</a><a href="kanban.html" class="active">📌 أعمدة</a><a href="tasks.html">📊 جدول</a><a href="gantt.html">📈 Gantt</a><a href="calendar.html">📅 تقويم</a><a href="reports.html">📉 إحصائيات</a><a href="chat.html">💬 محادثة</a></div>
+        <div class="toolbar"><input type="text" id="searchInput" placeholder="🔍 بحث..." oninput="filterCards()"><select id="assigneeFilter" onchange="filterCards()"><option value="">👤 الكل</option></select><button class="btn btn-outline" onclick="loadKanban()" style="height:36px;">🔄 تحديث</button></div>
         <div class="kanban" id="kanbanBoard"></div>
     </main>
 
@@ -190,11 +169,6 @@
         <a href="#" onclick="openSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>المزيد</a>
     </nav>
 
-    <!-- Modals -->
-    <div class="modal-overlay" id="commentsModal" onclick="if(event.target===this)closeM('commentsModal')"><div class="modal-content"><div class="modal-header"><h2>💬 التعليقات</h2><button class="modal-close" onclick="closeM('commentsModal')">✕</button></div><div class="modal-body" id="commentsBody"></div></div></div>
-    <div class="modal-overlay" id="filesModal" onclick="if(event.target===this)closeM('filesModal')"><div class="modal-content"><div class="modal-header"><h2>📎 الملفات</h2><button class="modal-close" onclick="closeM('filesModal')">✕</button></div><div class="modal-body" id="filesBody"></div></div></div>
-    <div class="modal-overlay" id="priorityModal" onclick="if(event.target===this)closeM('priorityModal')"><div class="modal-content"><div class="modal-header"><h2>🚩 الأولوية</h2><button class="modal-close" onclick="closeM('priorityModal')">✕</button></div><div class="modal-body" id="priorityBody"></div></div></div>
-    <div class="modal-overlay" id="statusModal" onclick="if(event.target===this)closeM('statusModal')"><div class="modal-content"><div class="modal-header"><h2>● الحالة</h2><button class="modal-close" onclick="closeM('statusModal')">✕</button></div><div class="modal-body" id="statusBody"></div></div></div>
     <div class="modal-overlay" id="detailsModal" onclick="if(event.target===this)closeM('detailsModal')"><div class="modal-content"><div class="modal-header"><h2 id="detailsTitle"></h2><button class="modal-close" onclick="closeM('detailsModal')">✕</button></div><div class="modal-body" id="detailsBody"></div></div></div>
 
     <script>
@@ -218,102 +192,89 @@
         const pCls = { critical: 'pri-critical', high: 'pri-high', medium: 'pri-medium', low: 'pri-low' };
         let allTasks = [], allProjects = [], currentTaskId = null;
 
-        async function loadProjects() {
-            const res = await fetch(`${API_BASE}/projects`, { headers: { 'Authorization': `Bearer ${token}` } });
-            allProjects = await res.json();
-            const sel = document.getElementById('projectFilter');
-            sel.innerHTML = '<option value="">كل المشاريع</option>' + allProjects.map(p => `<option value="${p._id}">${p.name}</option>`).join('');
-            const params = new URLSearchParams(window.location.search);
-            const pid = params.get('projectId');
-            if (pid) { sel.value = pid; document.getElementById('projectTitle').textContent = '📁 ' + (allProjects.find(p => p._id === pid)?.name || ''); }
-        }
+        async function loadProjects() { const res = await fetch(`${API_BASE}/projects`, { headers: { 'Authorization': `Bearer ${token}` } }); allProjects = await res.json(); const sel = document.getElementById('projectFilter'); sel.innerHTML = '<option value="">كل المشاريع</option>' + allProjects.map(p => `<option value="${p._id}">${p.name}</option>`).join(''); const params = new URLSearchParams(window.location.search); const pid = params.get('projectId'); if (pid) { sel.value = pid; document.getElementById('projectTitle').textContent = '📁 ' + (allProjects.find(p => p._id === pid)?.name || ''); } }
+        async function loadKanban() { const pid = document.getElementById('projectFilter').value; let url = `${API_BASE}/tasks`; if (pid) url += `?projectId=${pid}`; const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } }); allTasks = await res.json(); if (pid) document.getElementById('projectTitle').textContent = '📁 ' + (allProjects.find(p => p._id === pid)?.name || ''); else document.getElementById('projectTitle').textContent = ''; const assignees = [...new Set(allTasks.map(t => t.assignee).filter(Boolean))]; document.getElementById('assigneeFilter').innerHTML = '<option value="">👤 الكل</option>' + assignees.map(a => `<option value="${a}">${a}</option>`).join(''); renderBoard(allTasks); }
 
-        async function loadKanban() {
-            const pid = document.getElementById('projectFilter').value;
-            let url = `${API_BASE}/tasks`; if (pid) url += `?projectId=${pid}`;
-            const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
-            allTasks = await res.json();
-            if (pid) document.getElementById('projectTitle').textContent = '📁 ' + (allProjects.find(p => p._id === pid)?.name || '');
-            else document.getElementById('projectTitle').textContent = '';
-            const assignees = [...new Set(allTasks.map(t => t.assignee).filter(Boolean))];
-            document.getElementById('assigneeFilter').innerHTML = '<option value="">👤 الكل</option>' + assignees.map(a => `<option value="${a}">${a}</option>`).join('');
-            renderBoard(allTasks);
-        }
+        function renderBoard(tasks) { document.getElementById('kanbanBoard').innerHTML = statuses.map(s => { const filtered = tasks.filter(t => t.status === s); return `<div class="column" data-status="${s}" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="dropTask(event,'${s}')"><div class="column-header"><h3>${icons[s]} ${labels[s]} <span class="col-count">${filtered.length}</span></h3></div><div class="task-list">${filtered.length === 0 ? '<div class="empty-column">لا توجد مهام</div>' : ''}${filtered.map(t => renderCard(t)).join('')}<div class="drop-zone">📥 أسقط المهمة هنا</div></div><div class="add-task-btn" onclick="quickAdd('${s}')">+ إضافة مهمة</div></div>`; }).join(''); }
 
-        function renderBoard(tasks) {
-            document.getElementById('kanbanBoard').innerHTML = statuses.map(s => {
-                const filtered = tasks.filter(t => t.status === s);
-                return `<div class="column" data-status="${s}" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="dropTask(event,'${s}')">
-                    <div class="column-header"><h3>${icons[s]} ${labels[s]} <span class="col-count">${filtered.length}</span></h3></div>
-                    <div class="task-list">
-                        ${filtered.length === 0 ? '<div class="empty-column">لا توجد مهام</div>' : ''}
-                        ${filtered.map(t => renderCard(t)).join('')}
-                        <div class="drop-zone">📥 أسقط المهمة هنا</div>
-                    </div>
-                    <div class="add-task-btn" onclick="quickAdd('${s}')">+ إضافة مهمة</div>
-                </div>`;
-            }).join('');
-        }
-
-        function renderCard(t) {
-            const cls = sCls[t.status] || 'status-new';
-            const isOverdue = t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'done';
-            const cCount = t.comments?.length || 0;
-            const aCount = t.attachments?.length || 0;
-            const initial = (t.assignee || '?')[0];
-            const pc = pCls[t.priority] || 'pri-medium';
-
-            return `<div class="task-card ${cls}" draggable="true" data-id="${t._id}" ondragstart="dragTask(event,'${t._id}')" ondragend="this.classList.remove('dragging')">
-                <div class="card-header">
-                    <div class="card-header-left">
-                        <button class="icon-btn" onclick="event.stopPropagation();openDetails('${t._id}')" title="تعديل">✎</button>
-                        <button class="icon-btn" onclick="event.stopPropagation();openDetails('${t._id}')" title="تفاصيل">☷</button>
-                    </div>
-                    <div class="card-header-right"><span class="status-label">${labels[t.status]} <span class="status-dot-sm"></span></span></div>
-                </div>
-                <div class="card-title" onclick="openDetails('${t._id}')">${t.title}</div>
-                ${t.dueDate ? `<div class="date-badge ${isOverdue ? 'overdue' : ''}">📅 ${new Date(t.dueDate).toLocaleDateString('ar-SA')}</div>` : ''}
-                <div class="card-footer">
-                    <div class="card-footer-left">
-                        <div class="avatar-sm">${initial}</div>
-                        <div class="drag-handle" title="اسحب لنقل المهمة"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-                    </div>
-                    <div class="card-footer-right">
-                        <div class="indicators">
-                            <button class="ind-btn" onclick="event.stopPropagation();openComments('${t._id}')">${cCount} 💬</button>
-                            <button class="ind-btn" onclick="event.stopPropagation();openFiles('${t._id}')">${aCount} 📄</button>
-                        </div>
-                        <button class="pri-btn ${pc}" onclick="event.stopPropagation();openPriority('${t._id}')">🚩</button>
-                        <button class="stat-btn" onclick="event.stopPropagation();openStatus('${t._id}')"><span class="status-dot-sm"></span></button>
-                    </div>
-                </div>
-            </div>`;
-        }
+        function renderCard(t) { const cls = sCls[t.status] || 'status-new'; const isOverdue = t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'done'; const cCount = t.comments?.length || 0; const aCount = t.attachments?.length || 0; const initial = (t.assignee || '?')[0]; const pc = pCls[t.priority] || 'pri-medium'; return `<div class="task-card ${cls}" draggable="true" data-id="${t._id}" ondragstart="dragTask(event,'${t._id}')" ondragend="this.classList.remove('dragging')" onclick="openDetails('${t._id}')"><div class="card-header"><div class="card-header-left"><button class="icon-btn" onclick="event.stopPropagation();openDetails('${t._id}')" title="تعديل">✎</button><button class="icon-btn" onclick="event.stopPropagation();openDetails('${t._id}')" title="تفاصيل">☷</button></div><div class="card-header-right"><span class="status-label">${labels[t.status]} <span class="status-dot-sm"></span></span></div></div><div class="card-title">${t.title}</div>${t.dueDate ? `<div class="date-badge ${isOverdue ? 'overdue' : ''}">📅 ${new Date(t.dueDate).toLocaleDateString('ar-SA')}</div>` : ''}<div class="card-footer"><div class="card-footer-left"><div class="avatar-sm">${initial}</div><div class="drag-handle" title="اسحب لنقل المهمة"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div><div class="card-footer-right"><div class="indicators"><button class="ind-btn" onclick="event.stopPropagation();openDetails('${t._id}','comments')">${cCount} 💬</button><button class="ind-btn" onclick="event.stopPropagation();openDetails('${t._id}','files')">${aCount} 📄</button></div><button class="pri-btn ${pc}" onclick="event.stopPropagation();openDetails('${t._id}','priority')">🚩</button><button class="stat-btn" onclick="event.stopPropagation();openDetails('${t._id}','status')"><span class="status-dot-sm"></span></button></div></div></div>`; }
 
         function dragTask(e, id) { e.dataTransfer.setData('text/plain', id); e.target.classList.add('dragging'); }
         async function dropTask(e, s) { e.preventDefault(); e.currentTarget.classList.remove('drag-over'); const id = e.dataTransfer.getData('text/plain'); if (!id) return; await fetch(`${API_BASE}/tasks/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ status: s }) }); showToast('✅ تم'); loadKanban(); }
         async function quickAdd(s) { const title = prompt('عنوان المهمة:'); if (!title) return; const pid = document.getElementById('projectFilter').value; await fetch(`${API_BASE}/tasks`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ title, status: s, projectId: pid || null }) }); showToast('✅ تم'); loadKanban(); }
         function filterCards() { const q = document.getElementById('searchInput').value.toLowerCase(); const a = document.getElementById('assigneeFilter').value; let f = allTasks; if (q) f = f.filter(t => t.title.toLowerCase().includes(q)); if (a) f = f.filter(t => t.assignee === a); renderBoard(f); }
 
-        // Comments Modal
-        function openComments(id) { currentTaskId = id; const t = allTasks.find(t => t._id === id); if (!t) return; const cs = t.comments || []; document.getElementById('commentsBody').innerHTML = (cs.length === 0 ? '<p style="color:#94A3B8;text-align:center;padding:1rem;">لا توجد تعليقات</p>' : '') + cs.map(c => `<div class="comment-item"><div class="cu">${c.username || 'مستخدم'}</div><div class="ct">${c.text}</div><div class="ctm">${new Date(c.createdAt).toLocaleString('ar-SA')}</div></div>`).join('') + `<div class="comment-row"><input type="text" id="commentInput" placeholder="اكتب تعليقاً... استخدم @ للإشارة"><button class="btn btn-primary" onclick="addComment()" style="height:40px;">إرسال</button></div>`; document.getElementById('commentsModal').classList.add('show'); setTimeout(() => document.getElementById('commentInput')?.focus(), 200); }
-        async function addComment() { const inp = document.getElementById('commentInput'); const txt = inp.value.trim(); if (!txt || !currentTaskId) return; await fetch(`${API_BASE}/tasks/${currentTaskId}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ text: txt }) }); const r = await fetch(`${API_BASE}/tasks/${currentTaskId}`, { headers: { 'Authorization': `Bearer ${token}` } }); const u = await r.json(); const i = allTasks.findIndex(t => t._id === currentTaskId); if (i >= 0) allTasks[i] = u; showToast('✅ تم'); openComments(currentTaskId); renderBoard(allTasks); }
+        async function refreshTask() { const r = await fetch(`${API_BASE}/tasks/${currentTaskId}`, { headers: { 'Authorization': `Bearer ${token}` } }); const u = await r.json(); const i = allTasks.findIndex(t => t._id === currentTaskId); if (i >= 0) allTasks[i] = u; return u; }
 
-        // Files Modal
-        function openFiles(id) { currentTaskId = id; const t = allTasks.find(t => t._id === id); if (!t) return; const ats = t.attachments || []; document.getElementById('filesBody').innerHTML = (ats.length === 0 ? '<p style="color:#94A3B8;text-align:center;padding:1rem;">لا توجد مرفقات</p>' : '') + ats.map(a => `<div class="file-item"><span>📎</span><a href="${a.url}" target="_blank" style="color:var(--primary);text-decoration:none;flex:1;">${a.name}</a><button class="btn btn-outline" style="height:28px;font-size:0.7rem;" onclick="delAtt('${a._id}')">🗑️</button></div>`).join('') + `<div style="margin-top:1rem;display:flex;gap:0.5rem;"><input type="file" id="fileUpload" style="display:none;" onchange="upFile()"><button class="btn btn-primary" onclick="document.getElementById('fileUpload').click()">📁 رفع ملف</button></div>`; document.getElementById('filesModal').classList.add('show'); }
-        async function upFile() { const file = document.getElementById('fileUpload').files[0]; if (!file || !currentTaskId) return; const fd = new FormData(); fd.append('file', file); const ur = await fetch(`${API_BASE}/upload`, { method: 'POST', body: fd }); const ud = await ur.json(); if (ur.ok) { await fetch(`${API_BASE}/tasks/${currentTaskId}/attachments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(ud) }); const r = await fetch(`${API_BASE}/tasks/${currentTaskId}`, { headers: { 'Authorization': `Bearer ${token}` } }); const u = await r.json(); const i = allTasks.findIndex(t => t._id === currentTaskId); if (i >= 0) allTasks[i] = u; showToast('✅ تم'); openFiles(currentTaskId); renderBoard(allTasks); } }
-        async function delAtt(aid) { if (!currentTaskId) return; await fetch(`${API_BASE}/tasks/${currentTaskId}/attachments/${aid}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); const r = await fetch(`${API_BASE}/tasks/${currentTaskId}`, { headers: { 'Authorization': `Bearer ${token}` } }); const u = await r.json(); const i = allTasks.findIndex(t => t._id === currentTaskId); if (i >= 0) allTasks[i] = u; openFiles(currentTaskId); renderBoard(allTasks); }
+        function openDetails(id, tab) {
+            currentTaskId = id;
+            const t = allTasks.find(t => t._id === id); if (!t) return;
+            const isOverdue = t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'done';
+            const cCount = t.comments?.length || 0;
+            const aCount = t.attachments?.length || 0;
+            const comments = t.comments || [];
+            const attachments = t.attachments || [];
+            const pc = pCls[t.priority] || 'pri-medium';
 
-        // Priority Modal
-        function openPriority(id) { currentTaskId = id; const t = allTasks.find(t => t._id === id); if (!t) return; document.getElementById('priorityBody').innerHTML = `<div class="opt-group">${priorities.map(p => `<button class="opt-btn ${t.priority === p ? 'sel' : ''}" onclick="chPri('${p}')">${pLabels[p]}</button>`).join('')}</div>`; document.getElementById('priorityModal').classList.add('show'); }
-        async function chPri(p) { if (!currentTaskId) return; await fetch(`${API_BASE}/tasks/${currentTaskId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ priority: p }) }); const r = await fetch(`${API_BASE}/tasks/${currentTaskId}`, { headers: { 'Authorization': `Bearer ${token}` } }); const u = await r.json(); const i = allTasks.findIndex(t => t._id === currentTaskId); if (i >= 0) allTasks[i] = u; closeM('priorityModal'); renderBoard(allTasks); showToast('✅ تم'); }
+            document.getElementById('detailsTitle').textContent = '📋 ' + t.title;
 
-        // Status Modal
-        function openStatus(id) { currentTaskId = id; document.getElementById('statusBody').innerHTML = `<div class="opt-group">${statuses.map(s => `<button class="opt-btn" onclick="chStat('${s}')">${icons[s]} ${labels[s]}</button>`).join('')}</div>`; document.getElementById('statusModal').classList.add('show'); }
-        async function chStat(s) { if (!currentTaskId) return; await fetch(`${API_BASE}/tasks/${currentTaskId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ status: s }) }); const r = await fetch(`${API_BASE}/tasks/${currentTaskId}`, { headers: { 'Authorization': `Bearer ${token}` } }); const u = await r.json(); const i = allTasks.findIndex(t => t._id === currentTaskId); if (i >= 0) allTasks[i] = u; closeM('statusModal'); renderBoard(allTasks); showToast('✅ تم'); }
+            let html = `
+                <div class="detail-section">
+                    <label>✎ العنوان</label>
+                    <input type="text" id="detTitle" value="${t.title}" onchange="saveField('title',this.value)">
+                </div>
+                <div class="detail-section">
+                    <label>📝 الوصف</label>
+                    <textarea id="detDesc" onchange="saveField('description',this.value)">${t.description || ''}</textarea>
+                </div>
+                <div class="detail-grid">
+                    <div class="detail-section"><label>👤 المسؤول</label><input type="text" id="detAssignee" value="${t.assignee || ''}" onchange="saveField('assignee',this.value)"></div>
+                    <div class="detail-section"><label>📅 تاريخ الاستحقاق</label><input type="date" id="detDueDate" value="${t.dueDate ? new Date(t.dueDate).toISOString().split('T')[0] : ''}" onchange="saveField('dueDate',this.value)"></div>
+                </div>
+                <div class="detail-grid">
+                    <div class="detail-section"><label>📅 تاريخ البداية</label><input type="date" id="detStartDate" value="${t.startDate ? new Date(t.startDate).toISOString().split('T')[0] : ''}" onchange="saveField('startDate',this.value)"></div>
+                    <div class="detail-section"><label>📅 تاريخ النهاية</label><input type="date" id="detEndDate" value="${t.dueDate ? new Date(t.dueDate).toISOString().split('T')[0] : ''}" onchange="saveField('dueDate',this.value)"></div>
+                </div>
+                <div class="detail-section">
+                    <label>🚩 الأولوية</label>
+                    <div class="opt-group">${priorities.map(p => `<button class="opt-btn ${t.priority === p ? 'sel' : ''}" onclick="chPri('${p}')">${pLabels[p]}</button>`).join('')}</div>
+                </div>
+                <div class="detail-section">
+                    <label>● الحالة</label>
+                    <div class="opt-group">${statuses.map(s => `<button class="opt-btn ${t.status === s ? 'sel' : ''}" onclick="chStat('${s}')">${icons[s]} ${labels[s]}</button>`).join('')}</div>
+                </div>
+                <div class="detail-section">
+                    <label>📎 الملفات (${aCount})</label>
+                    ${attachments.length === 0 ? '<p style="color:#94A3B8;font-size:0.85rem;">لا توجد مرفقات</p>' : ''}
+                    ${attachments.map(a => `<div class="file-item"><span>📎</span><a href="${a.url}" target="_blank" style="color:var(--primary);text-decoration:none;flex:1;">${a.name}</a><button class="btn btn-outline" style="height:28px;font-size:0.7rem;" onclick="delAtt('${a._id}')">🗑️</button></div>`).join('')}
+                    <div style="margin-top:0.75rem;display:flex;gap:0.5rem;"><input type="file" id="fileUpload" style="display:none;" onchange="upFileDet()"><button class="btn btn-primary" onclick="document.getElementById('fileUpload').click()">📁 رفع ملف</button></div>
+                    <div class="drop-area" ondragover="event.preventDefault()" ondrop="dropFile(event)">📥 أفلت الملفات هنا للتحميل</div>
+                </div>
+                <div class="detail-section">
+                    <div class="toggle-row"><label>🔄 التكرار</label><div class="toggle-sw ${t.isRecurring ? 'on' : ''}" id="recurToggle" onclick="toggleRecur()"></div></div>
+                </div>
+                <div class="detail-section">
+                    <label>💬 التعليقات (${cCount})</label>
+                    ${comments.length === 0 ? '<p style="color:#94A3B8;font-size:0.85rem;">لا توجد تعليقات</p>' : ''}
+                    ${comments.map(c => `<div class="comment-item"><div class="cu">${c.username || 'مستخدم'}</div><div class="ct">${c.text}</div><div class="ctm">${new Date(c.createdAt).toLocaleString('ar-SA')}</div></div>`).join('')}
+                    <div class="comment-row"><input type="text" id="commentInput" placeholder="اكتب تعليقاً... استخدم @ للإشارة"><button class="btn btn-primary" onclick="addCommentDet()" style="height:40px;">إرسال</button></div>
+                </div>`;
 
-        // Details Modal
-        function openDetails(id) { const t = allTasks.find(t => t._id === id); if (!t) return; document.getElementById('detailsTitle').textContent = t.title; document.getElementById('detailsBody').innerHTML = `<p style="color:var(--text-light);margin-bottom:1rem;">${t.description || 'لا يوجد وصف'}</p><div style="display:flex;gap:0.5rem;"><a href="task.html?id=${t._id}" class="btn btn-primary" style="flex:1;text-decoration:none;">📋 فتح كامل</a><button class="btn btn-outline" onclick="closeM('detailsModal')">إغلاق</button></div>`; document.getElementById('detailsModal').classList.add('show'); }
+            document.getElementById('detailsBody').innerHTML = html;
+            document.getElementById('detailsModal').classList.add('show');
+
+            if (tab === 'comments') setTimeout(() => document.getElementById('commentInput')?.scrollIntoView({ behavior: 'smooth' }), 300);
+            if (tab === 'files') setTimeout(() => document.querySelector('.drop-area')?.scrollIntoView({ behavior: 'smooth' }), 300);
+        }
+
+        async function saveField(field, value) { if (!currentTaskId) return; await fetch(`${API_BASE}/tasks/${currentTaskId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ [field]: value }) }); await refreshTask(); renderBoard(allTasks); }
+        async function chPri(p) { await saveField('priority', p); openDetails(currentTaskId); }
+        async function chStat(s) { await saveField('status', s); openDetails(currentTaskId); }
+        async function toggleRecur() { const t = allTasks.find(t => t._id === currentTaskId); if (!t) return; const v = !t.isRecurring; await saveField('isRecurring', v); document.getElementById('recurToggle').classList.toggle('on', v); await refreshTask(); renderBoard(allTasks); }
+        async function addCommentDet() { const inp = document.getElementById('commentInput'); const txt = inp.value.trim(); if (!txt || !currentTaskId) return; await fetch(`${API_BASE}/tasks/${currentTaskId}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ text: txt }) }); await refreshTask(); renderBoard(allTasks); openDetails(currentTaskId, 'comments'); }
+        async function upFileDet() { const file = document.getElementById('fileUpload').files[0]; if (!file || !currentTaskId) return; const fd = new FormData(); fd.append('file', file); const ur = await fetch(`${API_BASE}/upload`, { method: 'POST', body: fd }); const ud = await ur.json(); if (ur.ok) { await fetch(`${API_BASE}/tasks/${currentTaskId}/attachments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(ud) }); await refreshTask(); renderBoard(allTasks); openDetails(currentTaskId, 'files'); } }
+        async function dropFile(e) { e.preventDefault(); const file = e.dataTransfer.files[0]; if (!file || !currentTaskId) return; const fd = new FormData(); fd.append('file', file); const ur = await fetch(`${API_BASE}/upload`, { method: 'POST', body: fd }); const ud = await ur.json(); if (ur.ok) { await fetch(`${API_BASE}/tasks/${currentTaskId}/attachments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(ud) }); await refreshTask(); renderBoard(allTasks); openDetails(currentTaskId, 'files'); } }
+        async function delAtt(aid) { if (!currentTaskId) return; await fetch(`${API_BASE}/tasks/${currentTaskId}/attachments/${aid}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); await refreshTask(); renderBoard(allTasks); openDetails(currentTaskId, 'files'); }
 
         loadProjects().then(() => loadKanban());
     </script>
