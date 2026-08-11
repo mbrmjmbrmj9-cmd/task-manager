@@ -108,6 +108,9 @@ router.patch('/:id', authenticate, requireTaskOwnership, async (req, res) => {
             task.activity.push({ action: 'تغيير الحالة', username: req.user.username, details: `من ${task.status} إلى ${req.body.status}` });
         }
 
+        // ✅ حساب التقدم تلقائياً
+        task.progress = calculateProgress(task);
+
         await task.save();
         res.json(task);
     } catch (err) {
@@ -256,5 +259,26 @@ router.get('/stats/:projectId', authenticate, async (req, res) => {
     const done = await Task.countDocuments({ ...filter, status: 'done' });
     res.json({ total, done, completionRate: total > 0 ? Math.round((done / total) * 100) : 0 });
 });
+
+/**
+ * ✅ حساب نسبة تقدم المهمة تلقائياً
+ */
+function calculateProgress(task) {
+    // إذا كانت منتهية
+    if (task.status === 'done') return 100;
+    
+    // إذا كانت متعثرة
+    if (task.status === 'blocked') return task.progress || 0;
+    
+    // حسب الحالة
+    const statusProgress = {
+        'new': 0,
+        'in-progress': 40,
+        'review': 75,
+        'archived': 0
+    };
+    
+    return statusProgress[task.status] || 0;
+}
 
 module.exports = router;
