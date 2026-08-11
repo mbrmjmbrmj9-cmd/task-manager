@@ -12,62 +12,54 @@
         :root { --sidebar-w: 240px; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-        
         .sidebar { width: var(--sidebar-w); background: var(--card); border-left: 1px solid var(--border); padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 100; overflow-y: auto; display: flex; flex-direction: column; gap: 0.25rem; }
         .sidebar .logo { font-size: 1.3rem; font-weight: 800; padding: 0 0.75rem; margin-bottom: 1rem; color: var(--primary); }
         .sidebar a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 0.9rem; white-space: nowrap; }
         .sidebar a:hover, .sidebar a.active { background: #EFF6FF; color: var(--primary); }
         .sidebar a svg { width: 20px; height: 20px; flex-shrink: 0; }
         .sidebar .label { transition: opacity 0.2s; }
-        
         .main { margin-right: var(--sidebar-w); padding: 1.5rem; min-height: 100vh; display: flex; flex-direction: column; }
         .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem; }
         .topbar h1 { font-size: 1.5rem; font-weight: 800; }
-        
-        .nav-bar { display: flex; gap: 0; padding: 0.5rem 0; border-bottom: 1px solid var(--border); margin-bottom: 0.5rem; flex-wrap: wrap; }
-        .nav-item { padding: 0.4rem 0.75rem; font-size: 0.8rem; font-weight: 600; color: var(--text-light); text-decoration: none; border-bottom: 2px solid transparent; }
-        .nav-item.active, .nav-item:hover { color: var(--primary); border-bottom-color: var(--primary); }
-        
+        .topbar .project-title { font-size: 0.9rem; color: var(--text-light); }
         .toolbar { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
-        .toolbar button, .toolbar select, .toolbar input { height: 32px; font-size: 0.8rem; padding: 0 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-family: inherit; }
-        .toolbar .spacer { flex: 1; }
-        
+        .toolbar input, .toolbar select { height: 36px; border-radius: 8px; border: 1px solid var(--border); padding: 0 0.5rem; font-family: inherit; font-size: 0.8rem; background: var(--card); color: var(--text); }
+        .toolbar input { flex: 1; min-width: 150px; }
+        .spacer { flex: 1; }
         .kanban { display: flex; gap: 1rem; flex: 1; overflow-x: auto; padding-bottom: 1rem; }
-        .column { flex: 1; min-width: 260px; background: #F1F5F9; border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; }
+        .column { flex: 1; min-width: 270px; background: #F1F5F9; border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; max-height: calc(100vh - 250px); }
         body.dark .column { background: #1E293B; }
-        .column h3 { font-size: 0.85rem; font-weight: 700; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
-        .count { background: var(--card); padding: 0.1rem 0.5rem; border-radius: 10px; font-size: 0.75rem; }
+        .column-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+        .column-header h3 { font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+        .count { background: var(--card); padding: 0.15rem 0.5rem; border-radius: 10px; font-size: 0.75rem; font-weight: 600; }
         .task-list { flex: 1; overflow-y: auto; }
-        .task-card { background: var(--card); border-radius: 8px; padding: 0.75rem; margin-bottom: 0.5rem; border-right: 4px solid #E2E8F0; cursor: grab; position: relative; }
+        .task-card { background: var(--card); border-radius: 10px; padding: 0.75rem; margin-bottom: 0.5rem; border-right: 4px solid #E2E8F0; cursor: grab; position: relative; transition: box-shadow 0.2s; }
+        .task-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .task-card.dragging { opacity: 0.5; }
         .task-card.priority-critical { border-right-color: #EF4444; }
         .task-card.priority-high { border-right-color: #F97316; }
         .task-card.priority-medium { border-right-color: #EAB308; }
         .task-card.priority-low { border-right-color: #22C55E; }
-        .task-card .task-title { font-weight: 600; font-size: 0.85rem; }
+        .task-card .task-title { font-weight: 600; font-size: 0.85rem; margin-bottom: 0.35rem; }
         .task-card .task-title a { color: var(--text); text-decoration: none; }
-        .task-card .task-date { font-size: 0.7rem; background: #F1F5F9; padding: 0.15rem 0.5rem; border-radius: 4px; display: inline-block; margin: 0.3rem 0; }
-        .task-card .card-footer { display: flex; gap: 0.6rem; font-size: 0.75rem; color: var(--text-light); }
-        .task-card .card-actions { position: absolute; top: 5px; left: 5px; display: none; gap: 0.15rem; }
-        .task-card:hover .card-actions { display: flex; }
-        .task-card .icon-btn { background: none; border: none; cursor: pointer; font-size: 0.9rem; padding: 0.15rem; border-radius: 4px; color: var(--text-light); }
-        .task-card .drag-handle { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); color: #CBD5E0; cursor: grab; font-size: 1.1rem; }
-        .add-task-btn { margin-top: auto; padding: 0.5rem; text-align: center; border: 2px dashed var(--border); border-radius: 8px; cursor: pointer; font-size: 0.8rem; color: var(--text-light); }
+        .task-card .task-title a:hover { color: var(--primary); }
+        .task-card .task-meta { display: flex; gap: 0.5rem; font-size: 0.7rem; color: var(--text-light); flex-wrap: wrap; align-items: center; }
+        .task-card .task-date { background: #F1F5F9; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; }
+        .task-card .task-date.overdue { background: #FEE2E2; color: #DC2626; }
+        .add-task-btn { margin-top: auto; padding: 0.5rem; text-align: center; border: 2px dashed var(--border); border-radius: 8px; cursor: pointer; font-size: 0.8rem; color: var(--text-light); transition: all 0.2s; }
+        .add-task-btn:hover { border-color: var(--primary); color: var(--primary); background: #EFF6FF; }
         .column.drag-over { background: #E2E8F0; }
-        
-        .dropdown { position: relative; display: inline-block; }
-        .dropdown-menu { position: absolute; top: 100%; left: 0; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 0; min-width: 180px; z-index: 200; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .dropdown-menu.show { display: block; }
-        .dropdown-menu button { display: block; width: 100%; padding: 0.5rem 1rem; border: none; background: none; cursor: pointer; font-family: inherit; font-size: 0.85rem; text-align: right; color: var(--text); }
-        .dropdown-menu button:hover { background: #F1F5F9; }
-        
+        body.dark .column.drag-over { background: #334155; }
         .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
         .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); padding: 0.5rem 1rem; z-index: 90; justify-content: space-around; }
         .bottom-nav a { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-light); text-decoration: none; font-size: 0.65rem; font-weight: 500; }
         .bottom-nav a.active { color: var(--primary); }
         .bottom-nav a svg { width: 22px; height: 22px; }
-
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #16A34A; color: white; padding: 0.75rem 1.5rem; border-radius: 12px; z-index: 9999; font-weight: 600; animation: toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards; }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(-20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateX(-50%) translateY(-20px); } }
         @media (max-width: 1024px) { :root { --sidebar-w: 72px; } .sidebar { padding: 1rem 0.5rem; } .sidebar .logo { font-size: 1rem; text-align: center; } .sidebar .label, .sidebar .logo span { display: none; } .sidebar a { justify-content: center; padding: 0.5rem; } }
-        @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 1rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } .kanban { flex-direction: column; } .column { min-width: auto; } }
+        @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 1rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } .kanban { flex-direction: column; } .column { min-width: auto; max-height: none; } }
     </style>
 </head>
 <body>
@@ -81,44 +73,28 @@
         <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">Gantt</span></a>
         <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
         <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
-        <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg><span class="label">Workflows</span></a>
-        <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">القوالب</span></a>
-        <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">الأرشيف</span></a>
         <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
     </aside>
 
     <main class="main">
-        <div class="topbar"><h1>Kanban</h1><div style="display:flex;gap:0.5rem;"><button class="btn btn-outline" onclick="toggleDark()" id="darkBtn" style="height:36px;">🌙</button><button class="btn btn-outline" onclick="logout()" style="height:36px;">خروج</button></div></div>
-        
-        <div class="nav-bar">
-            <a href="tasks.html" class="nav-item">📋 قائمة</a>
-            <a href="kanban.html" class="nav-item active">📌 أعمدة</a>
-            <a href="tasks.html" class="nav-item">📊 جدول</a>
-            <a href="gantt.html" class="nav-item">📈 Gantt</a>
-            <a href="reports.html" class="nav-item">📉 إحصائيات</a>
-            <a href="calendar.html" class="nav-item">📅 تقويم</a>
-            <a href="chat.html" class="nav-item">💬 محادثة</a>
-        </div>
-
-        <div class="toolbar">
-            <select id="workflowSelect" onchange="changeWorkflow()"><option value="default">📋 افتراضي</option></select>
-            <button>🤖 AI</button>
-            <div class="dropdown">
-                <button onclick="toggleDropdown('moreMenu')">⋯ المزيد ▾</button>
-                <div class="dropdown-menu" id="moreMenu">
-                    <button onclick="refreshBoard()">🔄 تحديث</button>
-                    <button onclick="exportTasks()">📥 تصدير</button>
-                    <button onclick="printBoard()">🖨️ طباعة</button>
-                    <button onclick="archiveDone()">📦 أرشفة المكتملة</button>
-                </div>
+        <div class="topbar">
+            <div>
+                <h1>📌 Kanban</h1>
+                <p class="project-title" id="projectTitle"></p>
             </div>
-            <input type="text" placeholder="🔍 بحث..." id="searchInput">
-            <button>🏷️ وسوم</button>
-            <button>👤 فلترة</button>
-            <button onclick="showSettings()">⚙️ إعدادات</button>
-            <span class="spacer"></span>
+            <div style="display:flex;gap:0.5rem;">
+                <select id="projectFilter" onchange="loadKanban()" style="height:36px;border-radius:8px;border:1px solid var(--border);padding:0 0.5rem;font-family:inherit;font-size:0.8rem;background:var(--card);color:var(--text);"><option value="">كل المشاريع</option></select>
+                <button class="btn btn-outline" onclick="toggleDark()" id="darkBtn" style="height:36px;">🌙</button>
+                <button class="btn btn-outline" onclick="logout()" style="height:36px;">خروج</button>
+            </div>
         </div>
-
+        <div class="toolbar">
+            <input type="text" id="searchInput" placeholder="🔍 بحث..." oninput="filterCards()">
+            <select id="assigneeFilter" onchange="filterCards()" style="width:auto;">
+                <option value="">👤 الكل</option>
+            </select>
+            <button class="btn btn-outline" onclick="refreshBoard()" style="height:36px;">🔄 تحديث</button>
+        </div>
         <div class="kanban" id="kanbanBoard"></div>
     </main>
 
@@ -137,35 +113,128 @@
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'login.html';
         function logout() { localStorage.clear(); window.location.href = 'login.html'; }
-        function toggleDark() { document.body.classList.toggle('dark'); const isDark = document.body.classList.contains('dark'); localStorage.setItem('dark', isDark); document.getElementById('darkBtn').textContent = isDark ? '☀️' : '🌙'; }
+        function toggleDark() { document.body.classList.toggle('dark'); const d = document.body.classList.contains('dark'); localStorage.setItem('dark', d); document.getElementById('darkBtn').textContent = d ? '☀️' : '🌙'; }
         if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
-        function toggleDropdown(id) { const m = document.getElementById(id); m.classList.toggle('show'); }
-        document.addEventListener('click', e => { if (!e.target.closest('.dropdown')) document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show')); });
+        function showToast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 3000); }
 
         const statuses = ['new', 'in-progress', 'review', 'done', 'blocked'];
-        const labels = { 'new': '📥 متاحة', 'in-progress': '🔄 قيد التنفيذ', 'review': '👁️ مراجعة', 'done': '✅ مكتملة', 'blocked': '🚫 متعثرة' };
+        const labels = { 'new': '📥 جديدة', 'in-progress': '🔄 قيد التنفيذ', 'review': '👁️ مراجعة', 'done': '✅ مكتملة', 'blocked': '🚫 متعثرة' };
+        let allTasks = [];
+        let allProjects = [];
 
-        async function loadKanban() {
-            const res = await fetch(`${API_BASE}/tasks`, { headers: { 'Authorization': `Bearer ${token}` } });
-            const tasks = await res.json();
-            document.getElementById('kanbanBoard').innerHTML = statuses.map(s => {
-                const filtered = tasks.filter(t => t.status === s);
-                return `<div class="column" data-status="${s}"><h3>${labels[s]} <span class="count">${filtered.length}</span></h3><div class="task-list">${filtered.map(t => `<div class="task-card priority-${t.priority||'medium'}" draggable="true" data-id="${t._id}"><div class="drag-handle">⋮⋮</div><div class="task-title"><a href="task.html?id=${t._id}">${t.title}</a></div>${t.dueDate?`<div class="task-date">📅 ${new Date(t.dueDate).toLocaleDateString('ar-SA')}</div>`:''}<div class="card-footer"><span>💬${t.comments?.length||0}</span><span>📁${t.attachments?.length||0}</span><span>${t.priority==='critical'?'🔴':t.priority==='high'?'🟠':t.priority==='medium'?'🟡':'🟢'}</span></div><div class="card-actions"><button class="icon-btn" onclick="location.href='task.html?id=${t._id}'">✏️</button><button class="icon-btn" onclick="cardMenu('${t._id}')">⋯</button></div></div>`).join('')}</div><div class="add-task-btn" onclick="quickAdd('${s}')">+ إضافة مهمة</div></div>`;
-            }).join('');
-            document.querySelectorAll('.task-card').forEach(card => { card.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', card.dataset.id); card.style.opacity='0.5'; }); card.addEventListener('dragend', e => card.style.opacity='1'); });
-            document.querySelectorAll('.column').forEach(col => { col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('drag-over'); }); col.addEventListener('dragleave', () => col.classList.remove('drag-over')); col.addEventListener('drop', async e => { e.preventDefault(); col.classList.remove('drag-over'); const id = e.dataTransfer.getData('text/plain'); await fetch(`${API_BASE}/tasks/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ status: col.dataset.status }) }); loadKanban(); }); });
-            document.getElementById('searchInput').addEventListener('input', function() { const q = this.value.toLowerCase(); document.querySelectorAll('.task-card').forEach(c => c.style.display = c.textContent.toLowerCase().includes(q) ? 'block' : 'none'); });
+        async function loadProjects() {
+            try {
+                const res = await fetch(`${API_BASE}/projects`, { headers: { 'Authorization': `Bearer ${token}` } });
+                allProjects = await res.json();
+                const sel = document.getElementById('projectFilter');
+                sel.innerHTML = '<option value="">كل المشاريع</option>' + allProjects.map(p => `<option value="${p._id}">${p.name}</option>`).join('');
+                
+                const params = new URLSearchParams(window.location.search);
+                const pid = params.get('projectId');
+                if (pid) { sel.value = pid; document.getElementById('projectTitle').textContent = '📁 ' + (allProjects.find(p => p._id === pid)?.name || ''); }
+            } catch (err) {}
         }
 
-        async function quickAdd(status) { const title = prompt('عنوان المهمة:'); if (!title) return; await fetch(`${API_BASE}/tasks`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ title, status }) }); loadKanban(); }
-        function cardMenu(id) { const action = prompt('اختر: حذف / نسخ / إلغاء'); if (action === 'حذف') { if (confirm('حذف المهمة؟')) { fetch(`${API_BASE}/tasks/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }).then(() => loadKanban()); } } }
-        function refreshBoard() { loadKanban(); }
-        function exportTasks() { alert('سيتم التصدير قريباً'); }
-        function printBoard() { window.print(); }
-        async function archiveDone() { if (!confirm('أرشفة المكتملة؟')) return; const res = await fetch(`${API_BASE}/tasks`, { headers: { 'Authorization': `Bearer ${token}` } }); const tasks = await res.json(); for (const t of tasks.filter(t => t.status === 'done')) { await fetch(`${API_BASE}/tasks/${t._id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ status: 'archived' }) }); } loadKanban(); }
-        function showSettings() { const steps = prompt('عدّل الأعمدة (مفصولة بفاصلة):', statuses.join(',')); if (steps) { const newSteps = steps.split(',').map(s => s.trim()); statuses.length = 0; newSteps.forEach(s => statuses.push(s)); loadKanban(); } }
+        async function loadKanban() {
+            try {
+                const pid = document.getElementById('projectFilter').value;
+                let url = `${API_BASE}/tasks`;
+                if (pid) url += `?projectId=${pid}`;
+                
+                const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+                allTasks = await res.json();
+                
+                if (pid) document.getElementById('projectTitle').textContent = '📁 ' + (allProjects.find(p => p._id === pid)?.name || '');
+                else document.getElementById('projectTitle').textContent = '';
+                
+                // جمع المسؤولين للفلترة
+                const assignees = [...new Set(allTasks.map(t => t.assignee).filter(Boolean))];
+                document.getElementById('assigneeFilter').innerHTML = '<option value="">👤 الكل</option>' + assignees.map(a => `<option value="${a}">${a}</option>`).join('');
+                
+                renderBoard(allTasks);
+            } catch (err) {
+                document.getElementById('kanbanBoard').innerHTML = '<p style="text-align:center;color:#DC2626;">خطأ في تحميل المهام</p>';
+            }
+        }
 
-        loadKanban();
+        function renderBoard(tasks) {
+            document.getElementById('kanbanBoard').innerHTML = statuses.map(s => {
+                const filtered = tasks.filter(t => t.status === s);
+                return `<div class="column" data-status="${s}" ondragover="event.preventDefault(); this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="dropTask(event, '${s}')">
+                    <div class="column-header">
+                        <h3>${labels[s]} <span class="count">${filtered.length}</span></h3>
+                    </div>
+                    <div class="task-list">
+                        ${filtered.map(t => {
+                            const isOverdue = t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'done';
+                            return `<div class="task-card priority-${t.priority || 'medium'}" draggable="true" data-id="${t._id}" ondragstart="dragTask(event, '${t._id}')" ondragend="event.target.classList.remove('dragging')">
+                                <div class="task-title"><a href="task.html?id=${t._id}">${isOverdue ? '🔴 ' : ''}${t.title}</a></div>
+                                <div class="task-meta">
+                                    ${t.assignee ? `<span>👤 ${t.assignee}</span>` : ''}
+                                    ${t.dueDate ? `<span class="task-date ${isOverdue ? 'overdue' : ''}">📅 ${new Date(t.dueDate).toLocaleDateString('ar-SA')}</span>` : ''}
+                                    <span>${t.priority === 'critical' ? '🔴' : t.priority === 'high' ? '🟠' : t.priority === 'medium' ? '🟡' : '🟢'}</span>
+                                    ${t.comments?.length > 0 ? `<span>💬${t.comments.length}</span>` : ''}
+                                    ${t.attachments?.length > 0 ? `<span>📎${t.attachments.length}</span>` : ''}
+                                </div>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                    <div class="add-task-btn" onclick="quickAdd('${s}')">+ إضافة مهمة</div>
+                </div>`;
+            }).join('');
+        }
+
+        function dragTask(e, id) {
+            e.dataTransfer.setData('text/plain', id);
+            e.target.classList.add('dragging');
+        }
+
+        async function dropTask(e, newStatus) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            const taskId = e.dataTransfer.getData('text/plain');
+            if (!taskId) return;
+            
+            try {
+                await fetch(`${API_BASE}/tasks/${taskId}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                showToast('✅ تم تحديث الحالة');
+                loadKanban();
+            } catch (err) {
+                showToast('❌ خطأ في التحديث');
+            }
+        }
+
+        async function quickAdd(status) {
+            const title = prompt('عنوان المهمة:');
+            if (!title) return;
+            const pid = document.getElementById('projectFilter').value;
+            try {
+                await fetch(`${API_BASE}/tasks`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ title, status, projectId: pid || null })
+                });
+                showToast('✅ تمت الإضافة');
+                loadKanban();
+            } catch (err) { alert('خطأ'); }
+        }
+
+        function filterCards() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const assignee = document.getElementById('assigneeFilter').value;
+            let filtered = allTasks;
+            if (search) filtered = filtered.filter(t => t.title.toLowerCase().includes(search));
+            if (assignee) filtered = filtered.filter(t => t.assignee === assignee);
+            renderBoard(filtered);
+        }
+
+        function refreshBoard() { loadKanban(); }
+
+        loadProjects().then(() => loadKanban());
     </script>
 </body>
 </html>
