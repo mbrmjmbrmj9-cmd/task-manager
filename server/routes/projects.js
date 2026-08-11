@@ -3,25 +3,18 @@ const Project = require('../models/Project');
 const Task = require('../models/Task');
 const Workspace = require('../models/Workspace');
 const { authenticate, requireProjectOwnership } = require('../middleware/auth');
-const { paginate, paginatedResponse } = require('../middleware/paginate');
 
 const router = express.Router();
 
-// ✅ كل المشاريع (مع Pagination)
-router.get('/', authenticate, paginate, async (req, res) => {
+// ✅ جلب جميع المشاريع
+router.get('/', authenticate, async (req, res) => {
     try {
         const filter = { userId: req.user.id };
         if (req.query.workspaceId) filter.workspaceId = req.query.workspaceId;
         
-        const { page, limit, skip } = req.pagination;
-        const sort = { createdAt: -1 };
+        const projects = await Project.find(filter).sort({ createdAt: -1 });
         
-        const [projects, total] = await Promise.all([
-            Project.find(filter).sort(sort).skip(skip).limit(limit),
-            Project.countDocuments(filter)
-        ]);
-        
-        // نجيب عدد المهام لكل مشروع
+        // إضافة إحصائيات لكل مشروع
         const result = await Promise.all(projects.map(async (p) => {
             const taskFilter = { userId: req.user.id, projectId: p._id };
             const taskCount = await Task.countDocuments(taskFilter);
@@ -43,24 +36,13 @@ router.get('/', authenticate, paginate, async (req, res) => {
             };
         }));
         
-        const totalPages = Math.ceil(total / limit);
-        
-        res.json({
-            data: result,
-            pagination: {
-                page,
-                limit,
-                total,
-                totalPages,
-                hasNextPage: page < totalPages,
-                hasPrevPage: page > 1
-            }
-        });
+        res.json(result);
     } catch (err) {
         res.status(500).json({ error: 'خطأ في جلب المشاريع' });
     }
 });
-// ✅ جلب مشروع واحد مع إحصائياته
+
+// ✅ جلب مشروع واحد
 router.get('/:id', authenticate, async (req, res) => {
     try {
         const project = await Project.findOne({ _id: req.params.id, userId: req.user.id });
@@ -81,13 +63,12 @@ router.get('/:id', authenticate, async (req, res) => {
     }
 });
 
-// ✅ إنشاء مشروع (مع إعدادات افتراضية)
+// ✅ إنشاء مشروع
 router.post('/', authenticate, async (req, res) => {
     try {
-        const { name, description, color, workspaceId, settings } = req.body;
+        const { name, description, color, workspaceId } = req.body;
         if (!name) return res.status(400).json({ error: 'الاسم مطلوب' });
 
-        // التحقق من حدود workspace
         if (workspaceId) {
             const ws = await Workspace.findById(workspaceId);
             if (ws) {
@@ -104,7 +85,7 @@ router.post('/', authenticate, async (req, res) => {
             color: color || '#2563EB',
             userId: req.user.id,
             workspaceId: workspaceId || null,
-            settings: settings || {
+            settings: {
                 enableChat: true,
                 enableFiles: true,
                 enableGantt: true,
@@ -121,23 +102,20 @@ router.post('/', authenticate, async (req, res) => {
     }
 });
 
-// ✅ تحديث مشروع (المالك فقط)
+// ✅ تحديث مشروع
 router.patch('/:id', authenticate, requireProjectOwnership, async (req, res) => {
     try {
         const project = req.project;
-        
         const allowed = ['name', 'description', 'color', 'status', 'settings'];
         allowed.forEach(field => {
             if (req.body[field] !== undefined) {
                 if (field === 'settings') {
-                    // دمج الإعدادات بدل الاستبدال الكامل
                     project.settings = { ...project.settings.toObject(), ...req.body.settings };
                 } else {
                     project[field] = req.body[field];
                 }
             }
         });
-        
         await project.save();
         res.json(project);
     } catch (err) {
@@ -145,15 +123,25 @@ router.patch('/:id', authenticate, requireProjectOwnership, async (req, res) => 
     }
 });
 
-// ✅ حذف مشروع (المالك فقط)
+// ✅ حذف مشروع
 router.delete('/:id', authenticate, requireProjectOwnership, async (req, res) => {
     try {
         await Project.findByIdAndDelete(req.params.id);
-        // حذف جميع المهام المرتبطة بالمشروع
         await Task.deleteMany({ projectId: req.params.id });
         res.json({ message: 'تم حذف المشروع وجميع مهامه' });
     } catch (err) {
         res.status(500).json({ error: 'خطأ في حذف المشروع' });
+    }
+});
+
+// ✅ جلب إعدادات المشروع
+router.get('/:id/settings', authenticate, async (req, res) => {
+    try {
+        const project = await Project.findOne({ _id: req.params.id, userId: req.user.id });
+        if (!project) return res.status(404).json({ error: 'مشروع غير موجود' });
+        res.json({ projectId: project._id, projectName: project.name, settings: project.settings });
+    } catch (err) {
+        res.status(500).json({ error: 'خطأ في جلب الإعدادات' });
     }
 });
 
@@ -163,43 +151,7 @@ router.patch('/:id/settings', authenticate, requireProjectOwnership, async (req,
         const project = req.project;
         project.settings = { ...project.settings.toObject(), ...req.body };
         await project.save();
-        res.json(project);
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في تحديث الإعدادات' });
-    }
-});
-
-// ✅ جلب إعدادات المشروع
-router.get('/:id/settings', authenticate, async (req, res) => {
-    try {
-        const project = await Project.findOne({ _id: req.params.id, userId: req.user.id });
-        if (!project) return res.status(404).json({ error: 'مشروع غير موجود' });
-        
-        res.json({
-            projectId: project._id,
-            projectName: project.name,
-            settings: project.settings
-        });
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في جلب الإعدادات' });
-    }
-});
-
-// ✅ تحديث إعدادات المشروع (الموجود مسبقًا، نتركه كما هو)
-router.patch('/:id/settings', authenticate, requireProjectOwnership, async (req, res) => {
-    try {
-        const project = req.project;
-        
-        // دمج الإعدادات الجديدة مع القديمة
-        const currentSettings = project.settings ? project.settings.toObject() : {};
-        project.settings = { ...currentSettings, ...req.body };
-        
-        await project.save();
-        
-        res.json({
-            message: 'تم تحديث الإعدادات بنجاح',
-            settings: project.settings
-        });
+        res.json({ message: 'تم تحديث الإعدادات بنجاح', settings: project.settings });
     } catch (err) {
         res.status(500).json({ error: 'خطأ في تحديث الإعدادات' });
     }
