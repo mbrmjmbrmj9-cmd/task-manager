@@ -35,17 +35,11 @@
         .task-list::-webkit-scrollbar { width: 4px; }
         .task-list::-webkit-scrollbar-thumb { background: #CBD5E0; border-radius: 4px; }
 
-        /* بطاقة المهمة */
-        .task-card {
-            background: #FFFFFF; border-radius: 10px; padding: 0.7rem 0.75rem; margin-bottom: 0.5rem;
-            border: 1px solid #E2E8F0; cursor: default; position: relative; transition: all 0.2s ease;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.03); user-select: none;
-        }
+        .task-card { background: #FFFFFF; border-radius: 10px; padding: 0.7rem 0.75rem; margin-bottom: 0.5rem; border: 1px solid #E2E8F0; cursor: default; position: relative; transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.03); user-select: none; }
         body.dark .task-card { background: #1E293B; border-color: #334155; }
         .task-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
         .task-card.dragging { opacity: 0.5; transform: rotate(1.5deg); box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
 
-        /* Header البطاقة */
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; }
         .card-header-left { display: flex; align-items: center; gap: 0.35rem; }
         .card-header-right { display: flex; align-items: center; gap: 0.35rem; }
@@ -61,40 +55,40 @@
         .status-done .status-dot { background: #22C55E; }
         .status-blocked .status-dot { background: #EF4444; }
 
-        /* عنوان المهمة */
         .card-title { font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem; line-height: 1.45; color: #1E293B; cursor: pointer; }
         body.dark .card-title { color: #F1F5F9; }
         .card-title:hover { color: #2563EB; }
 
-        /* تاريخ المهمة */
         .date-badge { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.68rem; padding: 0.2rem 0.5rem; border-radius: 6px; border: 1px solid #E2E8F0; color: #64748B; margin-bottom: 0.45rem; background: #F8FAFC; }
         body.dark .date-badge { border-color: #334155; color: #94A3B8; background: #0F172A; }
         .date-badge.overdue { border-color: #FECACA; color: #DC2626; background: #FFF5F5; }
 
-        /* Footer البطاقة */
         .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 0.3rem; }
         .card-footer-left { display: flex; align-items: center; gap: 0.25rem; }
-        .card-footer-right { display: flex; align-items: center; gap: 0.55rem; }
+        .card-footer-right { display: flex; align-items: center; gap: 0.45rem; }
 
-        /* Avatar */
         .avatar-small { width: 24px; height: 24px; border-radius: 50%; background: #E2E8F0; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 700; color: #64748B; flex-shrink: 0; }
 
-        /* Drag Handle */
         .drag-handle { display: grid; grid-template-columns: repeat(3, 4px); grid-template-rows: repeat(3, 4px); gap: 2.5px; cursor: grab; padding: 2px; flex-shrink: 0; }
         .drag-handle:active { cursor: grabbing; }
         .drag-handle span { width: 4px; height: 4px; border-radius: 50%; background: #94A3B8; display: block; }
 
-        /* المؤشرات */
-        .indicators { display: flex; align-items: center; gap: 0.45rem; }
-        .indicator-item { display: flex; align-items: center; gap: 0.15rem; font-size: 0.65rem; color: #94A3B8; }
-        .indicator-item svg { width: 12px; height: 12px; }
+        /* مؤشرات تفاعلية */
+        .indicators { display: flex; align-items: center; gap: 0.3rem; }
+        .indicator-btn { display: flex; align-items: center; gap: 0.15rem; font-size: 0.65rem; color: #94A3B8; background: none; border: none; cursor: pointer; padding: 0.15rem 0.3rem; border-radius: 4px; font-family: inherit; transition: all 0.15s; white-space: nowrap; }
+        .indicator-btn:hover { background: #F1F5F9; color: #64748B; }
+        body.dark .indicator-btn:hover { background: #334155; color: #CBD5E0; }
 
-        /* Flag الأولوية */
-        .priority-flag { font-size: 0.8rem; flex-shrink: 0; }
+        .priority-btn { font-size: 0.8rem; background: none; border: none; cursor: pointer; padding: 0.1rem 0.25rem; border-radius: 4px; flex-shrink: 0; transition: all 0.15s; }
+        .priority-btn:hover { background: #F1F5F9; }
+        body.dark .priority-btn:hover { background: #334155; }
         .priority-critical { color: #EF4444; }
         .priority-high { color: #F97316; }
         .priority-medium { color: #EAB308; }
         .priority-low { color: #22C55E; }
+
+        .status-btn { background: none; border: none; cursor: pointer; padding: 0.1rem; border-radius: 50%; transition: all 0.15s; display: flex; }
+        .status-btn:hover { background: #F1F5F9; }
 
         .column.drag-over { background: #DBEAFE; outline: 2px dashed #2563EB; outline-offset: -4px; border-radius: 14px; }
         body.dark .column.drag-over { background: #1E3A5F; }
@@ -107,15 +101,27 @@
         .modal-overlay.show { display: flex; }
         .modal-content { background: var(--card); border-radius: 20px; width: 100%; max-width: 600px; max-height: 85vh; overflow-y: auto; box-shadow: 0 30px 60px rgba(0,0,0,0.2); animation: modalIn 0.2s ease; }
         @keyframes modalIn { from { opacity: 0; transform: translateY(30px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 1.5rem 0.75rem; }
-        .modal-header h2 { font-size: 1.15rem; font-weight: 800; }
-        .modal-close { background: #F1F5F9; border: none; font-size: 1.1rem; cursor: pointer; color: #64748B; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); }
+        .modal-header h2 { font-size: 1.1rem; font-weight: 800; }
+        .modal-close { background: #F1F5F9; border: none; font-size: 1rem; cursor: pointer; color: #64748B; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
         .modal-close:hover { background: #E2E8F0; color: #1E293B; }
-        .modal-body { padding: 1rem 1.5rem 1.5rem; }
-        .detail-section { margin-bottom: 1rem; }
-        .detail-section label { font-size: 0.75rem; font-weight: 700; color: #64748B; display: block; margin-bottom: 0.3rem; }
-        .detail-section .value { font-size: 0.9rem; color: var(--text); }
-        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+        .modal-body { padding: 1.25rem 1.5rem; }
+        .comment-item { background: #F8FAFC; padding: 0.75rem; border-radius: 10px; margin-bottom: 0.5rem; }
+        body.dark .comment-item { background: #0F172A; }
+        .comment-item .comment-user { font-weight: 700; font-size: 0.8rem; }
+        .comment-item .comment-text { font-size: 0.85rem; margin-top: 0.25rem; }
+        .comment-item .comment-time { font-size: 0.65rem; color: #94A3B8; margin-top: 0.25rem; }
+        .comment-input-row { display: flex; gap: 0.5rem; margin-top: 1rem; }
+        .comment-input-row input { flex: 1; height: 40px; border-radius: 8px; border: 1px solid var(--border); padding: 0 0.75rem; font-family: inherit; font-size: 0.85rem; background: var(--bg); color: var(--text); }
+        .file-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+        .priority-options { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .priority-opt { padding: 0.5rem 0.75rem; border-radius: 8px; border: 2px solid var(--border); cursor: pointer; font-size: 0.85rem; background: none; font-family: inherit; transition: all 0.15s; }
+        .priority-opt:hover { border-color: var(--primary); }
+        .priority-opt.selected { border-color: var(--primary); background: #EFF6FF; }
+        .status-options { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .status-opt { padding: 0.5rem 0.75rem; border-radius: 8px; border: 2px solid var(--border); cursor: pointer; font-size: 0.85rem; background: none; font-family: inherit; transition: all 0.15s; }
+        .status-opt:hover { border-color: var(--primary); }
+        .status-opt.selected { border-color: var(--primary); background: #EFF6FF; }
 
         .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #16A34A; color: #fff; padding: 0.75rem 1.5rem; border-radius: 12px; z-index: 9999; font-weight: 600; font-size: 0.9rem; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards; }
         @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(-20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
@@ -168,8 +174,29 @@
         <a href="#" onclick="openSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>المزيد</a>
     </nav>
 
-    <div class="modal-overlay" id="taskModal" onclick="if(event.target===this)closeModal()">
-        <div class="modal-content"><div class="modal-header"><h2 id="modalTitle"></h2><button class="modal-close" onclick="closeModal()">✕</button></div><div class="modal-body" id="modalBody"></div></div>
+    <!-- Modal التعليقات -->
+    <div class="modal-overlay" id="commentsModal" onclick="if(event.target===this)closeModal('commentsModal')">
+        <div class="modal-content"><div class="modal-header"><h2>💬 التعليقات</h2><button class="modal-close" onclick="closeModal('commentsModal')">✕</button></div><div class="modal-body" id="commentsBody"></div></div>
+    </div>
+
+    <!-- Modal الملفات -->
+    <div class="modal-overlay" id="filesModal" onclick="if(event.target===this)closeModal('filesModal')">
+        <div class="modal-content"><div class="modal-header"><h2>📎 الملفات</h2><button class="modal-close" onclick="closeModal('filesModal')">✕</button></div><div class="modal-body" id="filesBody"></div></div>
+    </div>
+
+    <!-- Modal تغيير الأولوية -->
+    <div class="modal-overlay" id="priorityModal" onclick="if(event.target===this)closeModal('priorityModal')">
+        <div class="modal-content"><div class="modal-header"><h2>🚩 تغيير الأولوية</h2><button class="modal-close" onclick="closeModal('priorityModal')">✕</button></div><div class="modal-body" id="priorityBody"></div></div>
+    </div>
+
+    <!-- Modal تغيير الحالة -->
+    <div class="modal-overlay" id="statusModal" onclick="if(event.target===this)closeModal('statusModal')">
+        <div class="modal-content"><div class="modal-header"><h2>● تغيير الحالة</h2><button class="modal-close" onclick="closeModal('statusModal')">✕</button></div><div class="modal-body" id="statusBody"></div></div>
+    </div>
+
+    <!-- Modal تفاصيل المهمة -->
+    <div class="modal-overlay" id="taskModal" onclick="if(event.target===this)closeModal('taskModal')">
+        <div class="modal-content"><div class="modal-header"><h2 id="modalTitle"></h2><button class="modal-close" onclick="closeModal('taskModal')">✕</button></div><div class="modal-body" id="modalBody"></div></div>
     </div>
 
     <script>
@@ -182,12 +209,16 @@
         function toggleDark() { document.body.classList.toggle('dark'); const d = document.body.classList.contains('dark'); localStorage.setItem('dark', d); document.getElementById('darkBtn').textContent = d ? '☀️' : '🌙'; }
         if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
         function showToast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 3000); }
+        function closeModal(id) { document.getElementById(id).classList.remove('show'); }
 
         const statuses = ['new', 'in-progress', 'review', 'done', 'blocked'];
         const labels = { 'new': 'متاحة', 'in-progress': 'قيد التنفيذ', 'review': 'مراجعة', 'done': 'مكتملة', 'blocked': 'متعثرة' };
         const statusIcons = { 'new': '📥', 'in-progress': '⚙️', 'review': '👁️', 'done': '✅', 'blocked': '🚫' };
         const statusClasses = { 'new': 'status-new', 'in-progress': 'status-progress', 'review': 'status-review', 'done': 'status-done', 'blocked': 'status-blocked' };
-        let allTasks = [], allProjects = [];
+        const priorities = ['critical', 'high', 'medium', 'low'];
+        const priorityLabels = { critical: '🔴 حرجة', high: '🟠 عالية', medium: '🟡 متوسطة', low: '🟢 منخفضة' };
+        const priorityCls = { critical: 'priority-critical', high: 'priority-high', medium: 'priority-medium', low: 'priority-low' };
+        let allTasks = [], allProjects = [], currentTaskId = null;
 
         async function loadProjects() {
             const res = await fetch(`${API_BASE}/projects`, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -225,7 +256,7 @@
         function renderCard(t) {
             const cls = statusClasses[t.status] || 'status-new';
             const statusLabel = labels[t.status] || t.status;
-            const priorityCls = `priority-${t.priority || 'medium'}`;
+            const pCls = priorityCls[t.priority] || 'priority-medium';
             const isOverdue = t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'done';
             const commentCount = t.comments?.length || 0;
             const attachCount = t.attachments?.length || 0;
@@ -235,7 +266,7 @@
                 <div class="card-header">
                     <div class="card-header-left">
                         <button class="icon-btn" onclick="event.stopPropagation();openTaskDetails('${t._id}')" title="تعديل">✎</button>
-                        <button class="icon-btn" onclick="event.stopPropagation()" title="إجراءات">☷</button>
+                        <button class="icon-btn" onclick="event.stopPropagation();openTaskDetails('${t._id}')" title="تفاصيل">☷</button>
                     </div>
                     <div class="card-header-right">
                         <span class="status-label">${statusLabel} <span class="status-dot"></span></span>
@@ -250,20 +281,20 @@
                     </div>
                     <div class="card-footer-right">
                         <div class="indicators">
-                            <span class="indicator-item">${commentCount} 💬</span>
-                            <span class="indicator-item">${attachCount} 📄</span>
+                            <button class="indicator-btn" onclick="event.stopPropagation();openComments('${t._id}')">${commentCount} 💬</button>
+                            <button class="indicator-btn" onclick="event.stopPropagation();openFiles('${t._id}')">${attachCount} 📄</button>
                         </div>
-                        <span class="priority-flag ${priorityCls}">🚩</span>
-                        <span class="status-dot"></span>
+                        <button class="priority-btn ${pCls}" onclick="event.stopPropagation();openPriority('${t._id}')" title="تغيير الأولوية">🚩</button>
+                        <button class="status-btn" onclick="event.stopPropagation();openStatus('${t._id}')" title="تغيير الحالة"><span class="status-dot"></span></button>
                     </div>
                 </div>
             </div>`;
         }
 
+        // ============ Drag & Drop ============
         function dragTask(e, id) { e.dataTransfer.setData('text/plain', id); e.target.classList.add('dragging'); }
         async function dropTask(e, newStatus) { e.preventDefault(); e.currentTarget.classList.remove('drag-over'); const id = e.dataTransfer.getData('text/plain'); if (!id) return; await fetch(`${API_BASE}/tasks/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ status: newStatus }) }); showToast('✅ تم'); loadKanban(); }
         async function quickAdd(s) { const title = prompt('عنوان المهمة:'); if (!title) return; const pid = document.getElementById('projectFilter').value; await fetch(`${API_BASE}/tasks`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ title, status: s, projectId: pid || null }) }); showToast('✅ تم'); loadKanban(); }
-        async function deleteTask(id) { if (!confirm('حذف؟')) return; await fetch(`${API_BASE}/tasks/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); loadKanban(); }
 
         function filterCards() {
             const search = document.getElementById('searchInput').value.toLowerCase();
@@ -274,23 +305,134 @@
             renderBoard(filtered);
         }
 
+        // ============ Modal التعليقات ============
+        function openComments(id) {
+            currentTaskId = id;
+            const t = allTasks.find(t => t._id === id); if (!t) return;
+            const comments = t.comments || [];
+            document.getElementById('commentsBody').innerHTML = `
+                ${comments.length === 0 ? '<p style="color:#94A3B8;text-align:center;padding:1rem;">لا توجد تعليقات</p>' : ''}
+                ${comments.map(c => `<div class="comment-item"><div class="comment-user">${c.username || 'مستخدم'}</div><div class="comment-text">${c.text}</div><div class="comment-time">${new Date(c.createdAt).toLocaleString('ar-SA')}</div></div>`).join('')}
+                <div class="comment-input-row">
+                    <input type="text" id="commentInput" placeholder="اكتب تعليقاً... استخدم @ للإشارة">
+                    <button class="btn btn-primary" onclick="addComment()" style="height:40px;">إرسال</button>
+                </div>`;
+            document.getElementById('commentsModal').classList.add('show');
+            setTimeout(() => document.getElementById('commentInput')?.focus(), 200);
+        }
+
+        async function addComment() {
+            const input = document.getElementById('commentInput');
+            const text = input.value.trim();
+            if (!text || !currentTaskId) return;
+            await fetch(`${API_BASE}/tasks/${currentTaskId}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ text }) });
+            const res = await fetch(`${API_BASE}/tasks/${currentTaskId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const updated = await res.json();
+            const idx = allTasks.findIndex(t => t._id === currentTaskId);
+            if (idx >= 0) allTasks[idx] = updated;
+            showToast('✅ تم إضافة التعليق');
+            openComments(currentTaskId);
+            renderBoard(allTasks);
+        }
+
+        // ============ Modal الملفات ============
+        function openFiles(id) {
+            currentTaskId = id;
+            const t = allTasks.find(t => t._id === id); if (!t) return;
+            const attachments = t.attachments || [];
+            document.getElementById('filesBody').innerHTML = `
+                ${attachments.length === 0 ? '<p style="color:#94A3B8;text-align:center;padding:1rem;">لا توجد مرفقات</p>' : ''}
+                ${attachments.map(a => `<div class="file-item"><span>📎</span><a href="${a.url}" target="_blank" style="color:var(--primary);text-decoration:none;flex:1;">${a.name}</a><button class="btn btn-outline" style="height:28px;font-size:0.7rem;" onclick="deleteAttachment('${a._id}')">🗑️</button></div>`).join('')}
+                <div style="margin-top:1rem;display:flex;gap:0.5rem;">
+                    <input type="file" id="fileUpload" style="display:none;" onchange="uploadFile()">
+                    <button class="btn btn-primary" onclick="document.getElementById('fileUpload').click()">📁 رفع ملف</button>
+                </div>`;
+            document.getElementById('filesModal').classList.add('show');
+        }
+
+        async function uploadFile() {
+            const file = document.getElementById('fileUpload').files[0];
+            if (!file || !currentTaskId) return;
+            const formData = new FormData(); formData.append('file', file);
+            const uploadRes = await fetch(`${API_BASE}/upload`, { method: 'POST', body: formData });
+            const uploadData = await uploadRes.json();
+            if (uploadRes.ok) {
+                await fetch(`${API_BASE}/tasks/${currentTaskId}/attachments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(uploadData) });
+                const res = await fetch(`${API_BASE}/tasks/${currentTaskId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const updated = await res.json();
+                const idx = allTasks.findIndex(t => t._id === currentTaskId);
+                if (idx >= 0) allTasks[idx] = updated;
+                showToast('✅ تم رفع الملف');
+                openFiles(currentTaskId);
+                renderBoard(allTasks);
+            }
+        }
+
+        async function deleteAttachment(attId) {
+            if (!currentTaskId) return;
+            await fetch(`${API_BASE}/tasks/${currentTaskId}/attachments/${attId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+            const res = await fetch(`${API_BASE}/tasks/${currentTaskId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const updated = await res.json();
+            const idx = allTasks.findIndex(t => t._id === currentTaskId);
+            if (idx >= 0) allTasks[idx] = updated;
+            openFiles(currentTaskId);
+            renderBoard(allTasks);
+        }
+
+        // ============ Modal تغيير الأولوية ============
+        function openPriority(id) {
+            currentTaskId = id;
+            const t = allTasks.find(t => t._id === id); if (!t) return;
+            document.getElementById('priorityBody').innerHTML = `
+                <div class="priority-options">
+                    ${priorities.map(p => `<button class="priority-opt ${t.priority === p ? 'selected' : ''}" onclick="changePriority('${p}')">${priorityLabels[p]}</button>`).join('')}
+                </div>`;
+            document.getElementById('priorityModal').classList.add('show');
+        }
+
+        async function changePriority(p) {
+            if (!currentTaskId) return;
+            await fetch(`${API_BASE}/tasks/${currentTaskId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ priority: p }) });
+            const res = await fetch(`${API_BASE}/tasks/${currentTaskId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const updated = await res.json();
+            const idx = allTasks.findIndex(t => t._id === currentTaskId);
+            if (idx >= 0) allTasks[idx] = updated;
+            closeModal('priorityModal');
+            renderBoard(allTasks);
+            showToast('✅ تم تغيير الأولوية');
+        }
+
+        // ============ Modal تغيير الحالة ============
+        function openStatus(id) {
+            currentTaskId = id;
+            document.getElementById('statusBody').innerHTML = `
+                <div class="status-options">
+                    ${statuses.map(s => `<button class="status-opt" onclick="changeStatus('${s}')">${statusIcons[s]} ${labels[s]}</button>`).join('')}
+                </div>`;
+            document.getElementById('statusModal').classList.add('show');
+        }
+
+        async function changeStatus(s) {
+            if (!currentTaskId) return;
+            await fetch(`${API_BASE}/tasks/${currentTaskId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ status: s }) });
+            const res = await fetch(`${API_BASE}/tasks/${currentTaskId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const updated = await res.json();
+            const idx = allTasks.findIndex(t => t._id === currentTaskId);
+            if (idx >= 0) allTasks[idx] = updated;
+            closeModal('statusModal');
+            renderBoard(allTasks);
+            showToast('✅ تم تغيير الحالة');
+        }
+
+        // ============ Modal تفاصيل المهمة ============
         function openTaskDetails(id) {
             const t = allTasks.find(t => t._id === id); if (!t) return;
-            const statusLabel = labels[t.status] || t.status;
-            const priorityLabels = { critical: '🔴 حرجة', high: '🟠 عالية', medium: '🟡 متوسطة', low: '🟢 منخفضة' };
             document.getElementById('modalTitle').textContent = t.title;
             document.getElementById('modalBody').innerHTML = `
-                <div class="detail-section"><label>الوصف</label><p class="value">${t.description || 'لا يوجد وصف'}</p></div>
-                <div class="detail-grid">
-                    <div class="detail-section"><label>الحالة</label><p class="value">${statusIcons[t.status]} ${statusLabel}</p></div>
-                    <div class="detail-section"><label>الأولوية</label><p class="value">${priorityLabels[t.priority] || t.priority}</p></div>
-                    ${t.assignee ? `<div class="detail-section"><label>المسؤول</label><p class="value">👤 ${t.assignee}</p></div>` : ''}
-                    ${t.dueDate ? `<div class="detail-section"><label>التاريخ</label><p class="value">📅 ${new Date(t.dueDate).toLocaleDateString('ar-SA')}</p></div>` : ''}
-                </div>
-                <div style="display:flex;gap:0.5rem;margin-top:1rem;"><a href="task.html?id=${t._id}" class="btn btn-primary" style="flex:1;text-decoration:none;">📋 فتح كامل</a><button class="btn btn-outline" onclick="closeModal()">إغلاق</button></div>`;
+                <p style="color:var(--text-light);">${t.description || 'لا يوجد وصف'}</p>
+                <div style="display:flex;gap:0.5rem;margin-top:1rem;"><a href="task.html?id=${t._id}" class="btn btn-primary" style="flex:1;text-decoration:none;">📋 فتح كامل</a><button class="btn btn-outline" onclick="closeModal('taskModal')">إغلاق</button></div>`;
             document.getElementById('taskModal').classList.add('show');
         }
-        function closeModal() { document.getElementById('taskModal').classList.remove('show'); }
 
         loadProjects().then(() => loadKanban());
     </script>
