@@ -3,44 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nivora | Gantt</title>
+    <title>Nivora | Gantt Chart</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#2563EB">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
-        :root { --sidebar-w: 240px; }
+        :root { --sidebar-w: 240px; --gantt-header-h: 48px; --row-h: 40px; --left-w: 320px; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
         .sidebar { width: var(--sidebar-w); background: var(--card); border-left: 1px solid var(--border); padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 100; overflow-y: auto; display: flex; flex-direction: column; gap: 0.25rem; }
         .sidebar .logo { font-size: 1.3rem; font-weight: 800; padding: 0 0.75rem; margin-bottom: 1rem; color: var(--primary); }
         .sidebar a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 0.9rem; white-space: nowrap; }
         .sidebar a:hover, .sidebar a.active { background: #EFF6FF; color: var(--primary); }
         .sidebar a svg { width: 20px; height: 20px; flex-shrink: 0; }
         .sidebar .label { transition: opacity 0.2s; }
-        .main { margin-right: var(--sidebar-w); padding: 1.5rem; min-height: 100vh; }
-        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem; }
+
+        .main { margin-right: var(--sidebar-w); padding: 1.5rem; min-height: 100vh; display: flex; flex-direction: column; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; flex-wrap: wrap; gap: 0.5rem; }
         .topbar h1 { font-size: 1.5rem; font-weight: 800; }
-        .toolbar { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
-        .toolbar button { height: 32px; font-size: 0.8rem; padding: 0 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-family: inherit; cursor: pointer; }
-        .toolbar button.active { background: var(--primary); color: white; }
-        .gantt-table { width: 100%; border-collapse: collapse; min-width: 600px; }
-        .gantt-table th, .gantt-table td { padding: 0.5rem; border-bottom: 1px solid var(--border); font-size: 0.85rem; text-align: right; }
-        .gantt-table th { background: #F1F5F9; font-weight: 700; }
-        .gantt-bar-wrap { position: relative; height: 24px; }
-        .gantt-bar { position: absolute; top: 4px; height: 16px; border-radius: 4px; min-width: 4px; }
-        .gantt-bar.done { background: #22C55E; }
-        .gantt-bar.progress { background: #2563EB; }
-        .gantt-bar.new { background: #E2E8F0; }
-        .gantt-bar.overdue { background: #EF4444; }
-        .today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: #EF4444; }
+        .project-title { font-size: 0.85rem; color: var(--text-light); }
+        .view-nav { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 0.5rem; overflow-x: auto; }
+        .view-nav a { padding: 0.5rem 0.85rem; font-size: 0.8rem; font-weight: 600; color: var(--text-light); text-decoration: none; border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; }
+        .view-nav a:hover { color: var(--primary); }
+        .view-nav a.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+        .toolbar { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap; align-items: center; }
+        .toolbar input, .toolbar select, .toolbar button { height: 34px; border-radius: 8px; border: 1px solid var(--border); padding: 0 0.5rem; font-family: inherit; font-size: 0.8rem; background: var(--card); color: var(--text); }
+        .toolbar input { flex: 1; min-width: 140px; }
+        .toolbar button { cursor: pointer; display: flex; align-items: center; gap: 0.25rem; font-weight: 600; }
+        .toolbar button:hover { background: #F1F5F9; }
+        .toolbar button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .spacer { flex: 1; }
+
+        /* Gantt Container */
+        .gantt-container { display: flex; flex: 1; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--card); position: relative; }
+        .gantt-left { width: var(--left-w); flex-shrink: 0; border-left: 1px solid var(--border); overflow-y: hidden; z-index: 2; background: var(--card); }
+        .gantt-left-header { height: var(--gantt-header-h); display: flex; align-items: center; padding: 0 1rem; border-bottom: 1px solid var(--border); font-weight: 700; font-size: 0.8rem; color: var(--text-light); background: #F8FAFC; position: sticky; top: 0; }
+        body.dark .gantt-left-header { background: #0F172A; }
+        .gantt-left-body { overflow-y: auto; height: calc(100% - var(--gantt-header-h)); }
+        .gantt-left-body::-webkit-scrollbar { width: 4px; }
+        .gantt-left-body::-webkit-scrollbar-thumb { background: #CBD5E0; border-radius: 4px; }
+        .gantt-left-row { height: var(--row-h); display: flex; align-items: center; padding: 0 1rem; border-bottom: 1px solid #F1F5F9; font-size: 0.82rem; font-weight: 500; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; gap: 0.5rem; transition: background 0.1s; }
+        .gantt-left-row:hover { background: #F8FAFC; }
+        body.dark .gantt-left-row { border-color: #1E293B; }
+        body.dark .gantt-left-row:hover { background: #1E293B; }
+        .gantt-left-row .assignee-dot { width: 20px; height: 20px; border-radius: 50%; background: #E2E8F0; display: flex; align-items: center; justify-content: center; font-size: 0.55rem; font-weight: 700; color: #64748B; flex-shrink: 0; }
+        .gantt-left-row .task-name { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+        .gantt-left-row .task-name a { color: var(--text); text-decoration: none; }
+        .gantt-left-row .task-name a:hover { color: var(--primary); }
+        .gantt-left-row .progress-text { font-size: 0.7rem; color: var(--text-light); flex-shrink: 0; }
+
+        .gantt-right { flex: 1; overflow: auto; position: relative; }
+        .gantt-right::-webkit-scrollbar { height: 6px; width: 6px; }
+        .gantt-right::-webkit-scrollbar-thumb { background: #CBD5E0; border-radius: 4px; }
+
+        .gantt-header { display: flex; height: var(--gantt-header-h); position: sticky; top: 0; z-index: 3; background: #F8FAFC; border-bottom: 1px solid var(--border); }
+        body.dark .gantt-header { background: #0F172A; }
+        .gantt-header-cell { flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.68rem; font-weight: 600; color: var(--text-light); border-left: 1px solid #F1F5F9; }
+        body.dark .gantt-header-cell { border-color: #1E293B; }
+        .gantt-header-cell.weekend { color: #EF4444; }
+        .gantt-header-cell.today { background: #EFF6FF; color: var(--primary); font-weight: 800; }
+
+        .gantt-body { position: relative; }
+        .gantt-row { height: var(--row-h); position: relative; border-bottom: 1px solid #F1F5F9; }
+        body.dark .gantt-row { border-color: #1E293B; }
+        .gantt-row:hover { background: #F8FAFC; }
+        body.dark .gantt-row:hover { background: #1A2332; }
+        .grid-line { position: absolute; top: 0; bottom: 0; width: 1px; background: #F1F5F9; }
+        body.dark .grid-line { background: #1E293B; }
+
+        .task-bar { position: absolute; top: 8px; height: 24px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; padding: 0 6px; font-size: 0.65rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: filter 0.15s, box-shadow 0.15s; z-index: 1; min-width: 4px; }
+        .task-bar:hover { filter: brightness(0.9); box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 5; }
+        .task-bar .bar-progress { position: absolute; top: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.25); border-radius: 0 5px 5px 0; }
+        .task-bar.status-done { background: #22C55E; }
+        .task-bar.status-progress { background: #2563EB; }
+        .task-bar.status-review { background: #8B5CF6; }
+        .task-bar.status-new { background: #94A3B8; }
+        .task-bar.status-blocked { background: #EF4444; }
+        .task-bar.overdue { border: 2px solid #EF4444; }
+
+        .dep-line { position: absolute; pointer-events: none; z-index: 0; }
+        .dep-line svg { overflow: visible; }
+
+        .today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: #EF4444; z-index: 4; opacity: 0.7; }
+        .today-label { position: absolute; top: -18px; right: -15px; background: #EF4444; color: #fff; font-size: 0.6rem; padding: 0.1rem 0.35rem; border-radius: 4px; font-weight: 600; white-space: nowrap; }
+
         .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
         .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); padding: 0.5rem 1rem; z-index: 90; justify-content: space-around; }
         .bottom-nav a { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-light); text-decoration: none; font-size: 0.65rem; font-weight: 500; }
         .bottom-nav a.active { color: var(--primary); }
         .bottom-nav a svg { width: 22px; height: 22px; }
-        @media (max-width: 1024px) { :root { --sidebar-w: 72px; } .sidebar { padding: 1rem 0.5rem; } .sidebar .logo { font-size: 1rem; text-align: center; } .sidebar .label, .sidebar .logo span { display: none; } .sidebar a { justify-content: center; padding: 0.5rem; } }
-        @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 1rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } .gantt-table { font-size: 0.7rem; } }
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #16A34A; color: #fff; padding: 0.75rem 1.5rem; border-radius: 12px; z-index: 9999; font-weight: 600; font-size: 0.9rem; animation: toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards; }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(-20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateX(-50%) translateY(-20px); } }
+
+        @media (max-width: 1024px) { :root { --sidebar-w: 72px; --left-w: 200px; } .sidebar { padding: 1rem 0.5rem; } .sidebar .logo { font-size: 1rem; text-align: center; } .sidebar .label, .sidebar .logo span { display: none; } .sidebar a { justify-content: center; padding: 0.5rem; } }
+        @media (max-width: 768px) { :root { --sidebar-w: 0; --left-w: 140px; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 0.75rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } .gantt-left-row { font-size: 0.7rem; padding: 0 0.5rem; } .gantt-left-row .progress-text { display: none; } .toolbar { gap: 0.25rem; } .toolbar button { font-size: 0.7rem; padding: 0 0.4rem; } }
     </style>
 </head>
 <body>
@@ -54,16 +114,42 @@
         <a href="gantt.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">Gantt</span></a>
         <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
         <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
-        <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg><span class="label">Workflows</span></a>
-        <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">القوالب</span></a>
-        <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">الأرشيف</span></a>
         <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
     </aside>
+
     <main class="main">
-        <div class="topbar"><h1>📈 Gantt Chart</h1><div style="display:flex;gap:0.5rem;"><button class="btn btn-outline" onclick="toggleDark()" id="darkBtn" style="height:36px;">🌙</button><button class="btn btn-outline" onclick="logout()" style="height:36px;">خروج</button></div></div>
-        <div class="toolbar"><button onclick="setZoom(20)">يوم</button><button onclick="setZoom(28)" class="active">أسبوع</button><button onclick="setZoom(40)">شهر</button><span style="flex:1;"></span><button onclick="exportPDF()">📥 PDF</button></div>
-        <div style="overflow-x:auto;"><table class="gantt-table"><thead id="ganttHead"></thead><tbody id="ganttBody"></tbody></table></div>
+        <div class="topbar"><div><h1>📈 Gantt Chart</h1><p class="project-title" id="projectTitle"></p></div>
+            <div style="display:flex;gap:0.5rem;">
+                <select id="projectFilter" onchange="loadGantt()" style="height:36px;border-radius:8px;border:1px solid var(--border);padding:0 0.5rem;font-family:inherit;font-size:0.8rem;background:var(--card);color:var(--text);"><option value="">كل المشاريع</option></select>
+                <button class="btn btn-outline" onclick="toggleDark()" id="darkBtn" style="height:36px;">🌙</button>
+                <button class="btn btn-outline" onclick="logout()" style="height:36px;">خروج</button>
+            </div>
+        </div>
+        <div class="view-nav">
+            <a href="tasks.html">📋 قائمة</a><a href="kanban.html">📌 أعمدة</a><a href="tasks.html">📊 جدول</a><a href="gantt.html" class="active">📈 Gantt</a><a href="calendar.html">📅 تقويم</a><a href="reports.html">📉 إحصائيات</a><a href="chat.html">💬 محادثة</a>
+        </div>
+        <div class="toolbar">
+            <input type="text" id="searchInput" placeholder="🔍 بحث..." oninput="filterTasks()">
+            <select id="assigneeFilter" onchange="filterTasks()"><option value="">👤 الكل</option></select>
+            <button onclick="zoomIn()">🔍+</button>
+            <button onclick="zoomOut()">🔍-</button>
+            <button onclick="scrollToToday()">📅 اليوم</button>
+            <span class="spacer"></span>
+            <button onclick="exportPDF()">📥 PDF</button>
+        </div>
+
+        <div class="gantt-container" id="ganttContainer">
+            <div class="gantt-left">
+                <div class="gantt-left-header">📋 المهمة</div>
+                <div class="gantt-left-body" id="ganttLeftBody"></div>
+            </div>
+            <div class="gantt-right" id="ganttRight">
+                <div class="gantt-header" id="ganttHeader"></div>
+                <div class="gantt-body" id="ganttBody"></div>
+            </div>
+        </div>
     </main>
+
     <nav class="bottom-nav">
         <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>الرئيسية</a>
         <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg>مهام</a>
@@ -71,6 +157,7 @@
         <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>فريق</a>
         <a href="#" onclick="openSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>المزيد</a>
     </nav>
+
     <script>
         function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
         function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
@@ -78,37 +165,128 @@
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'login.html';
         function logout() { localStorage.clear(); window.location.href = 'login.html'; }
-        function toggleDark() { document.body.classList.toggle('dark'); const isDark = document.body.classList.contains('dark'); localStorage.setItem('dark', isDark); document.getElementById('darkBtn').textContent = isDark ? '☀️' : '🌙'; }
+        function toggleDark() { document.body.classList.toggle('dark'); const d = document.body.classList.contains('dark'); localStorage.setItem('dark', d); document.getElementById('darkBtn').textContent = d ? '☀️' : '🌙'; }
         if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
-        let DAY_WIDTH = 28, allTasks = [];
-        function setZoom(w) { DAY_WIDTH = w; document.querySelectorAll('.toolbar button').forEach(b => b.classList.remove('active')); if (w===20) document.querySelector('.toolbar button:nth-child(1)').classList.add('active'); if (w===28) document.querySelector('.toolbar button:nth-child(2)').classList.add('active'); if (w===40) document.querySelector('.toolbar button:nth-child(3)').classList.add('active'); renderGantt(); }
-        async function loadGantt() { const res = await fetch(`${API_BASE}/tasks`, { headers: { 'Authorization': `Bearer ${token}` } }); allTasks = await res.json(); renderGantt(); }
+        function showToast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 3000); }
+
+        let allTasks = [], allProjects = [], dayWidth = 32, filteredTasks = [];
+
+        async function loadProjects() {
+            const res = await fetch(`${API_BASE}/projects`, { headers: { 'Authorization': `Bearer ${token}` } });
+            allProjects = await res.json();
+            const sel = document.getElementById('projectFilter');
+            sel.innerHTML = '<option value="">كل المشاريع</option>' + allProjects.map(p => `<option value="${p._id}">${p.name}</option>`).join('');
+            const params = new URLSearchParams(window.location.search);
+            const pid = params.get('projectId');
+            if (pid) { sel.value = pid; document.getElementById('projectTitle').textContent = '📁 ' + (allProjects.find(p => p._id === pid)?.name || ''); }
+        }
+
+        async function loadGantt() {
+            const pid = document.getElementById('projectFilter').value;
+            let url = `${API_BASE}/tasks`; if (pid) url += `?projectId=${pid}`;
+            const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+            allTasks = await res.json();
+            if (pid) document.getElementById('projectTitle').textContent = '📁 ' + (allProjects.find(p => p._id === pid)?.name || '');
+            else document.getElementById('projectTitle').textContent = '';
+            const assignees = [...new Set(allTasks.map(t => t.assignee).filter(Boolean))];
+            document.getElementById('assigneeFilter').innerHTML = '<option value="">👤 الكل</option>' + assignees.map(a => `<option value="${a}">${a}</option>`).join('');
+            filteredTasks = [...allTasks];
+            renderGantt();
+        }
+
+        function filterTasks() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const a = document.getElementById('assigneeFilter').value;
+            filteredTasks = allTasks;
+            if (q) filteredTasks = filteredTasks.filter(t => t.title.toLowerCase().includes(q));
+            if (a) filteredTasks = filteredTasks.filter(t => t.assignee === a);
+            renderGantt();
+        }
+
         function renderGantt() {
-            const tasks = allTasks.filter(t => t.dueDate || t.startDate);
-            if (!tasks.length) { document.getElementById('ganttBody').innerHTML = '<tr><td colspan="5" style="text-align:center;padding:2rem;">لا توجد مهام</td></tr>'; return; }
-            const dates = []; tasks.forEach(t => { if (t.startDate) dates.push(new Date(t.startDate)); if (t.dueDate) dates.push(new Date(t.dueDate)); });
-            const min = new Date(Math.min(...dates)); min.setDate(min.getDate()-1);
-            const max = new Date(Math.max(...dates)); max.setDate(max.getDate()+2);
-            const days = Math.ceil((max-min)/(86400000));
-            let head = '<tr><th>المهمة</th><th>الحالة</th>';
-            for (let i=0; i<days; i++) { const d = new Date(min); d.setDate(d.getDate()+i); head += `<th style="width:${DAY_WIDTH}px;text-align:center;font-size:0.6rem;">${d.getDate()}/${d.getMonth()+1}</th>`; }
-            head += '</tr>'; document.getElementById('ganttHead').innerHTML = head;
-            let body = ''; const today = new Date();
-            tasks.forEach(t => {
+            const tasks = filteredTasks.filter(t => t.startDate || t.dueDate);
+            if (tasks.length === 0) {
+                document.getElementById('ganttLeftBody').innerHTML = '<div style="padding:2rem;text-align:center;color:var(--text-light);">لا توجد مهام بمواعيد</div>';
+                document.getElementById('ganttHeader').innerHTML = '';
+                document.getElementById('ganttBody').innerHTML = '';
+                return;
+            }
+
+            const dates = [];
+            tasks.forEach(t => { if (t.startDate) dates.push(new Date(t.startDate)); if (t.dueDate) dates.push(new Date(t.dueDate)); });
+            const minDate = new Date(Math.min(...dates)); minDate.setDate(minDate.getDate() - 2);
+            const maxDate = new Date(Math.max(...dates)); maxDate.setDate(maxDate.getDate() + 2);
+            const totalDays = Math.ceil((maxDate - minDate) / 86400000) + 1;
+            const today = new Date(); today.setHours(0,0,0,0);
+
+            // Header
+            let headerHTML = '';
+            for (let i = 0; i < totalDays; i++) {
+                const d = new Date(minDate); d.setDate(d.getDate() + i);
+                const isWeekend = d.getDay() === 5 || d.getDay() === 6;
+                const isToday = d.toDateString() === today.toDateString();
+                headerHTML += `<div class="gantt-header-cell ${isWeekend ? 'weekend' : ''} ${isToday ? 'today' : ''}" style="width:${dayWidth}px;">${d.getDate()}/${d.getMonth()+1}</div>`;
+            }
+            document.getElementById('ganttHeader').innerHTML = headerHTML;
+
+            // Left panel
+            document.getElementById('ganttLeftBody').innerHTML = tasks.map(t => {
+                const initial = (t.assignee || '?')[0];
+                const progress = t.progress || 0;
+                return `<div class="gantt-left-row" onclick="window.location.href='task.html?id=${t._id}'">
+                    <div class="assignee-dot">${initial}</div>
+                    <span class="task-name">${t.title}</span>
+                    <span class="progress-text">${progress}%</span>
+                </div>`;
+            }).join('');
+
+            // Body + Bars
+            let bodyHTML = '';
+            tasks.forEach((t, idx) => {
                 const start = t.startDate ? new Date(t.startDate) : new Date(t.createdAt);
-                const end = new Date(t.dueDate);
-                const left = Math.floor((start-min)/86400000) * DAY_WIDTH;
-                const w = Math.max(Math.ceil((end-start)/86400000), 1) * DAY_WIDTH;
-                const cls = t.status==='done'?'done':t.status==='in-progress'?'progress':new Date(t.dueDate)<today?'overdue':'new';
-                body += `<tr><td>${t.title}</td><td>${t.status==='done'?'✅':'🔄'}</td><td colspan="${days}" style="position:relative;"><div class="gantt-bar-wrap"><div class="gantt-bar ${cls}" style="left:${left}px;width:${w}px;"></div>`;
-                const todayLeft = Math.floor((today-min)/86400000) * DAY_WIDTH;
-                if (todayLeft>=0 && todayLeft<days*DAY_WIDTH) body += `<div class="today-line" style="left:${todayLeft}px;"></div>`;
-                body += `</div></td></tr>`;
+                const end = new Date(t.dueDate || start);
+                if (end < start) end.setDate(start.getDate() + 1);
+                const left = Math.floor((start - minDate) / 86400000) * dayWidth;
+                const width = Math.max(Math.ceil((end - start) / 86400000) * dayWidth, 4);
+                const progress = t.progress || 0;
+                const progressWidth = Math.round((progress / 100) * width);
+                const isOverdue = new Date(t.dueDate) < today && t.status !== 'done';
+                const statusClass = `status-${t.status === 'done' ? 'done' : t.status === 'in-progress' ? 'progress' : t.status === 'review' ? 'review' : t.status === 'blocked' ? 'blocked' : 'new'}`;
+
+                bodyHTML += `<div class="gantt-row">`;
+                for (let i = 0; i < totalDays; i++) {
+                    bodyHTML += `<div class="grid-line" style="left:${i * dayWidth}px;"></div>`;
+                }
+                bodyHTML += `<div class="task-bar ${statusClass} ${isOverdue ? 'overdue' : ''}" style="left:${left}px;width:${width}px;" onclick="window.location.href='task.html?id=${t._id}'" title="${t.title} (${progress}%)">
+                    <div class="bar-progress" style="width:${width - progressWidth}px;"></div>
+                    ${width > 60 ? t.title : ''}
+                </div></div>`;
             });
-            document.getElementById('ganttBody').innerHTML = body;
+
+            // Today line
+            const todayLeft = Math.floor((today - minDate) / 86400000) * dayWidth;
+            if (todayLeft >= 0 && todayLeft < totalDays * dayWidth) {
+                bodyHTML += `<div class="today-line" style="left:${todayLeft}px;"><div class="today-label">اليوم</div></div>`;
+            }
+
+            document.getElementById('ganttBody').innerHTML = bodyHTML;
+
+            // مزامنة التمرير العمودي
+            const leftBody = document.getElementById('ganttLeftBody');
+            const rightPanel = document.getElementById('ganttRight');
+            leftBody.addEventListener('scroll', () => { rightPanel.scrollTop = leftBody.scrollTop; });
+            rightPanel.addEventListener('scroll', () => { leftBody.scrollTop = rightPanel.scrollTop; });
+        }
+
+        function zoomIn() { dayWidth = Math.min(dayWidth + 8, 80); renderGantt(); }
+        function zoomOut() { dayWidth = Math.max(dayWidth - 8, 16); renderGantt(); }
+        function scrollToToday() {
+            const todayLine = document.querySelector('.today-line');
+            if (todayLine) todayLine.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         }
         function exportPDF() { window.print(); }
-        loadGantt();
+
+        loadProjects().then(() => loadGantt());
     </script>
 </body>
 </html>
