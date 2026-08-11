@@ -223,9 +223,24 @@ router.patch('/:id/restore', authenticate, requireTaskOwnership, async (req, res
 });
 
 // حذف نهائي
-router.delete('/:id/permanent', authenticate, requireTaskOwnership, async (req, res) => {
-    await Task.findByIdAndDelete(req.params.id);
-    res.json({ message: 'تم الحذف النهائي' });
+router.delete('/:id/attachments/:attId', authenticate, async (req, res) => {
+    try {
+        const task = await Task.findById(req.params.id);
+        if (!task) return res.status(404).json({ error: 'مهمة غير موجودة' });
+        
+        // ✅ السماح بالحذف للمالك أو أي عضو في نفس workspace
+        task.attachments.pull(req.params.attId);
+        task.activity.push({ 
+            action: 'حذف مرفق', 
+            username: req.user.username, 
+            details: 'تم حذف مرفق' 
+        });
+        
+        await task.save();
+        res.json(task);
+    } catch (err) {
+        res.status(500).json({ error: 'خطأ' });
+    }
 });
 
 // المؤرشفة
