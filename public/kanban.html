@@ -272,8 +272,16 @@
         async function chStat(s) { await saveField('status', s); openDetails(currentTaskId); }
         async function toggleRecur() { const t = allTasks.find(t => t._id === currentTaskId); if (!t) return; const v = !t.isRecurring; await saveField('isRecurring', v); document.getElementById('recurToggle').classList.toggle('on', v); await refreshTask(); renderBoard(allTasks); }
         async function addCommentDet() { const inp = document.getElementById('commentInput'); const txt = inp.value.trim(); if (!txt || !currentTaskId) return; await fetch(`${API_BASE}/tasks/${currentTaskId}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ text: txt }) }); await refreshTask(); renderBoard(allTasks); openDetails(currentTaskId, 'comments'); }
-        async function upFileDet() { const file = document.getElementById('fileUpload').files[0]; if (!file || !currentTaskId) return; const fd = new FormData(); fd.append('file', file); const ur = await fetch(`${API_BASE}/upload`, { method: 'POST', body: fd }); const ud = await ur.json(); if (ur.ok) { await fetch(`${API_BASE}/tasks/${currentTaskId}/attachments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(ud) }); await refreshTask(); renderBoard(allTasks); openDetails(currentTaskId, 'files'); } }
-        async function dropFile(e) { e.preventDefault(); const file = e.dataTransfer.files[0]; if (!file || !currentTaskId) return; const fd = new FormData(); fd.append('file', file); const ur = await fetch(`${API_BASE}/upload`, { method: 'POST', body: fd }); const ud = await ur.json(); if (ur.ok) { await fetch(`${API_BASE}/tasks/${currentTaskId}/attachments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(ud) }); await refreshTask(); renderBoard(allTasks); openDetails(currentTaskId, 'files'); } }
+        async function upFileDet() { const file = document.getElementById('fileUpload').files[0]; if (!file || !currentTaskId) return; const fd = new FormData(); fd.append('file', file); const ur = await fetch(`${API_BASE}/upload`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}` },
+    body: fd
+}); const ud = await ur.json(); if (ur.ok) { await fetch(`${API_BASE}/tasks/${currentTaskId}/attachments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(ud) }); await refreshTask(); renderBoard(allTasks); openDetails(currentTaskId, 'files'); } }
+        async function dropFile(e) { e.preventDefault(); const file = e.dataTransfer.files[0]; if (!file || !currentTaskId) return; const fd = new FormData(); fd.append('file', file); const ur = await fetch(`${API_BASE}/upload`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}` },
+    body: fd
+}); const ud = await ur.json(); if (ur.ok) { await fetch(`${API_BASE}/tasks/${currentTaskId}/attachments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(ud) }); await refreshTask(); renderBoard(allTasks); openDetails(currentTaskId, 'files'); } }
         async function delAtt(aid) { if (!currentTaskId) return; await fetch(`${API_BASE}/tasks/${currentTaskId}/attachments/${aid}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); await refreshTask(); renderBoard(allTasks); openDetails(currentTaskId, 'files'); }
 
         loadProjects().then(() => loadKanban());
