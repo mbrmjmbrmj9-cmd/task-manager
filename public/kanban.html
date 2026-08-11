@@ -21,43 +21,65 @@
         .main { margin-right: var(--sidebar-w); padding: 1.5rem; min-height: 100vh; display: flex; flex-direction: column; }
         .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem; }
         .topbar h1 { font-size: 1.5rem; font-weight: 800; }
-        .topbar .project-title { font-size: 0.9rem; color: var(--text-light); }
         .toolbar { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
         .toolbar input, .toolbar select { height: 36px; border-radius: 8px; border: 1px solid var(--border); padding: 0 0.5rem; font-family: inherit; font-size: 0.8rem; background: var(--card); color: var(--text); }
         .toolbar input { flex: 1; min-width: 150px; }
-        .spacer { flex: 1; }
         .kanban { display: flex; gap: 1rem; flex: 1; overflow-x: auto; padding-bottom: 1rem; }
-        .column { flex: 1; min-width: 270px; background: #F1F5F9; border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; max-height: calc(100vh - 250px); }
+        .column { flex: 1; min-width: 280px; background: #F1F5F9; border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; max-height: calc(100vh - 250px); }
         body.dark .column { background: #1E293B; }
         .column-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
         .column-header h3 { font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
         .count { background: var(--card); padding: 0.15rem 0.5rem; border-radius: 10px; font-size: 0.75rem; font-weight: 600; }
         .task-list { flex: 1; overflow-y: auto; }
-        .task-card { background: var(--card); border-radius: 10px; padding: 0.75rem; margin-bottom: 0.5rem; border-right: 4px solid #E2E8F0; cursor: grab; position: relative; transition: box-shadow 0.2s; }
-        .task-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        .task-card.dragging { opacity: 0.5; }
+        .task-card { background: var(--card); border-radius: 10px; padding: 0.85rem; margin-bottom: 0.5rem; border-right: 4px solid #E2E8F0; cursor: pointer; position: relative; transition: all 0.2s; }
+        .task-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); transform: translateY(-1px); }
+        .task-card.dragging { opacity: 0.5; transform: rotate(3deg); }
         .task-card.priority-critical { border-right-color: #EF4444; }
         .task-card.priority-high { border-right-color: #F97316; }
         .task-card.priority-medium { border-right-color: #EAB308; }
         .task-card.priority-low { border-right-color: #22C55E; }
-        .task-card .task-title { font-weight: 600; font-size: 0.85rem; margin-bottom: 0.35rem; }
-        .task-card .task-title a { color: var(--text); text-decoration: none; }
-        .task-card .task-title a:hover { color: var(--primary); }
-        .task-card .task-meta { display: flex; gap: 0.5rem; font-size: 0.7rem; color: var(--text-light); flex-wrap: wrap; align-items: center; }
-        .task-card .task-date { background: #F1F5F9; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.7rem; }
-        .task-card .task-date.overdue { background: #FEE2E2; color: #DC2626; }
+        .task-card .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; }
+        .task-card .priority-badge { font-size: 0.65rem; padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 600; }
+        .task-card .priority-critical-label { background: #FEE2E2; color: #DC2626; }
+        .task-card .priority-high-label { background: #FFF7ED; color: #EA580C; }
+        .task-card .priority-medium-label { background: #FEF9C3; color: #CA8A04; }
+        .task-card .priority-low-label { background: #F0FDF4; color: #16A34A; }
+        .task-card .card-menu { background: none; border: none; cursor: pointer; color: var(--text-light); font-size: 1rem; padding: 0; line-height: 1; }
+        .task-card .card-title { font-weight: 700; font-size: 0.88rem; margin-bottom: 0.3rem; line-height: 1.4; }
+        .task-card .card-desc { font-size: 0.75rem; color: var(--text-light); margin-bottom: 0.5rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .task-card .card-meta { display: flex; gap: 0.5rem; font-size: 0.72rem; color: var(--text-light); flex-wrap: wrap; align-items: center; margin-bottom: 0.5rem; }
+        .task-card .card-meta span { display: flex; align-items: center; gap: 0.2rem; }
+        .task-card .card-footer { display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem; color: var(--text-light); border-top: 1px solid var(--border); padding-top: 0.5rem; margin-top: 0.25rem; }
+        .task-card .card-footer .indicators { display: flex; gap: 0.75rem; }
+        .task-card .card-footer .indicators span { display: flex; align-items: center; gap: 0.2rem; }
+        .task-card .overdue-badge { background: #FEE2E2; color: #DC2626; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.65rem; font-weight: 600; }
+        .task-card .done-badge { background: #DCFCE7; color: #16A34A; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.65rem; font-weight: 600; }
         .add-task-btn { margin-top: auto; padding: 0.5rem; text-align: center; border: 2px dashed var(--border); border-radius: 8px; cursor: pointer; font-size: 0.8rem; color: var(--text-light); transition: all 0.2s; }
         .add-task-btn:hover { border-color: var(--primary); color: var(--primary); background: #EFF6FF; }
-        .column.drag-over { background: #E2E8F0; }
-        body.dark .column.drag-over { background: #334155; }
+        .column.drag-over { background: #DBEAFE; }
+        body.dark .column.drag-over { background: #1E3A5F; }
+        .dropdown-menu { position: absolute; top: 25px; left: 0; background: var(--card); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); z-index: 50; min-width: 150px; display: none; }
+        .dropdown-menu.show { display: block; }
+        .dropdown-menu button { display: block; width: 100%; padding: 0.5rem 0.75rem; border: none; background: none; cursor: pointer; font-family: inherit; font-size: 0.8rem; text-align: right; color: var(--text); }
+        .dropdown-menu button:hover { background: #F1F5F9; }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; }
+        .modal-overlay.show { display: flex; }
+        .modal-content { background: var(--card); border-radius: 16px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,0.15); animation: modalIn 0.2s ease; }
+        @keyframes modalIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); }
+        .modal-header h2 { font-size: 1.1rem; font-weight: 800; }
+        .modal-close { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--text-light); }
+        .modal-body { padding: 1.5rem; }
+        .detail-row { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap; font-size: 0.85rem; }
+        .detail-row strong { color: var(--text-light); min-width: 80px; }
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #16A34A; color: white; padding: 0.75rem 1.5rem; border-radius: 12px; z-index: 9999; font-weight: 600; animation: toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards; }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(-20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateX(-50%) translateY(-20px); } }
         .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
         .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); padding: 0.5rem 1rem; z-index: 90; justify-content: space-around; }
         .bottom-nav a { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-light); text-decoration: none; font-size: 0.65rem; font-weight: 500; }
         .bottom-nav a.active { color: var(--primary); }
         .bottom-nav a svg { width: 22px; height: 22px; }
-        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #16A34A; color: white; padding: 0.75rem 1.5rem; border-radius: 12px; z-index: 9999; font-weight: 600; animation: toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards; }
-        @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(-20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-        @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateX(-50%) translateY(-20px); } }
         @media (max-width: 1024px) { :root { --sidebar-w: 72px; } .sidebar { padding: 1rem 0.5rem; } .sidebar .logo { font-size: 1rem; text-align: center; } .sidebar .label, .sidebar .logo span { display: none; } .sidebar a { justify-content: center; padding: 0.5rem; } }
         @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 1rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } .kanban { flex-direction: column; } .column { min-width: auto; max-height: none; } }
     </style>
@@ -78,10 +100,7 @@
 
     <main class="main">
         <div class="topbar">
-            <div>
-                <h1>📌 Kanban</h1>
-                <p class="project-title" id="projectTitle"></p>
-            </div>
+            <div><h1>📌 Kanban</h1><p style="font-size:0.85rem;color:var(--text-light);" id="projectTitle"></p></div>
             <div style="display:flex;gap:0.5rem;">
                 <select id="projectFilter" onchange="loadKanban()" style="height:36px;border-radius:8px;border:1px solid var(--border);padding:0 0.5rem;font-family:inherit;font-size:0.8rem;background:var(--card);color:var(--text);"><option value="">كل المشاريع</option></select>
                 <button class="btn btn-outline" onclick="toggleDark()" id="darkBtn" style="height:36px;">🌙</button>
@@ -90,10 +109,8 @@
         </div>
         <div class="toolbar">
             <input type="text" id="searchInput" placeholder="🔍 بحث..." oninput="filterCards()">
-            <select id="assigneeFilter" onchange="filterCards()" style="width:auto;">
-                <option value="">👤 الكل</option>
-            </select>
-            <button class="btn btn-outline" onclick="refreshBoard()" style="height:36px;">🔄 تحديث</button>
+            <select id="assigneeFilter" onchange="filterCards()"><option value="">👤 الكل</option></select>
+            <button class="btn btn-outline" onclick="loadKanban()" style="height:36px;">🔄 تحديث</button>
         </div>
         <div class="kanban" id="kanbanBoard"></div>
     </main>
@@ -105,6 +122,14 @@
         <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>فريق</a>
         <a href="#" onclick="openSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>المزيد</a>
     </nav>
+
+    <!-- Modal تفاصيل المهمة -->
+    <div class="modal-overlay" id="taskModal" onclick="if(event.target===this)closeModal()">
+        <div class="modal-content">
+            <div class="modal-header"><h2 id="modalTitle">تفاصيل المهمة</h2><button class="modal-close" onclick="closeModal()">✕</button></div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
 
     <script>
         function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
@@ -119,8 +144,7 @@
 
         const statuses = ['new', 'in-progress', 'review', 'done', 'blocked'];
         const labels = { 'new': '📥 جديدة', 'in-progress': '🔄 قيد التنفيذ', 'review': '👁️ مراجعة', 'done': '✅ مكتملة', 'blocked': '🚫 متعثرة' };
-        let allTasks = [];
-        let allProjects = [];
+        let allTasks = [], allProjects = [];
 
         async function loadProjects() {
             try {
@@ -128,7 +152,6 @@
                 allProjects = await res.json();
                 const sel = document.getElementById('projectFilter');
                 sel.innerHTML = '<option value="">كل المشاريع</option>' + allProjects.map(p => `<option value="${p._id}">${p.name}</option>`).join('');
-                
                 const params = new URLSearchParams(window.location.search);
                 const pid = params.get('projectId');
                 if (pid) { sel.value = pid; document.getElementById('projectTitle').textContent = '📁 ' + (allProjects.find(p => p._id === pid)?.name || ''); }
@@ -138,90 +161,92 @@
         async function loadKanban() {
             try {
                 const pid = document.getElementById('projectFilter').value;
-                let url = `${API_BASE}/tasks`;
-                if (pid) url += `?projectId=${pid}`;
-                
+                let url = `${API_BASE}/tasks`; if (pid) url += `?projectId=${pid}`;
                 const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
                 allTasks = await res.json();
-                
                 if (pid) document.getElementById('projectTitle').textContent = '📁 ' + (allProjects.find(p => p._id === pid)?.name || '');
                 else document.getElementById('projectTitle').textContent = '';
-                
-                // جمع المسؤولين للفلترة
                 const assignees = [...new Set(allTasks.map(t => t.assignee).filter(Boolean))];
                 document.getElementById('assigneeFilter').innerHTML = '<option value="">👤 الكل</option>' + assignees.map(a => `<option value="${a}">${a}</option>`).join('');
-                
                 renderBoard(allTasks);
-            } catch (err) {
-                document.getElementById('kanbanBoard').innerHTML = '<p style="text-align:center;color:#DC2626;">خطأ في تحميل المهام</p>';
-            }
+            } catch (err) { document.getElementById('kanbanBoard').innerHTML = '<p style="text-align:center;color:#DC2626;">خطأ</p>'; }
         }
 
         function renderBoard(tasks) {
             document.getElementById('kanbanBoard').innerHTML = statuses.map(s => {
                 const filtered = tasks.filter(t => t.status === s);
-                return `<div class="column" data-status="${s}" ondragover="event.preventDefault(); this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="dropTask(event, '${s}')">
-                    <div class="column-header">
-                        <h3>${labels[s]} <span class="count">${filtered.length}</span></h3>
-                    </div>
-                    <div class="task-list">
-                        ${filtered.map(t => {
-                            const isOverdue = t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'done';
-                            return `<div class="task-card priority-${t.priority || 'medium'}" draggable="true" data-id="${t._id}" ondragstart="dragTask(event, '${t._id}')" ondragend="event.target.classList.remove('dragging')">
-                                <div class="task-title"><a href="task.html?id=${t._id}">${isOverdue ? '🔴 ' : ''}${t.title}</a></div>
-                                <div class="task-meta">
-                                    ${t.assignee ? `<span>👤 ${t.assignee}</span>` : ''}
-                                    ${t.dueDate ? `<span class="task-date ${isOverdue ? 'overdue' : ''}">📅 ${new Date(t.dueDate).toLocaleDateString('ar-SA')}</span>` : ''}
-                                    <span>${t.priority === 'critical' ? '🔴' : t.priority === 'high' ? '🟠' : t.priority === 'medium' ? '🟡' : '🟢'}</span>
-                                    ${t.comments?.length > 0 ? `<span>💬${t.comments.length}</span>` : ''}
-                                    ${t.attachments?.length > 0 ? `<span>📎${t.attachments.length}</span>` : ''}
-                                </div>
-                            </div>`;
-                        }).join('')}
-                    </div>
+                return `<div class="column" data-status="${s}" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="dropTask(event,'${s}')">
+                    <div class="column-header"><h3>${labels[s]} <span class="count">${filtered.length}</span></h3></div>
+                    <div class="task-list">${filtered.map(t => renderCard(t)).join('')}</div>
                     <div class="add-task-btn" onclick="quickAdd('${s}')">+ إضافة مهمة</div>
                 </div>`;
             }).join('');
         }
 
-        function dragTask(e, id) {
-            e.dataTransfer.setData('text/plain', id);
-            e.target.classList.add('dragging');
+        function renderCard(t) {
+            const isOverdue = t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'done';
+            const isDone = t.status === 'done';
+            const priorityLabels = { critical: 'حرجة', high: 'عالية', medium: 'متوسطة', low: 'منخفضة' };
+            const priorityClass = `priority-${t.priority || 'medium'}-label`;
+            const doneCount = t.checklist?.filter(c => c.done).length || 0;
+            const totalCount = t.checklist?.length || 0;
+            const subtaskCount = allTasks.filter(st => st.parentTask === t._id).length;
+            
+            return `<div class="task-card priority-${t.priority || 'medium'}" draggable="true" data-id="${t._id}" ondragstart="dragTask(event,'${t._id}')" ondragend="this.classList.remove('dragging')" onclick="openTaskDetails('${t._id}')">
+                <div class="card-header">
+                    <span class="priority-badge ${priorityClass}">${priorityLabels[t.priority] || 'متوسطة'}</span>
+                    <button class="card-menu" onclick="event.stopPropagation();toggleCardMenu(event,'${t._id}')">⋮</button>
+                    <div class="dropdown-menu" id="menu-${t._id}">
+                        <button onclick="event.stopPropagation();openTaskDetails('${t._id}')">📋 فتح التفاصيل</button>
+                        <button onclick="event.stopPropagation();changeStatus('${t._id}','in-progress')">🔄 قيد التنفيذ</button>
+                        <button onclick="event.stopPropagation();changeStatus('${t._id}','done')">✅ مكتملة</button>
+                        <button onclick="event.stopPropagation();deleteTask('${t._id}')">🗑️ حذف</button>
+                    </div>
+                </div>
+                <div class="card-title">${isOverdue ? '🔴 ' : ''}${t.title}</div>
+                ${t.description ? `<div class="card-desc">${t.description}</div>` : ''}
+                <div class="card-meta">
+                    ${t.assignee ? `<span>👤 ${t.assignee}</span>` : ''}
+                    ${t.dueDate ? `<span>📅 ${new Date(t.dueDate).toLocaleDateString('ar-SA')}</span>` : ''}
+                </div>
+                <div class="card-footer">
+                    <div class="indicators">
+                        ${totalCount > 0 ? `<span>☑ ${doneCount}/${totalCount}</span>` : ''}
+                        ${subtaskCount > 0 ? `<span>↳ ${subtaskCount}</span>` : ''}
+                        ${t.comments?.length > 0 ? `<span>💬 ${t.comments.length}</span>` : ''}
+                        ${t.attachments?.length > 0 ? `<span>📎 ${t.attachments.length}</span>` : ''}
+                    </div>
+                    ${isOverdue ? '<span class="overdue-badge">⏰ متأخرة</span>' : ''}
+                    ${isDone ? '<span class="done-badge">✓ مكتملة</span>' : ''}
+                </div>
+            </div>`;
         }
 
+        function toggleCardMenu(e, id) { e.stopPropagation(); document.querySelectorAll('.dropdown-menu').forEach(m => { if (m.id !== 'menu-' + id) m.classList.remove('show'); }); document.getElementById('menu-' + id).classList.toggle('show'); }
+        document.addEventListener('click', () => document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('show')));
+
+        function dragTask(e, id) { e.dataTransfer.setData('text/plain', id); e.target.classList.add('dragging'); }
+
         async function dropTask(e, newStatus) {
-            e.preventDefault();
-            e.currentTarget.classList.remove('drag-over');
-            const taskId = e.dataTransfer.getData('text/plain');
-            if (!taskId) return;
-            
-            try {
-                await fetch(`${API_BASE}/tasks/${taskId}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ status: newStatus })
-                });
-                showToast('✅ تم تحديث الحالة');
-                loadKanban();
-            } catch (err) {
-                showToast('❌ خطأ في التحديث');
-            }
+            e.preventDefault(); e.currentTarget.classList.remove('drag-over');
+            const taskId = e.dataTransfer.getData('text/plain'); if (!taskId) return;
+            await fetch(`${API_BASE}/tasks/${taskId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ status: newStatus }) });
+            showToast('✅ تم تحديث الحالة'); loadKanban();
+        }
+
+        async function changeStatus(id, status) {
+            await fetch(`${API_BASE}/tasks/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ status }) });
+            showToast('✅ تم التحديث'); loadKanban();
         }
 
         async function quickAdd(status) {
-            const title = prompt('عنوان المهمة:');
-            if (!title) return;
+            const title = prompt('عنوان المهمة:'); if (!title) return;
             const pid = document.getElementById('projectFilter').value;
-            try {
-                await fetch(`${API_BASE}/tasks`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ title, status, projectId: pid || null })
-                });
-                showToast('✅ تمت الإضافة');
-                loadKanban();
-            } catch (err) { alert('خطأ'); }
+            await fetch(`${API_BASE}/tasks`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ title, status, projectId: pid || null }) });
+            showToast('✅ تمت الإضافة'); loadKanban();
         }
+
+        async function deleteTask(id) { if (!confirm('حذف المهمة؟')) return; await fetch(`${API_BASE}/tasks/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); loadKanban(); }
 
         function filterCards() {
             const search = document.getElementById('searchInput').value.toLowerCase();
@@ -232,7 +257,34 @@
             renderBoard(filtered);
         }
 
-        function refreshBoard() { loadKanban(); }
+        async function openTaskDetails(id) {
+            const t = allTasks.find(t => t._id === id); if (!t) return;
+            const isOverdue = t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'done';
+            const priorityLabels = { critical: '🔴 حرجة', high: '🟠 عالية', medium: '🟡 متوسطة', low: '🟢 منخفضة' };
+            const statusLabels = { 'new': '📥 جديدة', 'in-progress': '🔄 قيد التنفيذ', 'review': '👁️ مراجعة', 'done': '✅ مكتملة', 'blocked': '🚫 متعثرة' };
+            const doneCount = t.checklist?.filter(c => c.done).length || 0;
+            const totalCount = t.checklist?.length || 0;
+            const subtasks = allTasks.filter(st => st.parentTask === t._id);
+            
+            document.getElementById('modalTitle').textContent = t.title;
+            document.getElementById('modalBody').innerHTML = `
+                <div class="detail-row"><strong>الحالة:</strong> ${statusLabels[t.status] || t.status}</div>
+                <div class="detail-row"><strong>الأولوية:</strong> ${priorityLabels[t.priority] || t.priority}</div>
+                ${t.assignee ? `<div class="detail-row"><strong>المسؤول:</strong> 👤 ${t.assignee}</div>` : ''}
+                ${t.project ? `<div class="detail-row"><strong>المشروع:</strong> 📁 ${t.project}</div>` : ''}
+                ${t.dueDate ? `<div class="detail-row"><strong>التاريخ:</strong> 📅 ${new Date(t.dueDate).toLocaleDateString('ar-SA')} ${isOverdue ? '🔴 متأخرة' : ''}</div>` : ''}
+                ${t.description ? `<div class="detail-row"><strong>الوصف:</strong> ${t.description}</div>` : ''}
+                ${totalCount > 0 ? `<div class="detail-row"><strong>Checklist:</strong> ☑ ${doneCount}/${totalCount}</div>` : ''}
+                ${subtasks.length > 0 ? `<div class="detail-row"><strong>مهام فرعية:</strong> ↳ ${subtasks.length}</div>` : ''}
+                <div style="margin-top:1rem;display:flex;gap:0.5rem;">
+                    <button class="btn btn-primary" onclick="window.location.href='task.html?id=${t._id}'">📋 فتح كامل</button>
+                    <button class="btn btn-outline" onclick="closeModal()">إغلاق</button>
+                </div>
+            `;
+            document.getElementById('taskModal').classList.add('show');
+        }
+
+        function closeModal() { document.getElementById('taskModal').classList.remove('show'); }
 
         loadProjects().then(() => loadKanban());
     </script>
