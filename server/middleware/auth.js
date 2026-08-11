@@ -5,6 +5,24 @@ const Project = require('../models/Project');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'nivora_secret_2025';
 
+// ✅ ثوابت رسائل الخطأ الموحدة
+const AUTH_ERRORS = {
+    NOT_AUTHENTICATED: 'يجب تسجيل الدخول',
+    INVALID_SESSION: 'جلسة غير صالحة',
+    NOT_AUTHORIZED: 'غير مصرح',
+    NOT_MEMBER: 'لست عضواً في مساحة العمل',
+    INSUFFICIENT_PERMISSIONS: 'صلاحيات غير كافية',
+    WORKSPACE_NOT_FOUND: 'مساحة العمل غير موجودة',
+    TASK_NOT_FOUND: 'المهمة غير موجودة',
+    PROJECT_NOT_FOUND: 'المشروع غير موجود',
+    ONLY_OWNER: 'فقط مالك مساحة العمل يستطيع القيام بهذا الإجراء',
+    ONLY_OWNER_ADMIN: 'فقط المالك أو المدير يستطيع القيام بهذا الإجراء',
+    NOT_TASK_OWNER: 'لا تملك صلاحية على هذه المهمة',
+    NOT_PROJECT_OWNER: 'لا تملك صلاحية على هذا المشروع',
+    ADMIN_REQUIRED: 'مطلوب تسجيل الدخول للوحة التحكم',
+    ADMIN_NOT_AUTHORIZED: 'غير مصرح للوصول للوحة التحكم'
+};
+
 /**
  * المصادقة - التحقق من JWT Token
  */
@@ -13,12 +31,12 @@ function authenticate(req, res, next) {
     const token = authHeader && authHeader.split(' ')[1];
     
     if (!token) {
-        return res.status(401).json({ error: 'يجب تسجيل الدخول' });
+        return res.status(401).json({ error: AUTH_ERRORS.NOT_AUTHENTICATED });
     }
     
     jwt.verify(token, JWT_SECRET, (err, user) => {
         if (err) {
-            return res.status(403).json({ error: 'جلسة غير صالحة' });
+            return res.status(403).json({ error: AUTH_ERRORS.INVALID_SESSION });
         }
         req.user = user;
         next();
@@ -42,16 +60,16 @@ function requireRole(...roles) {
                 // إذا لم يكن هناك workspaceId، نبحث عن workspace ينتمي له المستخدم
                 const ws = await Workspace.findOne({ 'members.userId': req.user.id });
                 if (!ws) {
-                    return res.status(404).json({ error: 'لا توجد مساحة عمل' });
+                    return res.status(404).json({ error: AUTH_ERRORS.WORKSPACE_NOT_FOUND });
                 }
                 
                 const member = ws.members.find(m => m.userId.toString() === req.user.id);
                 if (!member) {
-                    return res.status(403).json({ error: 'لست عضواً في مساحة العمل' });
+                    return res.status(403).json({ error: AUTH_ERRORS.NOT_MEMBER });
                 }
                 
                 if (!roles.includes(member.role)) {
-                    return res.status(403).json({ error: 'صلاحيات غير كافية' });
+                    return res.status(403).json({ error: AUTH_ERRORS.INSUFFICIENT_PERMISSIONS });
                 }
                 
                 req.workspace = ws;
@@ -61,16 +79,16 @@ function requireRole(...roles) {
 
             const ws = await Workspace.findById(wsId);
             if (!ws) {
-                return res.status(404).json({ error: 'مساحة العمل غير موجودة' });
+                return res.status(404).json({ error: AUTH_ERRORS.WORKSPACE_NOT_FOUND });
             }
 
             const member = ws.members.find(m => m.userId.toString() === req.user.id);
             if (!member) {
-                return res.status(403).json({ error: 'لست عضواً في مساحة العمل' });
+                return res.status(403).json({ error: AUTH_ERRORS.NOT_MEMBER });
             }
 
             if (!roles.includes(member.role)) {
-                return res.status(403).json({ error: 'صلاحيات غير كافية' });
+                return res.status(403).json({ error: AUTH_ERRORS.INSUFFICIENT_PERMISSIONS });
             }
 
             req.workspace = ws;
@@ -84,13 +102,13 @@ function requireRole(...roles) {
 }
 
 /**
- * التحقق من ملكية المهمة
+ * التحقق من ملكية المهمة (المالك أو Owner/Admin في workspace)
  */
 async function requireTaskOwnership(req, res, next) {
     try {
         const task = await Task.findById(req.params.id);
         if (!task) {
-            return res.status(404).json({ error: 'المهمة غير موجودة' });
+            return res.status(404).json({ error: AUTH_ERRORS.TASK_NOT_FOUND });
         }
         
         // المستخدم هو مالك المهمة
@@ -111,7 +129,7 @@ async function requireTaskOwnership(req, res, next) {
             }
         }
         
-        return res.status(403).json({ error: 'لا تملك صلاحية على هذه المهمة' });
+        return res.status(403).json({ error: AUTH_ERRORS.NOT_TASK_OWNER });
     } catch (err) {
         console.error('خطأ في requireTaskOwnership:', err);
         res.status(500).json({ error: 'خطأ في التحقق من الملكية' });
@@ -119,13 +137,13 @@ async function requireTaskOwnership(req, res, next) {
 }
 
 /**
- * التحقق من ملكية المشروع
+ * التحقق من ملكية المشروع (المالك أو Owner/Admin في workspace)
  */
 async function requireProjectOwnership(req, res, next) {
     try {
         const project = await Project.findById(req.params.id);
         if (!project) {
-            return res.status(404).json({ error: 'المشروع غير موجود' });
+            return res.status(404).json({ error: AUTH_ERRORS.PROJECT_NOT_FOUND });
         }
         
         // المستخدم هو مالك المشروع
@@ -146,12 +164,13 @@ async function requireProjectOwnership(req, res, next) {
             }
         }
         
-        return res.status(403).json({ error: 'لا تملك صلاحية على هذا المشروع' });
+        return res.status(403).json({ error: AUTH_ERRORS.NOT_PROJECT_OWNER });
     } catch (err) {
         console.error('خطأ في requireProjectOwnership:', err);
         res.status(500).json({ error: 'خطأ في التحقق من الملكية' });
     }
 }
+
 /**
  * مصادقة المدير (Super Admin)
  */
@@ -160,16 +179,57 @@ function adminAuth(req, res, next) {
     const token = authHeader && authHeader.split(' ')[1];
     
     if (!token) {
-        return res.status(401).json({ error: 'مطلوب تسجيل الدخول' });
+        return res.status(401).json({ error: AUTH_ERRORS.ADMIN_REQUIRED });
     }
     
     jwt.verify(token, JWT_SECRET, (err, user) => {
         if (err || user.role !== 'super_admin') {
-            return res.status(403).json({ error: 'غير مصرح' });
+            return res.status(403).json({ error: AUTH_ERRORS.ADMIN_NOT_AUTHORIZED });
         }
         req.user = user;
         next();
     });
 }
 
-module.exports = { authenticate, requireRole, requireTaskOwnership, requireProjectOwnership, adminAuth };
+/**
+ * التحقق من العضوية فقط (بدون فحص دور محدد)
+ */
+async function requireMembership(req, res, next) {
+    try {
+        const wsId = req.params.workspaceId || 
+                     req.params.id || 
+                     req.body.workspaceId || 
+                     req.query.workspaceId;
+
+        if (!wsId) {
+            return res.status(400).json({ error: 'معرف مساحة العمل مطلوب' });
+        }
+
+        const ws = await Workspace.findById(wsId);
+        if (!ws) {
+            return res.status(404).json({ error: AUTH_ERRORS.WORKSPACE_NOT_FOUND });
+        }
+
+        const member = ws.members.find(m => m.userId.toString() === req.user.id);
+        if (!member) {
+            return res.status(403).json({ error: AUTH_ERRORS.NOT_MEMBER });
+        }
+
+        req.workspace = ws;
+        req.memberRole = member.role;
+        next();
+    } catch (err) {
+        console.error('خطأ في requireMembership:', err);
+        res.status(500).json({ error: 'خطأ في التحقق من العضوية' });
+    }
+}
+
+module.exports = { 
+    authenticate, 
+    requireRole, 
+    requireTaskOwnership, 
+    requireProjectOwnership, 
+    adminAuth,
+    requireMembership,
+    AUTH_ERRORS 
+};

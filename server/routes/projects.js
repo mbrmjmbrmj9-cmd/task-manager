@@ -2,7 +2,7 @@ const express = require('express');
 const Project = require('../models/Project');
 const Task = require('../models/Task');
 const Workspace = require('../models/Workspace');
-const { authenticate, requireProjectOwnership } = require('../middleware/auth');
+const { authenticate, requireProjectOwnership, requireRole, AUTH_ERRORS } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -11,6 +11,7 @@ router.get('/', authenticate, async (req, res) => {
     try {
         const filter = { userId: req.user.id };
         if (req.query.workspaceId) filter.workspaceId = req.query.workspaceId;
+        if (req.query.status) filter.status = req.query.status;
         
         const projects = await Project.find(filter).sort({ createdAt: -1 });
         
@@ -42,7 +43,7 @@ router.get('/', authenticate, async (req, res) => {
     }
 });
 
-// ✅ جلب مشروع واحد
+// ✅ جلب مشروع واحد مع إحصائياته
 router.get('/:id', authenticate, async (req, res) => {
     try {
         const project = await Project.findOne({ _id: req.params.id, userId: req.user.id });
@@ -51,11 +52,19 @@ router.get('/:id', authenticate, async (req, res) => {
         const taskFilter = { userId: req.user.id, projectId: project._id };
         const taskCount = await Task.countDocuments(taskFilter);
         const doneCount = await Task.countDocuments({ ...taskFilter, status: 'done' });
+        const inProgressCount = await Task.countDocuments({ ...taskFilter, status: 'in-progress' });
+        const overdueCount = await Task.countDocuments({ 
+            ...taskFilter, 
+            dueDate: { $lt: new Date() }, 
+            status: { $ne: 'done' } 
+        });
         
         res.json({
             ...project.toObject(),
             taskCount,
             doneCount,
+            inProgressCount,
+            overdueCount,
             completionRate: taskCount > 0 ? Math.round((doneCount / taskCount) * 100) : 0
         });
     } catch (err) {
@@ -63,19 +72,24 @@ router.get('/:id', authenticate, async (req, res) => {
     }
 });
 
-// ✅ إنشاء مشروع
+// ✅ إنشاء مشروع (أي عضو في workspace)
 router.post('/', authenticate, async (req, res) => {
     try {
         const { name, description, color, workspaceId } = req.body;
         if (!name) return res.status(400).json({ error: 'الاسم مطلوب' });
 
+        // التحقق من حدود workspace
         if (workspaceId) {
             const ws = await Workspace.findById(workspaceId);
-            if (ws) {
-                const count = await Project.countDocuments({ workspaceId });
-                if (count >= ws.maxProjects) {
-                    return res.status(400).json({ error: 'وصلت للحد الأقصى للمشاريع في خطتك' });
-                }
+            if (!ws) return res.status(404).json({ error: AUTH_ERRORS.WORKSPACE_NOT_FOUND });
+            
+            // التحقق من العضوية
+            const isMember = ws.members.some(m => m.userId.toString() === req.user.id);
+            if (!isMember) return res.status(403).json({ error: AUTH_ERRORS.NOT_MEMBER });
+            
+            const count = await Project.countDocuments({ workspaceId });
+            if (count >= ws.maxProjects) {
+                return res.status(400).json({ error: 'وصلت للحد الأقصى للمشاريع في خطتك' });
             }
         }
 
@@ -102,11 +116,12 @@ router.post('/', authenticate, async (req, res) => {
     }
 });
 
-// ✅ تحديث مشروع
+// ✅ تحديث مشروع (المالك فقط أو Owner/Admin في workspace)
 router.patch('/:id', authenticate, requireProjectOwnership, async (req, res) => {
     try {
         const project = req.project;
         const allowed = ['name', 'description', 'color', 'status', 'settings'];
+        
         allowed.forEach(field => {
             if (req.body[field] !== undefined) {
                 if (field === 'settings') {
@@ -116,21 +131,56 @@ router.patch('/:id', authenticate, requireProjectOwnership, async (req, res) => 
                 }
             }
         });
+        
         await project.save();
-        res.json(project);
+        res.json({ message: 'تم تحديث المشروع بنجاح', project });
     } catch (err) {
         res.status(500).json({ error: 'خطأ في تحديث المشروع' });
     }
 });
 
-// ✅ حذف مشروع
+// ✅ حذف مشروع (المالك فقط أو Owner/Admin في workspace)
 router.delete('/:id', authenticate, requireProjectOwnership, async (req, res) => {
     try {
-        await Project.findByIdAndDelete(req.params.id);
-        await Task.deleteMany({ projectId: req.params.id });
+        const project = req.project;
+        
+        // حذف جميع المهام المرتبطة
+        await Task.deleteMany({ projectId: project._id });
+        
+        // حذف المشروع
+        await Project.findByIdAndDelete(project._id);
+        
         res.json({ message: 'تم حذف المشروع وجميع مهامه' });
     } catch (err) {
         res.status(500).json({ error: 'خطأ في حذف المشروع' });
+    }
+});
+
+// ✅ أرشفة مشروع (المالك فقط)
+router.patch('/:id/archive', authenticate, requireProjectOwnership, async (req, res) => {
+    try {
+        const project = req.project;
+        project.status = 'archived';
+        project.archivedAt = new Date();
+        project.archivedBy = req.user.id;
+        await project.save();
+        res.json({ message: 'تم أرشفة المشروع بنجاح', project });
+    } catch (err) {
+        res.status(500).json({ error: 'خطأ في أرشفة المشروع' });
+    }
+});
+
+// ✅ استعادة مشروع من الأرشيف (المالك فقط)
+router.patch('/:id/restore', authenticate, requireProjectOwnership, async (req, res) => {
+    try {
+        const project = req.project;
+        project.status = 'active';
+        project.archivedAt = null;
+        project.archivedBy = null;
+        await project.save();
+        res.json({ message: 'تم استعادة المشروع بنجاح', project });
+    } catch (err) {
+        res.status(500).json({ error: 'خطأ في استعادة المشروع' });
     }
 });
 
@@ -145,7 +195,7 @@ router.get('/:id/settings', authenticate, async (req, res) => {
     }
 });
 
-// ✅ تحديث إعدادات المشروع
+// ✅ تحديث إعدادات المشروع (المالك فقط)
 router.patch('/:id/settings', authenticate, requireProjectOwnership, async (req, res) => {
     try {
         const project = req.project;
