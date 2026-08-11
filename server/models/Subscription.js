@@ -10,5 +10,8 @@ const subscriptionSchema = new mongoose.Schema({
     amount: { type: Number, default: 0 },
     createdAt: { type: Date, default: Date.now }
 });
-
+// ✅ Indexes
+subscriptionSchema.index({ organizationId: 1 });
+subscriptionSchema.index({ status: 1 });
+subscriptionSchema.index({ endDate: 1 });
 module.exports = mongoose.model('Subscription', subscriptionSchema);

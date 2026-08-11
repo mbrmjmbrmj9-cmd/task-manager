@@ -5,6 +5,7 @@ const User = require('../models/User');
 const rateLimit = require('express-rate-limit');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const { authenticate } = require('../middleware/auth');
 
 const router = express.Router();
 const JWT_SECRET = 'nivora_secret_2025';
@@ -32,18 +33,6 @@ const loginLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false
 });
-
-// Middleware
-function auth(req, res, next) {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'يجب تسجيل الدخول' });
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) return res.status(403).json({ error: 'جلسة غير صالحة' });
-        req.user = user;
-        next();
-    });
-}
 
 // تسجيل
 router.post('/register', async (req, res) => {
@@ -101,12 +90,49 @@ router.post('/login', loginLimiter, async (req, res) => {
 });
 
 // سجل الأمان
-router.get('/security-log', auth, async (req, res) => {
+router.get('/security-log', authenticate, async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
         res.json(user.securityLog?.slice(-20) || []);
     } catch (err) {
         res.status(500).json({ error: 'خطأ' });
+    }
+});
+
+// تغيير كلمة المرور (داخل التطبيق)
+router.post('/change-password', authenticate, async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ error: 'كلمة المرور الحالية والجديدة مطلوبتان' });
+        }
+        
+        if (newPassword.length < 8) {
+            return res.status(400).json({ error: 'كلمة المرور الجديدة يجب أن تكون 8 أحرف على الأقل' });
+        }
+        
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ error: 'المستخدم غير موجود' });
+        }
+        
+        const valid = await bcrypt.compare(currentPassword, user.password);
+        if (!valid) {
+            return res.status(400).json({ error: 'كلمة المرور الحالية غير صحيحة' });
+        }
+        
+        user.password = await bcrypt.hash(newPassword, 10);
+        user.securityLog.push({
+            action: 'password_changed',
+            ip: req.ip,
+            device: req.headers['user-agent']?.substring(0, 100) || ''
+        });
+        await user.save();
+        
+        res.json({ message: 'تم تغيير كلمة المرور بنجاح' });
+    } catch (err) {
+        res.status(500).json({ error: 'خطأ في الخادم' });
     }
 });
 
@@ -166,9 +192,56 @@ router.post('/reset-password', async (req, res) => {
         res.status(500).json({ error: 'خطأ' });
     }
 });
-router.patch('/avatar', auth, async (req, res) => {
-    const user = await User.findByIdAndUpdate(req.user.id, { avatar: req.body.avatar }, { new: true });
-    res.json(user);
+
+// تحديث الصورة الرمزية
+router.patch('/avatar', authenticate, async (req, res) => {
+    try {
+        const user = await User.findByIdAndUpdate(
+            req.user.id, 
+            { avatar: req.body.avatar }, 
+            { new: true }
+        );
+        res.json({ avatar: user.avatar });
+    } catch (err) {
+        res.status(500).json({ error: 'خطأ في تحديث الصورة' });
+    }
+});
+
+// جلب الملف الشخصي
+router.get('/profile', authenticate, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select('-password -resetToken -resetTokenExpiry -securityLog');
+        if (!user) {
+            return res.status(404).json({ error: 'المستخدم غير موجود' });
+        }
+        res.json(user);
+    } catch (err) {
+        res.status(500).json({ error: 'خطأ في جلب الملف الشخصي' });
+    }
+});
+
+// تحديث الملف الشخصي
+router.patch('/profile', authenticate, async (req, res) => {
+    try {
+        const allowedUpdates = ['fullName', 'email'];
+        const updates = {};
+        
+        allowedUpdates.forEach(field => {
+            if (req.body[field] !== undefined) {
+                updates[field] = req.body[field];
+            }
+        });
+        
+        const user = await User.findByIdAndUpdate(
+            req.user.id,
+            updates,
+            { new: true }
+        ).select('-password -resetToken -resetTokenExpiry -securityLog');
+        
+        res.json(user);
+    } catch (err) {
+        res.status(500).json({ error: 'خطأ في تحديث الملف الشخصي' });
+    }
 });
 
 module.exports = router;

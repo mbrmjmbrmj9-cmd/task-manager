@@ -44,9 +44,160 @@
         .emoji-picker.show { display: flex; gap: 0.25rem; flex-wrap: wrap; width: 250px; }
         .emoji-picker span { cursor: pointer; font-size: 1.2rem; padding: 0.2rem; }
         .emoji-picker span:hover { background: #EFF6FF; border-radius: 4px; }
+
+        /* ========== أنماط Responsive للـ Chat ========== */
+
+/* Tablet */
+@media (max-width: 1024px) {
+    .sidebar { width: 72px; padding: 1rem 0.5rem; }
+    .sidebar .logo { font-size: 1rem; text-align: center; }
+    .sidebar a { justify-content: center; padding: 0.5rem; font-size: 0; }
+    .sidebar a svg { margin: 0; }
+    .main { margin-right: 72px; }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        right: -260px;
+        width: 260px;
+        top: 0;
+        bottom: 0;
+        z-index: 200;
+        transition: right 0.3s ease;
+    }
+    .sidebar.open {
+        right: 0;
+    }
+    .sidebar a {
+        font-size: 0.9rem;
+        justify-content: flex-start;
+        padding: 0.6rem 0.75rem;
+    }
+    
+    .main {
+        margin-right: 0;
+    }
+    
+    /* Overlay للتطبيق الجانبي */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 199;
+    }
+    .sidebar-overlay.show {
+        display: block;
+    }
+    
+    /* Topbar */
+    .topbar {
+        padding: 0.75rem 1rem;
+    }
+    .topbar h1 {
+        font-size: 1rem;
+    }
+    .online-users {
+        display: none;
+    }
+    
+    /* شريط البحث */
+    .search-row {
+        padding: 0.5rem 1rem;
+    }
+    .search-row input {
+        height: 36px;
+        font-size: 0.8rem;
+    }
+    
+    /* منطقة الرسائل */
+    .messages {
+        padding: 0.75rem;
+    }
+    .msg {
+        max-width: 85%;
+        font-size: 0.85rem;
+    }
+    .msg .text {
+        font-size: 0.85rem;
+    }
+    .msg .user {
+        font-size: 0.7rem;
+    }
+    .msg .time {
+        font-size: 0.6rem;
+    }
+    .msg .actions {
+        display: flex !important;
+        opacity: 0.5;
+        gap: 0.15rem;
+    }
+    .msg .actions button {
+        font-size: 0.7rem;
+        padding: 0.1rem;
+    }
+    
+    /* رسالة مثبتة */
+    .pinned {
+        padding: 0.4rem 1rem;
+        font-size: 0.75rem;
+    }
+    
+    /* صف الإدخال */
+    .input-row {
+        padding: 0.75rem 1rem;
+        gap: 0.25rem;
+    }
+    .input-row input {
+        height: 40px;
+        font-size: 0.85rem;
+    }
+    .input-row .btn {
+        height: 40px;
+        padding: 0 0.75rem;
+        font-size: 0.8rem;
+    }
+    .emoji-btn {
+        font-size: 1rem;
+    }
+    
+    /* Emoji Picker */
+    .emoji-picker {
+        width: 200px;
+        bottom: 55px;
+        left: 1rem;
+    }
+    .emoji-picker span {
+        font-size: 1rem;
+        padding: 0.15rem;
+    }
+    
+    /* مؤشر الكتابة */
+    .typing-indicator {
+        padding: 0.25rem 1rem;
+        font-size: 0.7rem;
+    }
+}
+
+/* شاشات صغيرة جدًا */
+@media (max-width: 480px) {
+    .msg {
+        max-width: 90%;
+    }
+    .input-row input {
+        font-size: 0.8rem;
+    }
+}
     </style>
 </head>
 <body>
+    <!-- Sidebar Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- زر فتح القائمة الجانبية في الجوال -->
+<button class="mobile-menu-btn" id="mobileMenuBtn" onclick="openSidebar()" style="display:none;position:fixed;top:12px;right:12px;z-index:150;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:0.4rem 0.6rem;cursor:pointer;font-size:1.2rem;">☰</button>
     <aside class="sidebar">
         <div class="logo">📋 Nivora</div>
         <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>لوحة القيادة</a>
@@ -147,6 +298,152 @@
         document.getElementById('msgInput').addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });
         document.addEventListener('click', (e) => { if (!e.target.closest('.emoji-btn') && !e.target.closest('.emoji-picker')) { document.getElementById('emojiPicker').classList.remove('show'); } });
 
+ // دوال فتح وإغلاق القائمة الجانبية في الجوال
+function openSidebar() {
+    document.querySelector('.sidebar').classList.add('open');
+    document.getElementById('sidebarOverlay').classList.add('show');
+}
+function closeSidebar() {
+    document.querySelector('.sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('show');
+}
+
+// إظهار زر القائمة في الجوال
+function updateMobileUI() {
+    const btn = document.getElementById('mobileMenuBtn');
+    if (window.innerWidth <= 768) {
+        btn.style.display = 'block';
+    } else {
+        btn.style.display = 'none';
+        closeSidebar();
+    }
+}
+window.addEventListener('resize', updateMobileUI);
+// ========== @Mention Auto-complete ==========
+let mentionUsers = [];
+let mentionIndex = -1;
+let mentionStartPos = -1;
+
+// تحميل قائمة المستخدمين في workspace
+async function loadMentionUsers() {
+    try {
+        const wsId = localStorage.getItem('workspaceId');
+        if (!wsId) return;
+        
+        const res = await fetch(`${API_BASE}/workspaces/${wsId}/members`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const members = await res.json();
+        mentionUsers = members
+            .filter(m => m.userId)
+            .map(m => m.userId.username || m.userId.email || '');
+    } catch (err) {
+        console.error('خطأ في تحميل المستخدمين للـ mention');
+    }
+}
+
+// إنشاء قائمة mention منسدلة
+function createMentionDropdown(filter = '') {
+    // إزالة القائمة القديمة
+    const oldDropdown = document.getElementById('mentionDropdown');
+    if (oldDropdown) oldDropdown.remove();
+    
+    const filtered = mentionUsers.filter(u => u.toLowerCase().includes(filter.toLowerCase()));
+    if (filtered.length === 0) return;
+    
+    const dropdown = document.createElement('div');
+    dropdown.id = 'mentionDropdown';
+    dropdown.style.cssText = `
+        position: absolute; bottom: 55px; right: 1.5rem; background: var(--card);
+        border: 1px solid var(--border); border-radius: 8px; max-height: 150px;
+        overflow-y: auto; z-index: 20; min-width: 180px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    `;
+    
+    filtered.forEach((user, index) => {
+        const item = document.createElement('div');
+        item.textContent = user;
+        item.style.cssText = `
+            padding: 0.5rem 0.75rem; cursor: pointer; font-size: 0.85rem;
+            ${index === 0 ? 'background: #EFF6FF; color: var(--primary);' : ''}
+        `;
+        item.addEventListener('click', () => selectMention(user));
+        dropdown.appendChild(item);
+    });
+    
+    document.querySelector('.input-row').appendChild(dropdown);
+    mentionIndex = 0;
+}
+
+// اختيار mention
+function selectMention(username) {
+    const input = document.getElementById('msgInput');
+    if (mentionStartPos >= 0) {
+        const before = input.value.substring(0, mentionStartPos);
+        const after = input.value.substring(input.selectionStart);
+        input.value = before + '@' + username + ' ' + after;
+    }
+    removeMentionDropdown();
+    input.focus();
+}
+
+// إزالة القائمة المنسدلة
+function removeMentionDropdown() {
+    const dropdown = document.getElementById('mentionDropdown');
+    if (dropdown) dropdown.remove();
+    mentionStartPos = -1;
+    mentionIndex = -1;
+}
+
+// مراقبة الإدخال للـ mention
+document.getElementById('msgInput').addEventListener('input', function(e) {
+    const cursorPos = this.selectionStart;
+    const textBeforeCursor = this.value.substring(0, cursorPos);
+    const atSignIndex = textBeforeCursor.lastIndexOf('@');
+    
+    if (atSignIndex >= 0) {
+        const textAfterAt = textBeforeCursor.substring(atSignIndex + 1);
+        if (!textAfterAt.includes(' ')) {
+            mentionStartPos = atSignIndex;
+            createMentionDropdown(textAfterAt);
+            return;
+        }
+    }
+    
+    removeMentionDropdown();
+});
+
+// التنقل بلوحة المفاتيح في القائمة
+document.getElementById('msgInput').addEventListener('keydown', function(e) {
+    const dropdown = document.getElementById('mentionDropdown');
+    if (!dropdown) return;
+    
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        mentionIndex = Math.min(mentionIndex + 1, dropdown.children.length - 1);
+        updateDropdownSelection(dropdown);
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        mentionIndex = Math.max(mentionIndex - 1, 0);
+        updateDropdownSelection(dropdown);
+    } else if (e.key === 'Enter' && mentionIndex >= 0) {
+        e.preventDefault();
+        const selected = dropdown.children[mentionIndex];
+        if (selected) selected.click();
+    } else if (e.key === 'Escape') {
+        removeMentionDropdown();
+    }
+});
+
+function updateDropdownSelection(dropdown) {
+    Array.from(dropdown.children).forEach((item, i) => {
+        item.style.background = i === mentionIndex ? '#EFF6FF' : '';
+        item.style.color = i === mentionIndex ? 'var(--primary)' : '';
+    });
+}
+
+// تحميل المستخدمين عند بدء الصفحة
+loadMentionUsers();
+updateMobileUI();       
         updateOnlineCount();
     </script>
 </body>

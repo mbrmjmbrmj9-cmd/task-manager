@@ -12,5 +12,8 @@ const messageSchema = new mongoose.Schema({
     fileName: { type: String, default: '' },
     createdAt: { type: Date, default: Date.now }
 });
-
+// ✅ Indexes
+messageSchema.index({ channel: 1, createdAt: -1 });
+messageSchema.index({ taskId: 1, createdAt: -1 });
+messageSchema.index({ userId: 1 });
 module.exports = mongoose.model('Message', messageSchema);

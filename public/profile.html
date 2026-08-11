@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-        <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval';">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' 'unsafe-eval';">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nivora | الملف الشخصي</title>
     <link rel="manifest" href="/manifest.json">
@@ -10,38 +10,75 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
-        body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg); }
-        .card { width: 400px; padding: 2rem; text-align: center; }
-        .card h2 { margin-bottom: 1.5rem; }
+        :root { --primary: #2563EB; --bg: #F8FAFC; --card: #FFFFFF; --text: #1E293B; --text-light: #64748B; --border: #E2E8F0; }
+        body.dark { --bg: #0F172A; --card: #1E293B; --text: #F8FAFC; --text-light: #94A3B8; --border: #334155; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; transition: background 0.3s; }
+        .container { width: 100%; max-width: 480px; }
+        .card { background: var(--card); border-radius: 24px; padding: 2.5rem 2rem; box-shadow: 0 20px 50px rgba(0,0,0,0.06); border: 1px solid var(--border); text-align: center; }
+        .card h2 { margin-bottom: 1.5rem; font-size: 1.3rem; font-weight: 800; }
+        .back-link { display: block; text-align: right; color: var(--primary); text-decoration: none; margin-bottom: 1rem; font-size: 0.9rem; }
         .avatar-large { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; margin-bottom: 0.5rem; background: #E2E8F0; cursor: pointer; }
         .btn-full { width: 100%; margin-top: 0.5rem; }
         .lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; align-items: center; justify-content: center; }
         .lightbox.show { display: flex; }
         .lightbox img { max-width: 90%; max-height: 90%; border-radius: 16px; }
         .lightbox .close { position: absolute; top: 20px; right: 20px; color: white; font-size: 2rem; cursor: pointer; }
+        .input-group { position: relative; margin-bottom: 0.75rem; }
+        .input-group input { width: 100%; height: 48px; padding: 0 1rem; border-radius: 12px; border: 1px solid var(--border); font-family: inherit; font-size: 0.9rem; background: var(--bg); color: var(--text); transition: all 0.2s; }
+        .input-group input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        .section-divider { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border); text-align: right; }
+        .section-divider h3 { margin-bottom: 1rem; font-size: 0.95rem; font-weight: 700; }
+
+        @media (max-width: 480px) {
+            .card { padding: 1.5rem; }
+            .avatar-large { width: 120px; height: 120px; }
+        }
     </style>
 </head>
 <body>
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox" onclick="this.classList.remove('show')">
+        <span class="close">&times;</span>
+        <img id="lightboxImg" src="">
+    </div>
 
-    <div class="lightbox" id="lightbox" onclick="this.classList.remove('show')"><span class="close">&times;</span><img id="lightboxImg" src=""></div>
+    <div class="container">
+        <a href="index.html" class="back-link">← رجوع</a>
+        <div class="card">
+            <h2>الملف الشخصي</h2>
 
-    <div class="card">
-        <a href="index.html" style="display:block;text-align:right;color:var(--primary);text-decoration:none;margin-bottom:1rem;">← رجوع</a>
-        <h2>الملف الشخصي</h2>
+            <!-- الصورة الرمزية -->
+            <div id="currentAvatar">
+                <img id="avatarLarge" class="avatar-large" src="" onclick="openLightbox(this.src)" title="اضغط للتكبير">
+                <p style="color:var(--text-light);font-size:0.8rem;margin-top:0.25rem;">اضغط على الصورة للتكبير</p>
+                <input type="file" id="avatarInput" style="display:none;" accept="image/*" onchange="previewAndSave()">
+                <button class="btn btn-primary btn-full" onclick="document.getElementById('avatarInput').click()">📷 تغيير الصورة</button>
+                <button class="btn btn-outline btn-full" onclick="removeAvatar()">🗑️ إزالة</button>
+            </div>
 
-        <div id="currentAvatar">
-            <img id="avatarLarge" class="avatar-large" src="" onclick="openLightbox(this.src)" title="اضغط للتكبير">
-            <p style="color:var(--text-light);font-size:0.8rem;margin-top:0.25rem;">اضغط على الصورة للتكبير</p>
-            <input type="file" id="avatarInput" style="display:none;" accept="image/*" onchange="previewAndSave()">
-            <button class="btn btn-primary btn-full" onclick="document.getElementById('avatarInput').click()">📷 تغيير الصورة</button>
-            <button class="btn btn-outline btn-full" onclick="removeAvatar()">🗑️ إزالة</button>
-        </div>
+            <div id="noAvatar">
+                <img class="avatar-large" src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='35' r='20' fill='%2394A3B8'/><ellipse cx='50' cy='80' rx='35' ry='25' fill='%2394A3B8'/></svg>">
+                <p style="color:var(--text-light);margin-top:0.5rem;">لا توجد صورة شخصية</p>
+                <input type="file" id="avatarInput2" style="display:none;" accept="image/*" onchange="previewAndSave()">
+                <button class="btn btn-primary btn-full" onclick="document.getElementById('avatarInput2').click()">📷 إضافة صورة</button>
+            </div>
 
-        <div id="noAvatar">
-            <img class="avatar-large" src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='35' r='20' fill='%2394A3B8'/><ellipse cx='50' cy='80' rx='35' ry='25' fill='%2394A3B8'/></svg>">
-            <p style="color:var(--text-light);margin-top:0.5rem;">لا توجد صورة شخصية</p>
-            <input type="file" id="avatarInput2" style="display:none;" accept="image/*" onchange="previewAndSave()">
-            <button class="btn btn-primary btn-full" onclick="document.getElementById('avatarInput2').click()">📷 إضافة صورة</button>
+            <!-- ✅ تغيير كلمة المرور (جديد) -->
+            <div class="section-divider">
+                <h3>🔒 تغيير كلمة المرور</h3>
+                <div class="input-group">
+                    <input type="password" class="input" id="currentPassword" placeholder="كلمة المرور الحالية">
+                </div>
+                <div class="input-group">
+                    <input type="password" class="input" id="newPassword" placeholder="كلمة المرور الجديدة">
+                </div>
+                <div class="input-group">
+                    <input type="password" class="input" id="confirmNewPassword" placeholder="تأكيد كلمة المرور الجديدة">
+                </div>
+                <button class="btn btn-primary btn-full" onclick="changePassword()">💾 تغيير كلمة المرور</button>
+                <p id="passwordMsg" style="text-align:center;margin-top:0.5rem;font-size:0.85rem;display:none;"></p>
+            </div>
         </div>
     </div>
 
@@ -51,24 +88,123 @@
         if (!token) window.location.href = 'login.html';
         const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-        if (user.avatar) { document.getElementById('noAvatar').style.display = 'none'; document.getElementById('avatarLarge').src = user.avatar; }
-        else { document.getElementById('currentAvatar').style.display = 'none'; }
+        // عرض الصورة الرمزية
+        if (user.avatar) {
+            document.getElementById('noAvatar').style.display = 'none';
+            document.getElementById('avatarLarge').src = user.avatar;
+        } else {
+            document.getElementById('currentAvatar').style.display = 'none';
+        }
 
-        function openLightbox(src) { document.getElementById('lightboxImg').src = src; document.getElementById('lightbox').classList.add('show'); }
+        function openLightbox(src) {
+            document.getElementById('lightboxImg').src = src;
+            document.getElementById('lightbox').classList.add('show');
+        }
 
         async function previewAndSave() {
             const input = document.querySelector('input[type="file"]:not([style*="none"])') || document.querySelector('input[type="file"]');
-            const file = input.files[0]; if (!file) return;
-            const formData = new FormData(); formData.append('file', file);
-            const res = await fetch('https://nivora-t9ov.onrender.com/api/upload', { method: 'POST', body: formData });
+            const file = input.files[0];
+            if (!file) return;
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const res = await fetch('https://nivora-t9ov.onrender.com/api/upload', {
+                method: 'POST',
+                body: formData
+            });
+            
             const data = await res.json();
-            if (res.ok) { await fetch(`${API}/auth/avatar`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ avatar: data.url }) }); user.avatar = data.url; localStorage.setItem('user', JSON.stringify(user)); location.reload(); }
+            if (res.ok) {
+                await fetch(`${API}/auth/avatar`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ avatar: data.url })
+                });
+                user.avatar = data.url;
+                localStorage.setItem('user', JSON.stringify(user));
+                location.reload();
+            }
         }
 
         async function removeAvatar() {
             if (!confirm('إزالة الصورة الشخصية؟')) return;
-            await fetch(`${API}/auth/avatar`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ avatar: '' }) });
-            user.avatar = ''; localStorage.setItem('user', JSON.stringify(user)); location.reload();
+            await fetch(`${API}/auth/avatar`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ avatar: '' })
+            });
+            user.avatar = '';
+            localStorage.setItem('user', JSON.stringify(user));
+            location.reload();
+        }
+
+        // ✅ تغيير كلمة المرور (جديد)
+        async function changePassword() {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+            const msg = document.getElementById('passwordMsg');
+            
+            // تحقق من الحقول
+            if (!currentPassword || !newPassword || !confirmNewPassword) {
+                msg.textContent = '❌ جميع الحقول مطلوبة';
+                msg.style.color = '#DC2626';
+                msg.style.display = 'block';
+                return;
+            }
+            
+            if (newPassword !== confirmNewPassword) {
+                msg.textContent = '❌ كلمتا المرور الجديدتان غير متطابقتين';
+                msg.style.color = '#DC2626';
+                msg.style.display = 'block';
+                return;
+            }
+            
+            if (newPassword.length < 8) {
+                msg.textContent = '❌ كلمة المرور الجديدة يجب أن تكون 8 أحرف على الأقل';
+                msg.style.color = '#DC2626';
+                msg.style.display = 'block';
+                return;
+            }
+            
+            try {
+                const res = await fetch(`${API}/auth/change-password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ currentPassword, newPassword })
+                });
+                
+                const data = await res.json();
+                
+                if (res.ok) {
+                    msg.textContent = '✅ تم تغيير كلمة المرور بنجاح';
+                    msg.style.color = '#16A34A';
+                    msg.style.display = 'block';
+                    
+                    // مسح الحقول
+                    document.getElementById('currentPassword').value = '';
+                    document.getElementById('newPassword').value = '';
+                    document.getElementById('confirmNewPassword').value = '';
+                } else {
+                    msg.textContent = '❌ ' + (data.error || 'خطأ في تغيير كلمة المرور');
+                    msg.style.color = '#DC2626';
+                    msg.style.display = 'block';
+                }
+            } catch (err) {
+                msg.textContent = '❌ تعذر الاتصال بالخادم';
+                msg.style.color = '#DC2626';
+                msg.style.display = 'block';
+            }
         }
     </script>
 </body>

@@ -40,7 +40,9 @@ const taskSchema = new mongoose.Schema({
         enum: ['critical', 'high', 'medium', 'low']
     },
     category: { type: String, default: 'default' },
-    project: { type: String, default: '' },
+    // ✅ تم إضافة projectId للربط الحقيقي
+    project: { type: String, default: '' },         // اسم المشروع (للتوافق مع البيانات القديمة)
+    projectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Project', default: null }, // معرف المشروع
     assignee: { type: String, default: '' },
     startDate: { type: Date, default: null },
     dueDate: { type: Date, default: null },
@@ -55,6 +57,7 @@ const taskSchema = new mongoose.Schema({
     activity: [activitySchema],
     followers: [String],
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    workspaceId: { type: mongoose.Schema.Types.ObjectId, ref: 'Workspace', default: null },
     dependencies: [{
         taskId: { type: mongoose.Schema.Types.ObjectId, ref: 'Task' },
         type: { type: String, enum: ['finish-to-start', 'start-to-start', 'finish-to-finish'], default: 'finish-to-start' }
@@ -66,5 +69,12 @@ const taskSchema = new mongoose.Schema({
     recurringInterval: { type: Number, default: 1 },
     nextOccurrence: { type: Date, default: null },
 }, { timestamps: true });
+
+// ✅ إضافة indexes لتحسين الأداء
+taskSchema.index({ userId: 1, status: 1 });
+taskSchema.index({ userId: 1, projectId: 1 });
+taskSchema.index({ userId: 1, workspaceId: 1 });
+taskSchema.index({ projectId: 1, status: 1 });
+taskSchema.index({ dueDate: 1 });
 
 module.exports = mongoose.model('Task', taskSchema);

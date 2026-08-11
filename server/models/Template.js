@@ -12,5 +12,6 @@ const templateSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     createdAt: { type: Date, default: Date.now }
 });
-
+// ✅ Indexes
+templateSchema.index({ userId: 1 });
 module.exports = mongoose.model('Template', templateSchema);

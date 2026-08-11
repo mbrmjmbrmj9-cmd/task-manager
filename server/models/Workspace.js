@@ -14,5 +14,8 @@ const workspaceSchema = new mongoose.Schema({
     maxProjects: { type: Number, default: 5 },
     isActive: { type: Boolean, default: true }
 }, { timestamps: true });
-
+// ✅ Indexes
+workspaceSchema.index({ 'members.userId': 1 });
+workspaceSchema.index({ inviteCode: 1 });
+workspaceSchema.index({ ownerId: 1 });
 module.exports = mongoose.model('Workspace', workspaceSchema);

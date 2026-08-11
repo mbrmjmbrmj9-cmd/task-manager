@@ -18,9 +18,34 @@
         th { color: #94A3B8; }
         .bar { height: 8px; border-radius: 4px; background: #334155; }
         .bar-fill { height: 100%; border-radius: 4px; }
+        @media (max-width: 1024px) {
+    .sidebar { width: 60px; padding: 1rem 0.5rem; }
+    .sidebar h2 { font-size: 0.8rem; text-align: center; }
+    .sidebar a { font-size: 0; justify-content: center; padding: 0.5rem; }
+    .main { margin-right: 60px; padding: 1.5rem; }
+}
+@media (max-width: 768px) {
+    body { flex-direction: column; }
+    .sidebar { position: fixed; right: -260px; width: 260px; top: 0; bottom: 0; z-index: 200; transition: right 0.3s ease; padding: 1.5rem 1rem; }
+    .sidebar.open { right: 0; }
+    .sidebar h2 { font-size: 1rem; }
+    .sidebar a { font-size: 0.9rem; justify-content: flex-start; padding: 0.6rem 0.75rem; }
+    .main { margin-right: 0; padding: 1rem; }
+    h1 { font-size: 1.2rem; }
+    table { font-size: 0.75rem; }
+    th, td { padding: 0.5rem; }
+    .admin-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; }
+    .admin-overlay.show { display: block; }
+    .admin-menu-btn { display: flex !important; position: fixed; top: 12px; right: 12px; z-index: 150; background: #1E293B; color: white; border: 1px solid #334155; border-radius: 8px; padding: 0.4rem 0.6rem; cursor: pointer; font-size: 1.2rem; }
+}
+@media (max-width: 480px) {
+    table { display: block; overflow-x: auto; }
+}
     </style>
 </head>
 <body>
+    <div class="admin-overlay" id="adminOverlay" onclick="closeSidebar()"></div>
+<button class="admin-menu-btn" id="adminMenuBtn" onclick="openSidebar()" style="display:none;">☰</button>
     <aside class="sidebar">
     <h2>🔐 Nivora Admin</h2>
     <a href="dashboard.html">📊 لوحة القيادة</a>
@@ -66,7 +91,11 @@
                 `).join('') : '<p>لا توجد بيانات استخدام</p>'}
             `;
         }
-
+function openSidebar() { document.querySelector('.sidebar').classList.add('open'); document.getElementById('adminOverlay').classList.add('show'); }
+function closeSidebar() { document.querySelector('.sidebar').classList.remove('open'); document.getElementById('adminOverlay').classList.remove('show'); }
+function updateMobileUI() { const btn = document.getElementById('adminMenuBtn'); if (window.innerWidth <= 768) { btn.style.display = 'flex'; } else { btn.style.display = 'none'; closeSidebar(); } }
+window.addEventListener('resize', updateMobileUI);
+updateMobileUI();
         loadUsage();
     </script>
 </body>

@@ -1,29 +1,18 @@
 const express = require('express');
-const jwt = require('jsonwebtoken');
 const Template = require('../models/Template');
 const Task = require('../models/Task');
+const { authenticate } = require('../middleware/auth');
 
 const router = express.Router();
-const JWT_SECRET = 'nivora_secret_2025';
-function auth(req, res, next) {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'يجب تسجيل الدخول' });
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) return res.status(403).json({ error: 'جلسة غير صالحة' });
-        req.user = user;
-        next();
-    });
-}
 
 // جلب القوالب
-router.get('/', auth, async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
     const templates = await Template.find({ userId: req.user.id });
     res.json(templates);
 });
 
 // حفظ قالب
-router.post('/', auth, async (req, res) => {
+router.post('/', authenticate, async (req, res) => {
     const { name, tasks } = req.body;
     if (!name || !tasks || tasks.length === 0) return res.status(400).json({ error: 'الاسم والمهام مطلوبة' });
     const template = await Template.create({ name, tasks, userId: req.user.id });
@@ -31,7 +20,7 @@ router.post('/', auth, async (req, res) => {
 });
 
 // تطبيق قالب (إنشاء المهام)
-router.post('/:id/apply', auth, async (req, res) => {
+router.post('/:id/apply', authenticate, async (req, res) => {
     const template = await Template.findOne({ _id: req.params.id, userId: req.user.id });
     if (!template) return res.status(404).json({ error: 'قالب غير موجود' });
     
@@ -51,7 +40,7 @@ router.post('/:id/apply', auth, async (req, res) => {
 });
 
 // حذف قالب
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
     await Template.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
     res.json({ message: 'تم الحذف' });
 });

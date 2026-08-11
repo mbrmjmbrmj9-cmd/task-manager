@@ -1,25 +1,14 @@
 const express = require('express');
-const jwt = require('jsonwebtoken');
 const Workspace = require('../models/Workspace');
 const Plan = require('../models/Plan');
+const User = require('../models/User');
 const crypto = require('crypto');
+const { authenticate, requireRole } = require('../middleware/auth');
 
 const router = express.Router();
-const JWT_SECRET = 'nivora_secret_2025';
-
-function auth(req, res, next) {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-    if (!token) return res.status(401).json({ error: 'يجب تسجيل الدخول' });
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) return res.status(403).json({ error: 'جلسة غير صالحة' });
-        req.user = user;
-        next();
-    });
-}
 
 // إنشاء Workspace
-router.post('/', auth, async (req, res) => {
+router.post('/', authenticate, async (req, res) => {
     try {
         const { name } = req.body;
         if (!name) return res.status(400).json({ error: 'الاسم مطلوب' });
@@ -37,7 +26,7 @@ router.post('/', auth, async (req, res) => {
 });
 
 // الانضمام بـ Invite Code
-router.post('/join', auth, async (req, res) => {
+router.post('/join', authenticate, async (req, res) => {
     try {
         const { code } = req.body;
         if (!code) return res.status(400).json({ error: 'الرمز مطلوب' });
@@ -60,7 +49,7 @@ router.post('/join', auth, async (req, res) => {
 });
 
 // جلب Workspaces المستخدم
-router.get('/', auth, async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
     try {
         const workspaces = await Workspace.find({ 'members.userId': req.user.id });
         res.json(workspaces);
@@ -69,15 +58,35 @@ router.get('/', auth, async (req, res) => {
     }
 });
 
-// ========== صلاحيات الأعضاء ==========
-
-// جلب أعضاء workspace
-router.get('/:id/members', auth, async (req, res) => {
+// مغادرة Workspace
+router.post('/:id/leave', authenticate, async (req, res) => {
     try {
         const ws = await Workspace.findById(req.params.id);
         if (!ws) return res.status(404).json({ error: 'غير موجود' });
 
-        const User = require('../models/User');
+        const member = ws.members.find(m => m.userId.toString() === req.user.id);
+        if (!member) return res.status(400).json({ error: 'لست عضواً' });
+
+        if (member.role === 'owner') {
+            return res.status(400).json({ error: 'المالك لا يستطيع المغادرة. انقل الملكية أولاً أو احذف مساحة العمل' });
+        }
+
+        ws.members = ws.members.filter(m => m.userId.toString() !== req.user.id);
+        await ws.save();
+        res.json({ message: 'تمت المغادرة بنجاح' });
+    } catch (err) {
+        res.status(500).json({ error: 'خطأ في المغادرة' });
+    }
+});
+
+// ========== صلاحيات الأعضاء ==========
+
+// جلب أعضاء workspace
+router.get('/:id/members', authenticate, async (req, res) => {
+    try {
+        const ws = await Workspace.findById(req.params.id);
+        if (!ws) return res.status(404).json({ error: 'غير موجود' });
+
         const membersWithUsers = [];
         
         for (const m of ws.members) {
@@ -98,13 +107,15 @@ router.get('/:id/members', auth, async (req, res) => {
 });
 
 // تغيير دور عضو (فقط Owner)
-router.patch('/:id/members/:userId', auth, async (req, res) => {
+router.patch('/:id/members/:userId', authenticate, async (req, res) => {
     try {
         const ws = await Workspace.findById(req.params.id);
         if (!ws) return res.status(404).json({ error: 'غير موجود' });
 
         const member = ws.members.find(m => m.userId.toString() === req.user.id);
-        if (!member || member.role !== 'owner') return res.status(403).json({ error: 'فقط المالك يستطيع تغيير الأدوار' });
+        if (!member || member.role !== 'owner') {
+            return res.status(403).json({ error: 'فقط المالك يستطيع تغيير الأدوار' });
+        }
 
         const target = ws.members.find(m => m.userId.toString() === req.params.userId);
         if (!target) return res.status(404).json({ error: 'عضو غير موجود' });
@@ -118,13 +129,15 @@ router.patch('/:id/members/:userId', auth, async (req, res) => {
 });
 
 // إزالة عضو (Owner و Admin)
-router.delete('/:id/members/:userId', auth, async (req, res) => {
+router.delete('/:id/members/:userId', authenticate, async (req, res) => {
     try {
         const ws = await Workspace.findById(req.params.id);
         if (!ws) return res.status(404).json({ error: 'غير موجود' });
 
         const member = ws.members.find(m => m.userId.toString() === req.user.id);
-        if (!member || !['owner', 'admin'].includes(member.role)) return res.status(403).json({ error: 'صلاحيات غير كافية' });
+        if (!member || !['owner', 'admin'].includes(member.role)) {
+            return res.status(403).json({ error: 'صلاحيات غير كافية' });
+        }
 
         ws.members = ws.members.filter(m => m.userId.toString() !== req.params.userId);
         await ws.save();
@@ -137,11 +150,13 @@ router.delete('/:id/members/:userId', auth, async (req, res) => {
 // ========== خطة الاشتراك ==========
 
 // تحديث خطة workspace (فقط Owner)
-router.patch('/:id/plan', auth, async (req, res) => {
+router.patch('/:id/plan', authenticate, async (req, res) => {
     try {
         const ws = await Workspace.findById(req.params.id);
         const member = ws.members.find(m => m.userId.toString() === req.user.id);
-        if (!member || member.role !== 'owner') return res.status(403).json({ error: 'فقط المالك يستطيع تغيير الخطة' });
+        if (!member || member.role !== 'owner') {
+            return res.status(403).json({ error: 'فقط المالك يستطيع تغيير الخطة' });
+        }
 
         const { planId } = req.body;
         const plan = await Plan.findById(planId);

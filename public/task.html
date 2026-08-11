@@ -9,19 +9,22 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
-        body { display: flex; min-height: 100vh; background: var(--bg); }
-        .sidebar { width: 240px; background: var(--card); border-left: 1px solid var(--border); padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 100; }
-        .sidebar .logo { font-size: 1.3rem; font-weight: 800; margin-bottom: 1rem; }
-        .sidebar a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text); text-decoration: none; font-weight: 500; font-size: 0.9rem; }
+        :root { --sidebar-w: 240px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+        .sidebar { width: var(--sidebar-w); background: var(--card); border-left: 1px solid var(--border); padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 100; overflow-y: auto; display: flex; flex-direction: column; gap: 0.25rem; }
+        .sidebar .logo { font-size: 1.3rem; font-weight: 800; padding: 0 0.75rem; margin-bottom: 1rem; color: var(--primary); }
+        .sidebar a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 0.9rem; white-space: nowrap; }
         .sidebar a:hover, .sidebar a.active { background: #EFF6FF; color: var(--primary); }
-        .sidebar a svg { width: 20px; height: 20px; }
-        .main { margin-right: 240px; flex: 1; padding: 2rem; }
+        .sidebar a svg { width: 20px; height: 20px; flex-shrink: 0; }
+        .sidebar .label { transition: opacity 0.2s; }
+        .main { margin-right: var(--sidebar-w); padding: 2rem; min-height: 100vh; }
         .back-link { color: var(--primary); text-decoration: none; font-size: 0.9rem; margin-bottom: 1rem; display: inline-block; }
         .task-header { margin-bottom: 1.5rem; }
         .task-header h1 { font-size: 1.5rem; font-weight: 800; }
         .task-header .meta { display: flex; gap: 1rem; font-size: 0.85rem; color: var(--text-light); margin-top: 0.5rem; flex-wrap: wrap; }
-        .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 1.5rem; flex-wrap: wrap; }
-        .tab { padding: 0.6rem 1rem; cursor: pointer; font-weight: 600; font-size: 0.85rem; color: var(--text-light); border-bottom: 2px solid transparent; margin-bottom: -2px; }
+        .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 1.5rem; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .tab { padding: 0.6rem 1rem; cursor: pointer; font-weight: 600; font-size: 0.85rem; color: var(--text-light); border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; flex-shrink: 0; }
         .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
@@ -39,35 +42,93 @@
         .followers-list { display: flex; gap: 0.5rem; flex-wrap: wrap; }
         .follower-tag { display: flex; align-items: center; gap: 0.25rem; background: #EFF6FF; padding: 0.25rem 0.6rem; border-radius: 20px; font-size: 0.8rem; font-weight: 500; }
         .follower-tag button { background: none; border: none; cursor: pointer; color: #EF4444; font-size: 0.9rem; padding: 0; line-height: 1; }
-        .add-row { display: flex; gap: 0.5rem; margin-top: 1rem; }
-        .add-row input { flex: 1; }
+        .add-row { display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap; }
+        .add-row input, .add-row select { flex: 1; min-width: 120px; }
+        .subtask-item { transition: background 0.2s; }
+        .subtask-item:hover { background: #F1F5F9; }
+        body.dark .subtask-item:hover { background: #334155; }
+
+        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+        .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); padding: 0.5rem 1rem; z-index: 90; justify-content: space-around; }
+        .bottom-nav a { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-light); text-decoration: none; font-size: 0.65rem; font-weight: 500; }
+        .bottom-nav a.active { color: var(--primary); }
+        .bottom-nav a svg { width: 22px; height: 22px; }
+
+        /* ========== Responsive ========== */
+        @media (max-width: 1024px) {
+            :root { --sidebar-w: 72px; }
+            .sidebar { padding: 1rem 0.5rem; }
+            .sidebar .logo { font-size: 1rem; text-align: center; }
+            .sidebar .label, .sidebar .logo span { display: none; }
+            .sidebar a { justify-content: center; padding: 0.5rem; }
+            .main { padding: 1.5rem; }
+        }
+        @media (max-width: 768px) {
+            :root { --sidebar-w: 0; }
+            .sidebar { right: -260px; width: 260px; transition: right 0.3s ease; }
+            .sidebar.open { right: 0; }
+            .sidebar .label { display: inline; }
+            .sidebar .logo span { display: inline; }
+            .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; }
+            .overlay.show { display: block; }
+            .main { margin-right: 0; padding: 1rem; padding-bottom: 5rem; }
+            .tabs { padding-bottom: 0.5rem; }
+            .tab { font-size: 0.75rem; padding: 0.5rem 0.75rem; }
+            .task-header h1 { font-size: 1.1rem; }
+            .task-header .meta { flex-direction: column; gap: 0.25rem; font-size: 0.75rem; }
+            .tab-content { padding: 0.5rem 0; }
+            .add-row { flex-direction: column; }
+            .add-row input, .add-row select { width: 100%; }
+            .followers-list { gap: 0.25rem; }
+            .follower-tag { font-size: 0.7rem; padding: 0.2rem 0.5rem; }
+            .attachment-item { flex-wrap: wrap; gap: 0.25rem; font-size: 0.75rem; }
+            .bottom-nav { display: flex; }
+        }
+        @media (max-width: 480px) {
+            .task-header h1 { font-size: 1rem; }
+            .tab { font-size: 0.7rem; padding: 0.4rem 0.5rem; }
+            .card { padding: 1rem; }
+        }
     </style>
 </head>
 <body>
+    <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
 
-    <aside class="sidebar">
-        <div class="logo">📋 Nivora</div>
-        <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>لوحة القيادة</a>
-        <a href="tasks.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg>المهام</a>
-        <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>المشاريع</a>
-        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg>Kanban</a>
-        <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>Gantt</a>
-        <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>التقويم</a>
-        <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>التقارير</a>
-        <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg>Workflows</a>
-        <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>القوالب</a>
-        <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>الأرشيف</a>
-        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>الفريق</a>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="logo"><span>📋 Nivora</span></div>
+        <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="label">لوحة القيادة</span></a>
+        <a href="tasks.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg><span class="label">المهام</span></a>
+        <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">المشاريع</span></a>
+        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg><span class="label">Kanban</span></a>
+        <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">Gantt</span></a>
+        <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
+        <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
+        <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg><span class="label">Workflows</span></a>
+        <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">القوالب</span></a>
+        <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">الأرشيف</span></a>
+        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
     </aside>
 
+    <!-- Main Content -->
     <main class="main">
         <a href="tasks.html" class="back-link">← العودة للمهام</a>
+        <div class="task-header">
+            <h1 id="taskTitle">...</h1>
+            <div class="meta">
+                <span id="taskStatus"></span>
+                <span id="taskPriority"></span>
+                <span id="taskProject"></span>
+                <span id="taskDueDate"></span>
+                <span id="taskProgress"></span>
+            </div>
+        </div>
 
-        <div class="task-header"><h1 id="taskTitle">...</h1><div class="meta"><span id="taskStatus"></span><span id="taskPriority"></span><span id="taskProject"></span><span id="taskDueDate"></span><span id="taskProgress"></span></div></div>
-
+        <!-- التبويبات -->
         <div class="tabs">
             <div class="tab active" data-tab="overview">📋 نظرة عامة</div>
             <div class="tab" data-tab="checklist">✅ مهام فرعية</div>
+            <div class="tab" data-tab="subtasks">📑 مهام فرعية منفصلة</div>
             <div class="tab" data-tab="attachments">📎 مرفقات</div>
             <div class="tab" data-tab="comments">💬 تعليقات</div>
             <div class="tab" data-tab="discussion">💬 مناقشة</div>
@@ -76,17 +137,127 @@
             <div class="tab" data-tab="activity">📜 النشاط</div>
         </div>
 
-        <div class="tab-content active" id="tab-overview"><div class="card"><p id="taskDesc" style="color:var(--text-light);">...</p></div></div>
-        <div class="tab-content" id="tab-checklist"><div class="card"><div id="checklistItems"></div><div class="add-row"><input type="text" class="input" id="checklistInput" placeholder="أضف بنداً..."><button class="btn btn-primary" onclick="addChecklistItem()">➕</button></div></div></div>
-        <div class="tab-content" id="tab-attachments"><div class="card"><div id="attachmentsList"></div><div class="add-row" style="margin-top:1rem;flex-wrap:wrap;"><input type="file" id="fileInput" style="display:none;" onchange="uploadFile()"><button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">📁 رفع ملف</button><span id="uploadStatus" style="font-size:0.8rem;color:var(--text-light);"></span></div></div></div>
-        <div class="tab-content" id="tab-comments"><div class="card"><div id="commentsList"></div><div class="add-row"><input type="text" class="input" id="commentInput" placeholder="اكتب تعليقاً..."><button class="btn btn-primary" onclick="addComment()">💬</button></div></div></div>
-        <div class="tab-content" id="tab-discussion"><div class="card"><div id="discussionMessages" style="max-height:300px;overflow-y:auto;margin-bottom:1rem;"></div><div class="add-row"><input type="text" class="input" id="discussionInput" placeholder="اكتب في المناقشة..."><button class="btn btn-primary" onclick="sendDiscussion()">💬</button></div></div></div>
-        <div class="tab-content" id="tab-followers"><div class="card"><div id="followersList"></div><div class="add-row" style="margin-top:1rem;"><input type="text" class="input" id="followerInput" placeholder="اسم المتابع..."><button class="btn btn-primary" onclick="addFollower()">➕</button></div></div></div>
-        <div class="tab-content" id="tab-dependencies"><div class="card"><div id="dependenciesList"></div><div class="add-row" style="margin-top:1rem;"><select class="input" id="depTaskSelect" style="flex:1;"><option value="">اختر مهمة...</option></select><select class="input" id="depType" style="width:auto;"><option value="finish-to-start">Finish → Start</option><option value="start-to-start">Start → Start</option><option value="finish-to-finish">Finish → Finish</option></select><button class="btn btn-primary" onclick="addDependency()">🔗</button></div></div></div>
-        <div class="tab-content" id="tab-activity"><div class="card"><div id="activityList"></div></div></div>
+        <!-- محتوى التبويبات -->
+        <div class="tab-content active" id="tab-overview">
+            <div class="card"><p id="taskDesc" style="color:var(--text-light);">...</p></div>
+        </div>
+
+        <div class="tab-content" id="tab-checklist">
+            <div class="card">
+                <div id="checklistItems"></div>
+                <div class="add-row">
+                    <input type="text" class="input" id="checklistInput" placeholder="أضف بنداً...">
+                    <button class="btn btn-primary" onclick="addChecklistItem()">➕</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ✅ تبويب المهام الفرعية المنفصلة (جديد) -->
+        <div class="tab-content" id="tab-subtasks">
+            <div class="card">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                    <h3 style="font-size:0.95rem;font-weight:700;">المهام الفرعية</h3>
+                    <button class="btn btn-primary" onclick="showAddSubtask()" style="height:32px;font-size:0.8rem;">➕ مهمة فرعية</button>
+                </div>
+                
+                <!-- نموذج إضافة مهمة فرعية -->
+                <div id="addSubtaskForm" style="display:none;margin-bottom:1rem;padding:1rem;background:#F8FAFC;border-radius:12px;">
+                    <input type="text" class="input" id="subtaskTitle" placeholder="عنوان المهمة الفرعية" style="margin-bottom:0.5rem;">
+                    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                        <select class="input" id="subtaskPriority" style="width:auto;height:36px;">
+                            <option value="medium">🟡 متوسطة</option>
+                            <option value="high">🟠 عالية</option>
+                            <option value="critical">🔴 حرجة</option>
+                            <option value="low">🟢 منخفضة</option>
+                        </select>
+                        <input type="text" class="input" id="subtaskAssignee" placeholder="المسؤول" style="width:auto;flex:1;min-width:120px;height:36px;">
+                        <input type="date" class="input" id="subtaskDueDate" style="width:auto;height:36px;">
+                    </div>
+                    <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+                        <button class="btn btn-primary" onclick="addSubtask()" style="height:32px;font-size:0.8rem;">✅ إضافة</button>
+                        <button class="btn btn-outline" onclick="hideAddSubtask()" style="height:32px;font-size:0.8rem;">إلغاء</button>
+                    </div>
+                </div>
+                
+                <!-- قائمة المهام الفرعية -->
+                <div id="subtasksList"></div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="tab-attachments">
+            <div class="card">
+                <div id="attachmentsList"></div>
+                <div class="add-row" style="margin-top:1rem;flex-wrap:wrap;">
+                    <input type="file" id="fileInput" style="display:none;" onchange="uploadFile()">
+                    <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">📁 رفع ملف</button>
+                    <span id="uploadStatus" style="font-size:0.8rem;color:var(--text-light);"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="tab-comments">
+            <div class="card">
+                <div id="commentsList"></div>
+                <div class="add-row">
+                    <input type="text" class="input" id="commentInput" placeholder="اكتب تعليقاً...">
+                    <button class="btn btn-primary" onclick="addComment()">💬</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="tab-discussion">
+            <div class="card">
+                <div id="discussionMessages" style="max-height:300px;overflow-y:auto;margin-bottom:1rem;"></div>
+                <div class="add-row">
+                    <input type="text" class="input" id="discussionInput" placeholder="اكتب في المناقشة...">
+                    <button class="btn btn-primary" onclick="sendDiscussion()">💬</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="tab-followers">
+            <div class="card">
+                <div id="followersList"></div>
+                <div class="add-row" style="margin-top:1rem;">
+                    <input type="text" class="input" id="followerInput" placeholder="اسم المتابع...">
+                    <button class="btn btn-primary" onclick="addFollower()">➕</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="tab-dependencies">
+            <div class="card">
+                <div id="dependenciesList"></div>
+                <div class="add-row" style="margin-top:1rem;">
+                    <select class="input" id="depTaskSelect" style="flex:1;"><option value="">اختر مهمة...</option></select>
+                    <select class="input" id="depType" style="width:auto;">
+                        <option value="finish-to-start">Finish → Start</option>
+                        <option value="start-to-start">Start → Start</option>
+                        <option value="finish-to-finish">Finish → Finish</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="addDependency()">🔗</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="tab-activity">
+            <div class="card"><div id="activityList"></div></div>
+        </div>
     </main>
 
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="bottom-nav">
+        <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>الرئيسية</a>
+        <a href="tasks.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg>مهام</a>
+        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg>Kanban</a>
+        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>فريق</a>
+        <a href="#" onclick="openSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>المزيد</a>
+    </nav>
+
     <script>
+        function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
+        function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
+
         const API_BASE = 'https://nivora-t9ov.onrender.com/api';
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'login.html';
@@ -95,40 +266,418 @@
         if (!taskId) window.location.href = 'tasks.html';
         let taskData = null;
 
-        document.querySelectorAll('.tab').forEach(tab => { tab.addEventListener('click', () => { document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); tab.classList.add('active'); document.getElementById('tab-' + tab.dataset.tab).classList.add('active'); }); });
+        // تبديل التبويبات
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                const target = document.getElementById('tab-' + tab.dataset.tab);
+                if (target) target.classList.add('active');
+            });
+        });
 
+        // تحميل بيانات المهمة
         async function loadTask() {
-            const res = await fetch(`${API_BASE}/tasks/${taskId}`, { headers: { 'Authorization': `Bearer ${token}` } }); taskData = await res.json();
-            document.getElementById('taskTitle').textContent = taskData.title; document.getElementById('taskDesc').textContent = taskData.description || 'لا يوجد وصف';
+            const res = await fetch(`${API_BASE}/tasks/${taskId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+            taskData = await res.json();
+            document.getElementById('taskTitle').textContent = taskData.title;
+            document.getElementById('taskDesc').textContent = taskData.description || 'لا يوجد وصف';
             document.getElementById('taskStatus').innerHTML = '📌 ' + taskData.status;
             document.getElementById('taskPriority').innerHTML = taskData.priority === 'critical' ? '🔴 حرجة' : taskData.priority === 'high' ? '🟠 عالية' : taskData.priority === 'medium' ? '🟡 متوسطة' : '🟢 منخفضة';
             document.getElementById('taskProject').textContent = '📁 ' + (taskData.project || 'بدون مشروع');
             document.getElementById('taskDueDate').textContent = '📅 ' + (taskData.dueDate ? new Date(taskData.dueDate).toLocaleDateString('ar-SA') : 'بدون تاريخ');
             document.getElementById('taskProgress').textContent = '📊 ' + taskData.progress + '%';
-            renderChecklist(); renderAttachments(); renderComments(); renderFollowers(); renderDependencies(); renderActivity(); loadDiscussion();
+            renderChecklist();
+            renderAttachments();
+            renderComments();
+            renderFollowers();
+            renderDependencies();
+            renderActivity();
+            loadDiscussion();
+            loadSubtasks();
         }
 
-        function renderChecklist() { document.getElementById('checklistItems').innerHTML = taskData.checklist.map(item => `<div class="checklist-item ${item.done ? 'done' : ''}"><input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleChecklistItem('${item._id}', this.checked)"><span>${item.text}</span></div>`).join('') || '<p style="color:var(--text-light);">لا توجد بنود</p>'; }
-        function renderAttachments() { document.getElementById('attachmentsList').innerHTML = taskData.attachments.map(a => `<div class="attachment-item"><span>📎</span><a href="${a.url}" target="_blank">${a.name}</a><button class="btn btn-outline" style="height:24px;font-size:0.7rem;margin-right:auto;" onclick="deleteAttachment('${a._id}')">🗑️</button></div>`).join('') || '<p style="color:var(--text-light);">لا توجد مرفقات</p>'; }
-        function renderComments() { document.getElementById('commentsList').innerHTML = taskData.comments.map(c => `<div class="comment"><div class="comment-user">${c.username}</div><div class="comment-text">${c.text}</div><div class="comment-time">${new Date(c.createdAt).toLocaleString('ar-SA')}</div></div>`).join('') || '<p style="color:var(--text-light);">لا توجد تعليقات</p>'; }
-        function renderFollowers() { document.getElementById('followersList').innerHTML = (taskData.followers || []).map((f, i) => `<span class="follower-tag">👤 ${f}<button onclick="removeFollower(${i})">✕</button></span>`).join('') || '<p style="color:var(--text-light);">لا يوجد متابعون</p>'; }
-        async function renderDependencies() { const allTasks = await fetch(`${API_BASE}/tasks`, { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json()); document.getElementById('dependenciesList').innerHTML = (taskData.dependencies || []).map(d => { const linked = allTasks.find(t => t._id === d.taskId); return `<div class="attachment-item"><span>🔗</span><span>${linked ? linked.title : d.taskId}</span><span style="font-size:0.75rem;color:var(--text-light);">${d.type}</span><button class="btn btn-outline" style="height:24px;font-size:0.7rem;margin-right:auto;" onclick="deleteDependency('${d._id}')">🗑️</button></div>`; }).join('') || '<p style="color:var(--text-light);">لا توجد تبعيات</p>'; document.getElementById('depTaskSelect').innerHTML = '<option value="">اختر مهمة...</option>' + allTasks.filter(t => t._id !== taskData._id).map(t => `<option value="${t._id}">${t.title}</option>`).join(''); }
-        function renderActivity() { document.getElementById('activityList').innerHTML = taskData.activity.reverse().map(a => `<div class="activity-item"><strong>${a.username}</strong> - ${a.action} - ${a.details}<br><small>${new Date(a.createdAt).toLocaleString('ar-SA')}</small></div>`).join('') || '<p style="color:var(--text-light);">لا يوجد نشاط</p>'; }
-        async function loadDiscussion() { const res = await fetch(`${API_BASE}/chat?taskId=${taskId}`, { headers: { 'Authorization': `Bearer ${token}` } }); const messages = await res.json(); document.getElementById('discussionMessages').innerHTML = messages.map(m => `<div style="margin-bottom:0.5rem;padding:0.5rem;border-radius:8px;background:#F1F5F9;"><strong>${m.username}</strong>: ${m.text}<small style="color:var(--text-light);display:block;">${new Date(m.createdAt).toLocaleTimeString('ar-SA')}</small></div>`).join('') || '<p style="color:var(--text-light);">لا توجد مناقشات</p>'; }
-        async function sendDiscussion() { const input = document.getElementById('discussionInput'); const text = input.value.trim(); if (!text) return; await fetch(`${API_BASE}/chat`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ text, taskId, channel: 'discussion' }) }); input.value = ''; loadDiscussion(); }
-        async function addChecklistItem() { const input = document.getElementById('checklistInput'); const text = input.value.trim(); if (!text) return; await fetch(`${API_BASE}/tasks/${taskId}/checklist`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ text }) }); input.value = ''; loadTask(); }
-        async function toggleChecklistItem(itemId, done) { await fetch(`${API_BASE}/tasks/${taskId}/checklist/${itemId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ done }) }); loadTask(); }
-        async function uploadFile() { const file = document.getElementById('fileInput').files[0]; if (!file) return; document.getElementById('uploadStatus').textContent = '⏳...'; const formData = new FormData(); formData.append('file', file); const res = await fetch('https://nivora-t9ov.onrender.com/api/upload', { method: 'POST', body: formData }); const data = await res.json(); if (res.ok) { await fetch(`${API_BASE}/tasks/${taskId}/attachments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(data) }); document.getElementById('uploadStatus').textContent = '✅ تم'; loadTask(); } }
-        async function deleteAttachment(attId) { await fetch(`${API_BASE}/tasks/${taskId}/attachments/${attId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); loadTask(); }
-        async function addComment() { const input = document.getElementById('commentInput'); const text = input.value.trim(); if (!text) return; await fetch(`${API_BASE}/tasks/${taskId}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ text }) }); input.value = ''; loadTask(); }
-        async function addFollower() { const input = document.getElementById('followerInput'); const name = input.value.trim(); if (!name) return; const followers = [...(taskData.followers || []), name]; await fetch(`${API_BASE}/tasks/${taskId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ followers }) }); input.value = ''; loadTask(); }
-        async function removeFollower(index) { const followers = [...taskData.followers]; followers.splice(index, 1); await fetch(`${API_BASE}/tasks/${taskId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ followers }) }); loadTask(); }
-        async function addDependency() { const depTaskId = document.getElementById('depTaskSelect').value; const type = document.getElementById('depType').value; if (!depTaskId) return; await fetch(`${API_BASE}/tasks/${taskId}/dependencies`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ taskId: depTaskId, type }) }); loadTask(); }
-        async function deleteDependency(depId) { await fetch(`${API_BASE}/tasks/${taskId}/dependencies/${depId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); loadTask(); }
+        // ========== Checklist ==========
+        function renderChecklist() {
+            document.getElementById('checklistItems').innerHTML = taskData.checklist.map(item => `
+                <div class="checklist-item ${item.done ? 'done' : ''}">
+                    <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleChecklistItem('${item._id}', this.checked)">
+                    <span>${item.text}</span>
+                </div>
+            `).join('') || '<p style="color:var(--text-light);">لا توجد بنود</p>';
+        }
 
+        // ========== Attachments ==========
+        function renderAttachments() {
+            document.getElementById('attachmentsList').innerHTML = taskData.attachments.map(a => `
+                <div class="attachment-item">
+                    <span>📎</span><a href="${a.url}" target="_blank">${a.name}</a>
+                    <button class="btn btn-outline" style="height:24px;font-size:0.7rem;margin-right:auto;" onclick="deleteAttachment('${a._id}')">🗑️</button>
+                </div>
+            `).join('') || '<p style="color:var(--text-light);">لا توجد مرفقات</p>';
+        }
+
+        // ========== Comments ==========
+        function renderComments() {
+            document.getElementById('commentsList').innerHTML = taskData.comments.map(c => `
+                <div class="comment">
+                    <div class="comment-user">${c.username}</div>
+                    <div class="comment-text">${c.text}</div>
+                    <div class="comment-time">${new Date(c.createdAt).toLocaleString('ar-SA')}</div>
+                </div>
+            `).join('') || '<p style="color:var(--text-light);">لا توجد تعليقات</p>';
+        }
+
+        // ========== Followers ==========
+        function renderFollowers() {
+            document.getElementById('followersList').innerHTML = (taskData.followers || []).map((f, i) => `
+                <span class="follower-tag">👤 ${f}<button onclick="removeFollower(${i})">✕</button></span>
+            `).join('') || '<p style="color:var(--text-light);">لا يوجد متابعون</p>';
+        }
+
+        // ========== Dependencies ==========
+        async function renderDependencies() {
+            const allTasks = await fetch(`${API_BASE}/tasks`, { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json());
+            document.getElementById('dependenciesList').innerHTML = (taskData.dependencies || []).map(d => {
+                const linked = allTasks.find(t => t._id === d.taskId);
+                return `<div class="attachment-item">
+                    <span>🔗</span><span>${linked ? linked.title : d.taskId}</span>
+                    <span style="font-size:0.75rem;color:var(--text-light);">${d.type}</span>
+                    <button class="btn btn-outline" style="height:24px;font-size:0.7rem;margin-right:auto;" onclick="deleteDependency('${d._id}')">🗑️</button>
+                </div>`;
+            }).join('') || '<p style="color:var(--text-light);">لا توجد تبعيات</p>';
+            
+            document.getElementById('depTaskSelect').innerHTML = '<option value="">اختر مهمة...</option>' + 
+                allTasks.filter(t => t._id !== taskData._id).map(t => `<option value="${t._id}">${t.title}</option>`).join('');
+        }
+
+        // ========== Activity ==========
+        function renderActivity() {
+            document.getElementById('activityList').innerHTML = taskData.activity.reverse().map(a => `
+                <div class="activity-item">
+                    <strong>${a.username}</strong> - ${a.action} - ${a.details}<br>
+                    <small>${new Date(a.createdAt).toLocaleString('ar-SA')}</small>
+                </div>
+            `).join('') || '<p style="color:var(--text-light);">لا يوجد نشاط</p>';
+        }
+
+        // ========== Discussion ==========
+        async function loadDiscussion() {
+            const res = await fetch(`${API_BASE}/chat?taskId=${taskId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const messages = await res.json();
+            document.getElementById('discussionMessages').innerHTML = messages.map(m => `
+                <div style="margin-bottom:0.5rem;padding:0.5rem;border-radius:8px;background:#F1F5F9;">
+                    <strong>${m.username}</strong>: ${m.text}
+                    <small style="color:var(--text-light);display:block;">${new Date(m.createdAt).toLocaleTimeString('ar-SA')}</small>
+                </div>
+            `).join('') || '<p style="color:var(--text-light);">لا توجد مناقشات</p>';
+        }
+
+        async function sendDiscussion() {
+            const input = document.getElementById('discussionInput');
+            const text = input.value.trim();
+            if (!text) return;
+            await fetch(`${API_BASE}/chat`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ text, taskId, channel: 'discussion' })
+            });
+            input.value = '';
+            loadDiscussion();
+        }
+
+        // ========== إجراءات ==========
+        async function addChecklistItem() {
+            const input = document.getElementById('checklistInput');
+            const text = input.value.trim();
+            if (!text) return;
+            await fetch(`${API_BASE}/tasks/${taskId}/checklist`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ text })
+            });
+            input.value = '';
+            loadTask();
+        }
+
+        async function toggleChecklistItem(itemId, done) {
+            await fetch(`${API_BASE}/tasks/${taskId}/checklist/${itemId}`, {
+                method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ done })
+            });
+            loadTask();
+        }
+
+        async function uploadFile() {
+            const file = document.getElementById('fileInput').files[0];
+            if (!file) return;
+            document.getElementById('uploadStatus').textContent = '⏳...';
+            const formData = new FormData();
+            formData.append('file', file);
+            const res = await fetch('https://nivora-t9ov.onrender.com/api/upload', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (res.ok) {
+                await fetch(`${API_BASE}/tasks/${taskId}/attachments`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(data)
+                });
+                document.getElementById('uploadStatus').textContent = '✅ تم';
+                loadTask();
+            }
+        }
+
+        async function deleteAttachment(attId) {
+            await fetch(`${API_BASE}/tasks/${taskId}/attachments/${attId}`, {
+                method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` }
+            });
+            loadTask();
+        }
+
+        async function addComment() {
+            const input = document.getElementById('commentInput');
+            const text = input.value.trim();
+            if (!text) return;
+            await fetch(`${API_BASE}/tasks/${taskId}/comments`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ text })
+            });
+            input.value = '';
+            loadTask();
+        }
+
+        async function addFollower() {
+            const input = document.getElementById('followerInput');
+            const name = input.value.trim();
+            if (!name) return;
+            const followers = [...(taskData.followers || []), name];
+            await fetch(`${API_BASE}/tasks/${taskId}`, {
+                method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ followers })
+            });
+            input.value = '';
+            loadTask();
+        }
+
+        async function removeFollower(index) {
+            const followers = [...taskData.followers];
+            followers.splice(index, 1);
+            await fetch(`${API_BASE}/tasks/${taskId}`, {
+                method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ followers })
+            });
+            loadTask();
+        }
+
+        async function addDependency() {
+            const depTaskId = document.getElementById('depTaskSelect').value;
+            const type = document.getElementById('depType').value;
+            if (!depTaskId) return;
+            await fetch(`${API_BASE}/tasks/${taskId}/dependencies`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ taskId: depTaskId, type })
+            });
+            loadTask();
+        }
+
+        async function deleteDependency(depId) {
+            await fetch(`${API_BASE}/tasks/${taskId}/dependencies/${depId}`, {
+                method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` }
+            });
+            loadTask();
+        }
+
+        // ========== المهام الفرعية المنفصلة ==========
+        function showAddSubtask() {
+            document.getElementById('addSubtaskForm').style.display = 'block';
+            document.getElementById('subtaskTitle').focus();
+        }
+
+        function hideAddSubtask() {
+            document.getElementById('addSubtaskForm').style.display = 'none';
+            document.getElementById('subtaskTitle').value = '';
+            document.getElementById('subtaskAssignee').value = '';
+            document.getElementById('subtaskDueDate').value = '';
+        }
+
+        async function loadSubtasks() {
+            try {
+                const res = await fetch(`${API_BASE}/tasks/${taskId}/subtasks`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const subtasks = await res.json();
+                
+                const container = document.getElementById('subtasksList');
+                
+                if (subtasks.length === 0) {
+                    container.innerHTML = '<p style="color:var(--text-light);text-align:center;padding:1rem;">لا توجد مهام فرعية</p>';
+                    return;
+                }
+                
+                container.innerHTML = subtasks.map(st => `
+                    <div class="subtask-item" style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem;border-bottom:1px solid var(--border);border-radius:8px;${st.status === 'done' ? 'background:#F0FDF4;' : ''}">
+                        <input type="checkbox" ${st.status === 'done' ? 'checked' : ''} 
+                            onchange="toggleSubtaskStatus('${st._id}', this.checked)" 
+                            style="width:18px;height:18px;cursor:pointer;flex-shrink:0;">
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-weight:600;font-size:0.85rem;${st.status === 'done' ? 'text-decoration:line-through;color:var(--text-light);' : ''}">
+                                ${st.title}
+                            </div>
+                            <div style="display:flex;gap:0.75rem;font-size:0.7rem;color:var(--text-light);margin-top:0.25rem;flex-wrap:wrap;">
+                                ${st.assignee ? `<span>👤 ${st.assignee}</span>` : ''}
+                                ${st.dueDate ? `<span>📅 ${new Date(st.dueDate).toLocaleDateString('ar-SA')}</span>` : ''}
+                                <span>${st.priority === 'critical' ? '🔴' : st.priority === 'high' ? '🟠' : st.priority === 'medium' ? '🟡' : '🟢'}</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-outline" onclick="deleteSubtask('${st._id}')" style="height:28px;font-size:0.7rem;flex-shrink:0;">🗑️</button>
+                    </div>
+                `).join('');
+            } catch (err) {
+                document.getElementById('subtasksList').innerHTML = '<p style="color:#DC2626;">خطأ في تحميل المهام الفرعية</p>';
+            }
+        }
+
+        async function addSubtask() {
+            const title = document.getElementById('subtaskTitle').value.trim();
+            if (!title) return alert('العنوان مطلوب');
+            
+            const priority = document.getElementById('subtaskPriority').value;
+            const assignee = document.getElementById('subtaskAssignee').value.trim();
+            const dueDate = document.getElementById('subtaskDueDate').value;
+            
+            try {
+                const res = await fetch(`${API_BASE}/tasks/${taskId}/subtasks`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ title, priority, assignee, dueDate: dueDate || null })
+                });
+                
+                if (res.ok) {
+                    hideAddSubtask();
+                    loadSubtasks();
+                    loadTask();
+                }
+            } catch (err) {
+                alert('خطأ في إنشاء المهمة الفرعية');
+            }
+        }
+
+        async function toggleSubtaskStatus(subtaskId, done) {
+            const status = done ? 'done' : 'new';
+            try {
+                await fetch(`${API_BASE}/tasks/${subtaskId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ status })
+                });
+                loadSubtasks();
+                loadTask();
+            } catch (err) {
+                console.error('خطأ في تحديث حالة المهمة الفرعية');
+            }
+        }
+
+        async function deleteSubtask(subtaskId) {
+            if (!confirm('حذف المهمة الفرعية؟')) return;
+            try {
+                await fetch(`${API_BASE}/tasks/${taskId}/subtasks/${subtaskId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                loadSubtasks();
+                loadTask();
+            } catch (err) {
+                alert('خطأ في حذف المهمة الفرعية');
+            }
+        }
+
+        // تفعيل التبويب من الـ URL
         const activeTab = params.get('tab');
-        if (activeTab) { document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); const targetTab = document.querySelector(`.tab[data-tab="${activeTab}"]`); const targetContent = document.getElementById(`tab-${activeTab}`); if (targetTab) targetTab.classList.add('active'); if (targetContent) targetContent.classList.add('active'); }
+        if (activeTab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            const targetTab = document.querySelector(`.tab[data-tab="${activeTab}"]`);
+            const targetContent = document.getElementById(`tab-${activeTab}`);
+            if (targetTab) targetTab.classList.add('active');
+            if (targetContent) targetContent.classList.add('active');
+        }
+// ========== @Mention Auto-complete للتعليقات ==========
+let mentionUsers = [];
+let commentMentionIndex = -1;
+let commentMentionStartPos = -1;
 
+async function loadMentionUsers() {
+    try {
+        const wsId = localStorage.getItem('workspaceId');
+        if (!wsId) return;
+        const res = await fetch(`${API_BASE}/workspaces/${wsId}/members`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const members = await res.json();
+        mentionUsers = members.filter(m => m.userId).map(m => m.userId.username || '');
+    } catch (err) {}
+}
+
+function createCommentMentionDropdown(filter = '') {
+    const oldDropdown = document.getElementById('commentMentionDropdown');
+    if (oldDropdown) oldDropdown.remove();
+    
+    const filtered = mentionUsers.filter(u => u.toLowerCase().includes(filter.toLowerCase()));
+    if (filtered.length === 0) return;
+    
+    const dropdown = document.createElement('div');
+    dropdown.id = 'commentMentionDropdown';
+    dropdown.style.cssText = 'position:absolute;bottom:50px;right:0;background:var(--card);border:1px solid var(--border);border-radius:8px;max-height:150px;overflow-y:auto;z-index:20;min-width:180px;box-shadow:0 10px 30px rgba(0,0,0,0.1);';
+    
+    filtered.forEach((user, i) => {
+        const item = document.createElement('div');
+        item.textContent = user;
+        item.style.cssText = `padding:0.5rem 0.75rem;cursor:pointer;font-size:0.85rem;${i===0?'background:#EFF6FF;color:var(--primary);':''}`;
+        item.addEventListener('click', () => selectCommentMention(user));
+        dropdown.appendChild(item);
+    });
+    
+    document.querySelector('#tab-comments .add-row').appendChild(dropdown);
+    commentMentionIndex = 0;
+}
+
+function selectCommentMention(username) {
+    const input = document.getElementById('commentInput');
+    if (commentMentionStartPos >= 0) {
+        const before = input.value.substring(0, commentMentionStartPos);
+        input.value = before + '@' + username + ' ';
+    }
+    removeCommentMentionDropdown();
+    input.focus();
+}
+
+function removeCommentMentionDropdown() {
+    const dropdown = document.getElementById('commentMentionDropdown');
+    if (dropdown) dropdown.remove();
+    commentMentionStartPos = -1;
+    commentMentionIndex = -1;
+}
+
+document.getElementById('commentInput').addEventListener('input', function(e) {
+    const cursorPos = this.selectionStart;
+    const textBeforeCursor = this.value.substring(0, cursorPos);
+    const atSignIndex = textBeforeCursor.lastIndexOf('@');
+    if (atSignIndex >= 0) {
+        const textAfterAt = textBeforeCursor.substring(atSignIndex + 1);
+        if (!textAfterAt.includes(' ')) {
+            commentMentionStartPos = atSignIndex;
+            createCommentMentionDropdown(textAfterAt);
+            return;
+        }
+    }
+    removeCommentMentionDropdown();
+});
+
+loadMentionUsers();
         loadTask();
     </script>
 </body>

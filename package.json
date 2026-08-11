@@ -1,17 +1,36 @@
 {
   "name": "nivora",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Nivora - منصة سحابية متكاملة لإدارة العمل المؤسسي والمشاريع والفرق",
+  "main": "server/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server/server.js",
+    "dev": "nodemon server/server.js",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch",
+    "seed": "node server/config/seed.js",
+    "backup": "node scripts/backup.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "project-management",
+    "task-manager",
+    "saas",
+    "kanban",
+    "gantt",
+    "team-collaboration",
+    "workflow",
+    "enterprise"
+  ],
+  "author": "عبدالرقيب الخالدي",
   "license": "ISC",
   "type": "commonjs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mbrmjmbrmj9-cmd/task-manager"
+  },
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "cloudinary": "^1.41.3",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "express-rate-limit": "^8.6.2",
@@ -23,5 +42,10 @@
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "socket.io": "^4.8.3"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.14",
+    "supertest": "^6.3.4"
   }
 }

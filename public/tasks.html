@@ -61,6 +61,92 @@
             .task-table th:nth-child(3), .task-table td:nth-child(3),
             .task-table th:nth-child(4), .task-table td:nth-child(4) { display: none; }
         }
+        /* ✅ Modal Styles */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+.modal-overlay.show {
+    display: flex;
+}
+.modal-content {
+    background: var(--card);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 560px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+    animation: modalIn 0.25s ease;
+}
+@keyframes modalIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+.modal-header h2 {
+    font-size: 1.1rem;
+    font-weight: 800;
+}
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    cursor: pointer;
+    color: var(--text-light);
+    padding: 0.25rem;
+}
+.modal-close:hover {
+    color: var(--text);
+}
+.modal-body {
+    padding: 1.5rem;
+}
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border);
+}
+.form-group {
+    margin-bottom: 1rem;
+}
+.form-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+    color: var(--text-light);
+}
+.form-group .input {
+    width: 100%;
+}
+
+@media (max-width: 480px) {
+    .modal-content {
+        margin: 0.5rem;
+        border-radius: 12px;
+    }
+    .modal-body {
+        padding: 1rem;
+    }
+    .modal-body > div {
+        grid-template-columns: 1fr !important;
+    }
+}
     </style>
 </head>
 <body>
@@ -91,7 +177,8 @@
         </div>
 
         <div class="add-row">
-            <button class="btn btn-primary" onclick="openModal()">➕ مهمة جديدة</button>
+            <!-- استبدال هذا السطر -->
+<button class="btn btn-primary" onclick="openModal()">➕ مهمة جديدة</button>
             <button class="btn btn-outline" onclick="saveAsTemplate()">💾 حفظ كقالب</button>
             <select class="input" id="templateSelect" onchange="applyTemplate(this.value)" style="width:auto;height:42px;"><option value="">📋 تطبيق قالب...</option></select>
         </div>
@@ -142,8 +229,136 @@
         async function saveAsTemplate() { const name = prompt('اسم القالب:'); if (!name) return; const res = await fetch(`${API_BASE}/tasks`, { headers: { 'Authorization': `Bearer ${token}` } }); const tasks = await res.json(); if (tasks.length === 0) return alert('لا توجد مهام'); await fetch(`${API_BASE}/templates`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ name, tasks }) }); loadTemplateOptions(); showToast('✅ تم حفظ القالب'); }
         async function applyTemplate(id) { if (!id) return; if (!confirm('تطبيق القالب؟')) return; const res = await fetch(`${API_BASE}/templates/${id}/apply`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } }); if (res.ok) { showToast('✅ تم تطبيق القالب'); loadTasks(); } }
         function openModal() { alert('Modal إنشاء مهمة - سيتم تطويره'); }
+        // ========== Modal إنشاء مهمة ==========
+function openModal() {
+    document.getElementById('taskModal').classList.add('show');
+    document.getElementById('modalTaskTitle').focus();
+    loadProjectOptions();
+}
 
+function closeTaskModal(e) {
+    if (e && e.target !== document.getElementById('taskModal')) return;
+    document.getElementById('taskModal').classList.remove('show');
+    // مسح الحقول
+    document.getElementById('modalTaskTitle').value = '';
+    document.getElementById('modalTaskDesc').value = '';
+    document.getElementById('modalTaskPriority').value = 'medium';
+    document.getElementById('modalTaskStatus').value = 'new';
+    document.getElementById('modalTaskDueDate').value = '';
+}
+
+async function loadProjectOptions() {
+    try {
+        const res = await fetch(`${API_BASE}/projects`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const projects = await res.json();
+        const data = projects.data || projects; // دعم Pagination
+        document.getElementById('modalTaskProject').innerHTML = 
+            '<option value="">بدون مشروع</option>' + 
+            data.map(p => `<option value="${p._id}">${p.name}</option>`).join('');
+    } catch (err) {}
+}
+
+async function createTask() {
+    const title = document.getElementById('modalTaskTitle').value.trim();
+    if (!title) return alert('العنوان مطلوب');
+    
+    const btn = document.getElementById('modalSaveBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ جارٍ الإنشاء...';
+    
+    const body = {
+        title,
+        description: document.getElementById('modalTaskDesc').value.trim(),
+        priority: document.getElementById('modalTaskPriority').value,
+        status: document.getElementById('modalTaskStatus').value,
+        dueDate: document.getElementById('modalTaskDueDate').value || null,
+        project: document.getElementById('modalTaskProject').options[document.getElementById('modalTaskProject').selectedIndex]?.text || '',
+        projectId: document.getElementById('modalTaskProject').value || null
+    };
+    
+    try {
+        const res = await fetch(`${API_BASE}/tasks`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(body)
+        });
+        
+        if (res.ok) {
+            closeTaskModal();
+            showToast('✅ تم إنشاء المهمة بنجاح');
+            loadTasks();
+        } else {
+            const data = await res.json();
+            alert('❌ ' + (data.error || 'خطأ في إنشاء المهمة'));
+        }
+    } catch (err) {
+        alert('❌ تعذر الاتصال بالخادم');
+    }
+    
+    btn.disabled = false;
+    btn.textContent = '✅ إنشاء';
+}
         loadTasks(); loadTemplateOptions();
     </script>
+    <!-- ✅ Modal إنشاء مهمة -->
+<div class="modal-overlay" id="taskModal" onclick="closeTaskModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h2>➕ مهمة جديدة</h2>
+            <button class="modal-close" onclick="closeTaskModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>العنوان *</label>
+                <input type="text" class="input" id="modalTaskTitle" placeholder="عنوان المهمة">
+            </div>
+            <div class="form-group">
+                <label>الوصف</label>
+                <textarea class="input" id="modalTaskDesc" placeholder="وصف المهمة" rows="3" style="height:auto;padding:0.75rem;"></textarea>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                <div class="form-group">
+                    <label>الأولوية</label>
+                    <select class="input" id="modalTaskPriority">
+                        <option value="medium">🟡 متوسطة</option>
+                        <option value="high">🟠 عالية</option>
+                        <option value="critical">🔴 حرجة</option>
+                        <option value="low">🟢 منخفضة</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>الحالة</label>
+                    <select class="input" id="modalTaskStatus">
+                        <option value="new">📥 جديدة</option>
+                        <option value="in-progress">🔄 قيد التنفيذ</option>
+                        <option value="review">👁️ مراجعة</option>
+                        <option value="done">✅ مكتملة</option>
+                    </select>
+                </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                <div class="form-group">
+                    <label>المشروع</label>
+                    <select class="input" id="modalTaskProject">
+                        <option value="">بدون مشروع</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>تاريخ الاستحقاق</label>
+                    <input type="date" class="input" id="modalTaskDueDate">
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeTaskModal()">إلغاء</button>
+            <button class="btn btn-primary" id="modalSaveBtn" onclick="createTask()">✅ إنشاء</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>

@@ -25,9 +25,74 @@
         .team-card .meta { display: flex; gap: 1rem; color: var(--text-light); font-size: 0.85rem; margin-bottom: 1rem; }
         .team-card .current { background: #DCFCE7; color: #16A34A; padding: 0.1rem 0.5rem; border-radius: 10px; font-size: 0.75rem; }
         .team-card .plan-badge { background: #EFF6FF; color: #2563EB; padding: 0.2rem 0.6rem; border-radius: 10px; font-size: 0.75rem; }
+        /* ========== أنماط Responsive للـ Teams ========== */
+
+/* Tablet */
+@media (max-width: 1024px) {
+    .sidebar { width: 72px; padding: 1rem 0.5rem; }
+    .sidebar .logo { font-size: 1rem; text-align: center; }
+    .sidebar a { justify-content: center; padding: 0.5rem; font-size: 0; }
+    .sidebar a svg { margin: 0; }
+    .main { margin-right: 72px; padding: 1.5rem; }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        right: -260px;
+        width: 260px;
+        top: 0;
+        bottom: 0;
+        z-index: 200;
+        transition: right 0.3s ease;
+    }
+    .sidebar.open { right: 0; }
+    .sidebar a { font-size: 0.9rem; justify-content: flex-start; padding: 0.6rem 0.75rem; }
+    
+    .main { margin-right: 0; padding: 1rem; padding-bottom: 2rem; }
+    
+    /* Topbar */
+    .topbar { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+    .topbar h1 { font-size: 1.2rem; }
+    .topbar > div { width: 100%; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    
+    /* شبكة الفرق */
+    .teams-grid { 
+        grid-template-columns: 1fr; 
+        gap: 0.75rem; 
+    }
+    
+    /* بطاقة الفريق */
+    .team-card { padding: 1.25rem; }
+    .team-card h3 { font-size: 1rem; }
+    .team-card .meta { flex-wrap: wrap; gap: 0.5rem; font-size: 0.8rem; }
+    .team-card button { width: 100%; }
+    
+    /* Overlay */
+    .team-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 199;
+    }
+    .team-overlay.show { display: block; }
+}
+
+/* شاشات صغيرة جدًا */
+@media (max-width: 480px) {
+    .topbar h1 { font-size: 1.1rem; }
+    .team-card { padding: 1rem; }
+}
     </style>
 </head>
 <body>
+    <!-- Overlay للقائمة الجانبية -->
+<div class="team-overlay" id="teamOverlay" onclick="closeSidebar()"></div>
+
+<!-- زر القائمة للجوال -->
+<button id="mobileMenuBtn" onclick="openSidebar()" style="display:none;position:fixed;top:12px;right:12px;z-index:150;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:0.4rem 0.6rem;cursor:pointer;font-size:1.2rem;">☰</button>
 
     <aside class="sidebar">
         <div class="logo">📋 Nivora</div>
@@ -97,6 +162,29 @@
                 document.getElementById('btnNewTeam').style.display = 'inline-flex';
             }
         }
+
+     // دوال القائمة الجانبية للجوال
+function openSidebar() {
+    document.querySelector('.sidebar').classList.add('open');
+    document.getElementById('teamOverlay').classList.add('show');
+}
+function closeSidebar() {
+    document.querySelector('.sidebar').classList.remove('open');
+    document.getElementById('teamOverlay').classList.remove('show');
+}
+
+// تحديث واجهة الجوال
+function updateMobileUI() {
+    const btn = document.getElementById('mobileMenuBtn');
+    if (window.innerWidth <= 768) {
+        btn.style.display = 'block';
+    } else {
+        btn.style.display = 'none';
+        closeSidebar();
+    }
+}
+window.addEventListener('resize', updateMobileUI);
+updateMobileUI();   
 
         loadTeams();
         checkPermission();
