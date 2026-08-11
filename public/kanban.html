@@ -249,6 +249,7 @@
                     ${attachments.map(a => `<div class="file-item"><span>📎</span><a href="${a.url}" target="_blank" style="color:var(--primary);text-decoration:none;flex:1;">${a.name}</a><button class="btn btn-outline" style="height:28px;font-size:0.7rem;" onclick="delAtt('${a._id}')">🗑️</button></div>`).join('')}
                     <div style="margin-top:0.75rem;display:flex;gap:0.5rem;"><input type="file" id="fileUpload" style="display:none;" onchange="upFileDet()"><button class="btn btn-primary" onclick="document.getElementById('fileUpload').click()">📁 رفع ملف</button></div>
                     <div class="drop-area" ondragover="event.preventDefault()" ondrop="dropFile(event)">📥 أفلت الملفات هنا للتحميل</div>
+                    <a href="task.html?id=${id}&tab=attachments" class="btn btn-outline" style="width:100%;text-align:center;text-decoration:none;margin-top:0.5rem;display:block;">📋 فتح الملفات كاملة</a>
                 </div>
                 <div class="detail-section">
                     <div class="toggle-row"><label>🔄 التكرار</label><div class="toggle-sw ${t.isRecurring ? 'on' : ''}" id="recurToggle" onclick="toggleRecur()"></div></div>
@@ -258,6 +259,7 @@
                     ${comments.length === 0 ? '<p style="color:#94A3B8;font-size:0.85rem;">لا توجد تعليقات</p>' : ''}
                     ${comments.map(c => `<div class="comment-item"><div class="cu">${c.username || 'مستخدم'}</div><div class="ct">${c.text}</div><div class="ctm">${new Date(c.createdAt).toLocaleString('ar-SA')}</div></div>`).join('')}
                     <div class="comment-row"><input type="text" id="commentInput" placeholder="اكتب تعليقاً... استخدم @ للإشارة"><button class="btn btn-primary" onclick="addCommentDet()" style="height:40px;">إرسال</button></div>
+                    <a href="task.html?id=${id}&tab=comments" class="btn btn-outline" style="width:100%;text-align:center;text-decoration:none;margin-top:0.5rem;display:block;">📋 فتح التعليقات كاملة</a>
                 </div>`;
 
             document.getElementById('detailsBody').innerHTML = html;
