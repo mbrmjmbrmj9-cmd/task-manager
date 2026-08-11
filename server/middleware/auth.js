@@ -173,4 +173,3 @@ function adminAuth(req, res, next) {
 }
 
 module.exports = { authenticate, requireRole, requireTaskOwnership, requireProjectOwnership, adminAuth };
-module.exports = { authenticate, requireRole, requireTaskOwnership, requireProjectOwnership };
