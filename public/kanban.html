@@ -26,7 +26,7 @@
         .toolbar input { flex: 1; min-width: 150px; }
 
         .kanban { display: flex; gap: 1rem; flex: 1; overflow-x: auto; padding-bottom: 1rem; }
-        .column { flex: 1; min-width: 290px; background: #F1F5F9; border-radius: 14px; padding: 1rem; display: flex; flex-direction: column; max-height: calc(100vh - 240px); }
+        .column { flex: 1; min-width: 285px; background: #F1F5F9; border-radius: 14px; padding: 1rem; display: flex; flex-direction: column; max-height: calc(100vh - 235px); }
         body.dark .column { background: #1E293B; }
         .column-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; padding: 0 0.25rem; }
         .column-header h3 { font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
@@ -35,75 +35,89 @@
         .task-list::-webkit-scrollbar { width: 4px; }
         .task-list::-webkit-scrollbar-thumb { background: #CBD5E0; border-radius: 4px; }
 
-        .task-card { background: var(--card); border-radius: 12px; padding: 0.85rem; margin-bottom: 0.6rem; border-right: 4px solid #E2E8F0; cursor: pointer; position: relative; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
-        .task-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.08); transform: translateY(-2px); }
-        .task-card.dragging { opacity: 0.4; transform: rotate(2deg) scale(0.97); box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
-        .task-card.priority-critical { border-right-color: #EF4444; }
-        .task-card.priority-high { border-right-color: #F97316; }
-        .task-card.priority-medium { border-right-color: #EAB308; }
-        .task-card.priority-low { border-right-color: #22C55E; }
-        .task-card.done-card { opacity: 0.75; }
-        .task-card.done-card .card-title { text-decoration: line-through; color: var(--text-light); }
+        /* بطاقة المهمة */
+        .task-card {
+            background: #FFFFFF; border-radius: 10px; padding: 0.7rem 0.75rem; margin-bottom: 0.5rem;
+            border: 1px solid #E2E8F0; cursor: default; position: relative; transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03); user-select: none;
+        }
+        body.dark .task-card { background: #1E293B; border-color: #334155; }
+        .task-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+        .task-card.dragging { opacity: 0.5; transform: rotate(1.5deg); box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
 
-        .card-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
-        .priority-tag { font-size: 0.6rem; padding: 0.15rem 0.5rem; border-radius: 6px; font-weight: 700; letter-spacing: 0.3px; }
-        .priority-critical-tag { background: #FEE2E2; color: #DC2626; }
-        .priority-high-tag { background: #FFF7ED; color: #EA580C; }
-        .priority-medium-tag { background: #FEFCE8; color: #A16207; }
-        .priority-low-tag { background: #F0FDF4; color: #16A34A; }
-        .card-menu-btn { background: none; border: none; cursor: pointer; color: #94A3B8; font-size: 1.1rem; padding: 0.15rem 0.3rem; border-radius: 6px; line-height: 1; transition: all 0.15s; }
-        .card-menu-btn:hover { background: #F1F5F9; color: var(--text); }
+        /* Header البطاقة */
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; }
+        .card-header-left { display: flex; align-items: center; gap: 0.35rem; }
+        .card-header-right { display: flex; align-items: center; gap: 0.35rem; }
+        .icon-btn { background: none; border: none; cursor: pointer; color: #94A3B8; font-size: 0.9rem; padding: 0.15rem; border-radius: 4px; line-height: 1; transition: all 0.15s; display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; }
+        .icon-btn:hover { background: #F1F5F9; color: #64748B; }
+        body.dark .icon-btn:hover { background: #334155; color: #CBD5E0; }
 
-        .card-title { font-weight: 700; font-size: 0.88rem; margin-bottom: 0.55rem; line-height: 1.5; color: var(--text); }
+        .status-label { font-size: 0.7rem; font-weight: 600; display: flex; align-items: center; gap: 0.2rem; white-space: nowrap; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .status-new .status-dot { background: #3B82F6; }
+        .status-progress .status-dot { background: #D97706; }
+        .status-review .status-dot { background: #8B5CF6; }
+        .status-done .status-dot { background: #22C55E; }
+        .status-blocked .status-dot { background: #EF4444; }
 
-        .card-info-row { display: flex; gap: 0.4rem; margin-bottom: 0.5rem; flex-wrap: wrap; align-items: center; }
-        .info-chip { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.7rem; color: #64748B; background: #F8FAFC; padding: 0.2rem 0.5rem; border-radius: 6px; white-space: nowrap; }
-        body.dark .info-chip { background: #0F172A; color: #94A3B8; }
+        /* عنوان المهمة */
+        .card-title { font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem; line-height: 1.45; color: #1E293B; cursor: pointer; }
+        body.dark .card-title { color: #F1F5F9; }
+        .card-title:hover { color: #2563EB; }
 
-        .date-chip { font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 6px; font-weight: 600; white-space: nowrap; display: inline-flex; align-items: center; gap: 0.25rem; }
-        .date-normal { background: #F1F5F9; color: #64748B; }
-        .date-today { background: #FEF9C3; color: #A16207; }
-        .date-overdue { background: #FEE2E2; color: #DC2626; }
-        .date-done { background: #DCFCE7; color: #16A34A; }
+        /* تاريخ المهمة */
+        .date-badge { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.68rem; padding: 0.2rem 0.5rem; border-radius: 6px; border: 1px solid #E2E8F0; color: #64748B; margin-bottom: 0.45rem; background: #F8FAFC; }
+        body.dark .date-badge { border-color: #334155; color: #94A3B8; background: #0F172A; }
+        .date-badge.overdue { border-color: #FECACA; color: #DC2626; background: #FFF5F5; }
 
-        .card-bottom-row { display: flex; justify-content: space-between; align-items: center; margin-top: 0.6rem; padding-top: 0.55rem; border-top: 1px solid #F1F5F9; }
-        body.dark .card-bottom-row { border-top-color: #334155; }
-        .card-indicators { display: flex; gap: 0.65rem; align-items: center; }
-        .indicator { display: flex; align-items: center; gap: 0.2rem; font-size: 0.7rem; color: #94A3B8; }
-        .indicator span { font-weight: 500; }
+        /* Footer البطاقة */
+        .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 0.3rem; }
+        .card-footer-left { display: flex; align-items: center; gap: 0.25rem; }
+        .card-footer-right { display: flex; align-items: center; gap: 0.55rem; }
+
+        /* Avatar */
+        .avatar-small { width: 24px; height: 24px; border-radius: 50%; background: #E2E8F0; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 700; color: #64748B; flex-shrink: 0; }
+
+        /* Drag Handle */
+        .drag-handle { display: grid; grid-template-columns: repeat(3, 4px); grid-template-rows: repeat(3, 4px); gap: 2.5px; cursor: grab; padding: 2px; flex-shrink: 0; }
+        .drag-handle:active { cursor: grabbing; }
+        .drag-handle span { width: 4px; height: 4px; border-radius: 50%; background: #94A3B8; display: block; }
+
+        /* المؤشرات */
+        .indicators { display: flex; align-items: center; gap: 0.45rem; }
+        .indicator-item { display: flex; align-items: center; gap: 0.15rem; font-size: 0.65rem; color: #94A3B8; }
+        .indicator-item svg { width: 12px; height: 12px; }
+
+        /* Flag الأولوية */
+        .priority-flag { font-size: 0.8rem; flex-shrink: 0; }
+        .priority-critical { color: #EF4444; }
+        .priority-high { color: #F97316; }
+        .priority-medium { color: #EAB308; }
+        .priority-low { color: #22C55E; }
 
         .column.drag-over { background: #DBEAFE; outline: 2px dashed #2563EB; outline-offset: -4px; border-radius: 14px; }
-        body.dark .column.drag-over { background: #1E3A5F; outline-color: #3B82F6; }
-        .drop-zone { text-align: center; padding: 1rem; border: 2px dashed #CBD5E0; border-radius: 10px; margin: 0.5rem 0.25rem; color: #94A3B8; font-size: 0.8rem; display: none; }
-        .column.drag-over .drop-zone { display: block; }
+        body.dark .column.drag-over { background: #1E3A5F; }
 
-        .add-task-btn { margin-top: auto; padding: 0.6rem; text-align: center; border: 2px dashed #E2E8F0; border-radius: 10px; cursor: pointer; font-size: 0.8rem; color: #94A3B8; transition: all 0.2s; font-weight: 500; }
-        .add-task-btn:hover { border-color: var(--primary); color: var(--primary); background: #EFF6FF; }
+        .add-task-btn { margin-top: auto; padding: 0.5rem; text-align: center; border: 2px dashed #E2E8F0; border-radius: 10px; cursor: pointer; font-size: 0.8rem; color: #94A3B8; font-weight: 500; transition: all 0.2s; }
+        .add-task-btn:hover { border-color: #2563EB; color: #2563EB; background: #EFF6FF; }
 
-        .dropdown-card-menu { position: absolute; top: 35px; left: 5px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 12px 35px rgba(0,0,0,0.12); z-index: 50; min-width: 155px; display: none; overflow: hidden; }
-        .dropdown-card-menu.show { display: block; }
-        .dropdown-card-menu button { display: block; width: 100%; padding: 0.55rem 0.85rem; border: none; background: none; cursor: pointer; font-family: inherit; font-size: 0.8rem; text-align: right; color: var(--text); transition: background 0.1s; }
-        .dropdown-card-menu button:hover { background: #F1F5F9; }
-        .dropdown-card-menu button.danger { color: #DC2626; }
-        .dropdown-card-menu button.danger:hover { background: #FEE2E2; }
-
+        /* Modal */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(2px); }
         .modal-overlay.show { display: flex; }
-        .modal-content { background: var(--card); border-radius: 20px; width: 100%; max-width: 580px; max-height: 85vh; overflow-y: auto; box-shadow: 0 30px 60px rgba(0,0,0,0.2); animation: modalIn 0.2s ease; }
+        .modal-content { background: var(--card); border-radius: 20px; width: 100%; max-width: 600px; max-height: 85vh; overflow-y: auto; box-shadow: 0 30px 60px rgba(0,0,0,0.2); animation: modalIn 0.2s ease; }
         @keyframes modalIn { from { opacity: 0; transform: translateY(30px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        .modal-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 1.5rem 1.5rem 0.75rem; }
-        .modal-header h2 { font-size: 1.15rem; font-weight: 800; flex: 1; line-height: 1.5; }
-        .modal-close { background: #F1F5F9; border: none; font-size: 1.1rem; cursor: pointer; color: var(--text-light); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
-        .modal-close:hover { background: #E2E8F0; color: var(--text); }
-        .modal-body { padding: 0.75rem 1.5rem 1.5rem; }
-        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem; }
-        .detail-item { background: #F8FAFC; padding: 0.7rem 0.85rem; border-radius: 10px; }
-        body.dark .detail-item { background: #0F172A; }
-        .detail-item .detail-label { font-size: 0.7rem; color: #94A3B8; margin-bottom: 0.2rem; font-weight: 500; }
-        .detail-item .detail-value { font-size: 0.85rem; font-weight: 600; }
-        .detail-full { margin-bottom: 0.75rem; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 1.5rem 0.75rem; }
+        .modal-header h2 { font-size: 1.15rem; font-weight: 800; }
+        .modal-close { background: #F1F5F9; border: none; font-size: 1.1rem; cursor: pointer; color: #64748B; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+        .modal-close:hover { background: #E2E8F0; color: #1E293B; }
+        .modal-body { padding: 1rem 1.5rem 1.5rem; }
+        .detail-section { margin-bottom: 1rem; }
+        .detail-section label { font-size: 0.75rem; font-weight: 700; color: #64748B; display: block; margin-bottom: 0.3rem; }
+        .detail-section .value { font-size: 0.9rem; color: var(--text); }
+        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
 
-        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #16A34A; color: white; padding: 0.75rem 1.5rem; border-radius: 12px; z-index: 9999; font-weight: 600; font-size: 0.9rem; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards; }
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #16A34A; color: #fff; padding: 0.75rem 1.5rem; border-radius: 12px; z-index: 9999; font-weight: 600; font-size: 0.9rem; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards; }
         @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(-20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
         @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateX(-50%) translateY(-20px); } }
 
@@ -114,7 +128,7 @@
         .bottom-nav a svg { width: 22px; height: 22px; }
 
         @media (max-width: 1024px) { :root { --sidebar-w: 72px; } .sidebar { padding: 1rem 0.5rem; } .sidebar .logo { font-size: 1rem; text-align: center; } .sidebar .label, .sidebar .logo span { display: none; } .sidebar a { justify-content: center; padding: 0.5rem; } }
-        @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 1rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } .kanban { flex-direction: column; } .column { min-width: auto; max-height: none; } .detail-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 1rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } .kanban { flex-direction: column; } .column { min-width: auto; max-height: none; } }
     </style>
 </head>
 <body>
@@ -132,8 +146,7 @@
     </aside>
 
     <main class="main">
-        <div class="topbar">
-            <div><h1>📌 Kanban</h1><p style="font-size:0.85rem;color:var(--text-light);" id="projectTitle"></p></div>
+        <div class="topbar"><div><h1>📌 Kanban</h1><p id="projectTitle" style="font-size:0.85rem;color:var(--text-light);"></p></div>
             <div style="display:flex;gap:0.5rem;">
                 <select id="projectFilter" onchange="loadKanban()" style="height:36px;border-radius:8px;border:1px solid var(--border);padding:0 0.5rem;font-family:inherit;font-size:0.8rem;background:var(--card);color:var(--text);"><option value="">كل المشاريع</option></select>
                 <button class="btn btn-outline" onclick="toggleDark()" id="darkBtn" style="height:36px;">🌙</button>
@@ -141,8 +154,8 @@
             </div>
         </div>
         <div class="toolbar">
-            <input type="text" id="searchInput" placeholder="🔍 بحث عن مهمة..." oninput="filterCards()">
-            <select id="assigneeFilter" onchange="filterCards()"><option value="">👤 كل المسؤولين</option></select>
+            <input type="text" id="searchInput" placeholder="🔍 بحث..." oninput="filterCards()">
+            <select id="assigneeFilter" onchange="filterCards()"><option value="">👤 الكل</option></select>
         </div>
         <div class="kanban" id="kanbanBoard"></div>
     </main>
@@ -155,12 +168,8 @@
         <a href="#" onclick="openSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>المزيد</a>
     </nav>
 
-    <!-- Modal تفاصيل -->
     <div class="modal-overlay" id="taskModal" onclick="if(event.target===this)closeModal()">
-        <div class="modal-content">
-            <div class="modal-header"><h2 id="modalTitle"></h2><button class="modal-close" onclick="closeModal()">✕</button></div>
-            <div class="modal-body" id="modalBody"></div>
-        </div>
+        <div class="modal-content"><div class="modal-header"><h2 id="modalTitle"></h2><button class="modal-close" onclick="closeModal()">✕</button></div><div class="modal-body" id="modalBody"></div></div>
     </div>
 
     <script>
@@ -175,7 +184,9 @@
         function showToast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 3000); }
 
         const statuses = ['new', 'in-progress', 'review', 'done', 'blocked'];
-        const labels = { 'new': '📥 جديدة', 'in-progress': '🔄 قيد التنفيذ', 'review': '👁️ مراجعة', 'done': '✅ مكتملة', 'blocked': '🚫 متعثرة' };
+        const labels = { 'new': 'متاحة', 'in-progress': 'قيد التنفيذ', 'review': 'مراجعة', 'done': 'مكتملة', 'blocked': 'متعثرة' };
+        const statusIcons = { 'new': '📥', 'in-progress': '⚙️', 'review': '👁️', 'done': '✅', 'blocked': '🚫' };
+        const statusClasses = { 'new': 'status-new', 'in-progress': 'status-progress', 'review': 'status-review', 'done': 'status-done', 'blocked': 'status-blocked' };
         let allTasks = [], allProjects = [];
 
         async function loadProjects() {
@@ -196,80 +207,63 @@
             if (pid) document.getElementById('projectTitle').textContent = '📁 ' + (allProjects.find(p => p._id === pid)?.name || '');
             else document.getElementById('projectTitle').textContent = '';
             const assignees = [...new Set(allTasks.map(t => t.assignee).filter(Boolean))];
-            document.getElementById('assigneeFilter').innerHTML = '<option value="">👤 كل المسؤولين</option>' + assignees.map(a => `<option value="${a}">${a}</option>`).join('');
+            document.getElementById('assigneeFilter').innerHTML = '<option value="">👤 الكل</option>' + assignees.map(a => `<option value="${a}">${a}</option>`).join('');
             renderBoard(allTasks);
-        }
-
-        function getDateInfo(dueDate, status) {
-            if (!dueDate) return null;
-            if (status === 'done') return { cls: 'date-done', text: '✓ ' + new Date(dueDate).toLocaleDateString('ar-SA') };
-            const now = new Date(); now.setHours(0,0,0,0);
-            const due = new Date(dueDate); due.setHours(0,0,0,0);
-            const diff = Math.ceil((due - now) / 86400000);
-            if (diff < 0) return { cls: 'date-overdue', text: '🔴 متأخرة' };
-            if (diff === 0) return { cls: 'date-today', text: '🟡 اليوم' };
-            if (diff === 1) return { cls: 'date-today', text: '🟠 غدًا' };
-            return { cls: 'date-normal', text: '📅 ' + due.toLocaleDateString('ar-SA') };
         }
 
         function renderBoard(tasks) {
             document.getElementById('kanbanBoard').innerHTML = statuses.map(s => {
                 const filtered = tasks.filter(t => t.status === s);
                 return `<div class="column" data-status="${s}" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="dropTask(event,'${s}')">
-                    <div class="column-header"><h3>${labels[s]} <span class="count">${filtered.length}</span></h3></div>
-                    <div class="task-list">${filtered.map(t => renderCard(t)).join('')}<div class="drop-zone">📥 أسقط المهمة هنا</div></div>
+                    <div class="column-header"><h3>${statusIcons[s]} ${labels[s]} <span class="count">${filtered.length}</span></h3></div>
+                    <div class="task-list">${filtered.map(t => renderCard(t)).join('')}</div>
                     <div class="add-task-btn" onclick="quickAdd('${s}')">+ إضافة مهمة</div>
                 </div>`;
             }).join('');
         }
 
         function renderCard(t) {
-            const priorityLabels = { critical: 'حرجة', high: 'عالية', medium: 'متوسطة', low: 'منخفضة' };
-            const priorityCls = `priority-${t.priority || 'medium'}-tag`;
-            const dateInfo = getDateInfo(t.dueDate, t.status);
-            const doneCount = t.checklist?.filter(c => c.done).length || 0;
-            const totalChecklist = t.checklist?.length || 0;
-            const subtaskCount = allTasks.filter(st => st.parentTask === t._id).length;
+            const cls = statusClasses[t.status] || 'status-new';
+            const statusLabel = labels[t.status] || t.status;
+            const priorityCls = `priority-${t.priority || 'medium'}`;
+            const isOverdue = t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'done';
             const commentCount = t.comments?.length || 0;
             const attachCount = t.attachments?.length || 0;
-            const isDone = t.status === 'done';
+            const initial = (t.assignee || '?')[0];
 
-            return `<div class="task-card priority-${t.priority || 'medium'} ${isDone ? 'done-card' : ''}" draggable="true" data-id="${t._id}" ondragstart="dragTask(event,'${t._id}')" ondragend="this.classList.remove('dragging')" onclick="openTaskDetails('${t._id}')">
-                <div class="card-top-row">
-                    <span class="priority-tag ${priorityCls}">${priorityLabels[t.priority] || 'متوسطة'}</span>
-                    <button class="card-menu-btn" onclick="event.stopPropagation();toggleMenu(event,'${t._id}')">⋮</button>
-                    <div class="dropdown-card-menu" id="menu-${t._id}">
-                        <button onclick="event.stopPropagation();openTaskDetails('${t._id}')">📋 فتح التفاصيل</button>
-                        <button onclick="event.stopPropagation();changeStatus('${t._id}','in-progress')">🔄 قيد التنفيذ</button>
-                        <button onclick="event.stopPropagation();changeStatus('${t._id}','done')">✅ مكتملة</button>
-                        <button class="danger" onclick="event.stopPropagation();deleteTask('${t._id}')">🗑️ حذف</button>
+            return `<div class="task-card ${cls}" draggable="true" data-id="${t._id}" ondragstart="dragTask(event,'${t._id}')" ondragend="this.classList.remove('dragging')">
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <button class="icon-btn" onclick="event.stopPropagation();openTaskDetails('${t._id}')" title="تعديل">✎</button>
+                        <button class="icon-btn" onclick="event.stopPropagation()" title="إجراءات">☷</button>
+                    </div>
+                    <div class="card-header-right">
+                        <span class="status-label">${statusLabel} <span class="status-dot"></span></span>
                     </div>
                 </div>
-                <div class="card-title">${t.title}</div>
-                <div class="card-info-row">
-                    ${t.assignee ? `<span class="info-chip">👤 ${t.assignee}</span>` : ''}
-                    ${t.project && !document.getElementById('projectFilter').value ? `<span class="info-chip">📁 ${t.project}</span>` : ''}
-                    ${dateInfo ? `<span class="date-chip ${dateInfo.cls}">${dateInfo.text}</span>` : ''}
-                </div>
-                <div class="card-bottom-row">
-                    <div class="card-indicators">
-                        ${totalChecklist > 0 ? `<span class="indicator">☑ <span>${doneCount}/${totalChecklist}</span></span>` : ''}
-                        ${subtaskCount > 0 ? `<span class="indicator">↳ <span>${subtaskCount}</span></span>` : ''}
-                        ${commentCount > 0 ? `<span class="indicator">💬 <span>${commentCount}</span></span>` : ''}
-                        ${attachCount > 0 ? `<span class="indicator">📎 <span>${attachCount}</span></span>` : ''}
+                <div class="card-title" onclick="openTaskDetails('${t._id}')">${t.title}</div>
+                ${t.dueDate ? `<div class="date-badge ${isOverdue ? 'overdue' : ''}">📅 ${new Date(t.dueDate).toLocaleDateString('ar-SA')}</div>` : ''}
+                <div class="card-footer">
+                    <div class="card-footer-left">
+                        <div class="avatar-small">${initial}</div>
+                        <div class="drag-handle" title="اسحب لنقل المهمة"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                    </div>
+                    <div class="card-footer-right">
+                        <div class="indicators">
+                            <span class="indicator-item">${commentCount} 💬</span>
+                            <span class="indicator-item">${attachCount} 📄</span>
+                        </div>
+                        <span class="priority-flag ${priorityCls}">🚩</span>
+                        <span class="status-dot"></span>
                     </div>
                 </div>
             </div>`;
         }
 
-        function toggleMenu(e, id) { e.stopPropagation(); document.querySelectorAll('.dropdown-card-menu').forEach(m => { if (m.id !== 'menu-' + id) m.classList.remove('show'); }); document.getElementById('menu-' + id).classList.toggle('show'); }
-        document.addEventListener('click', () => document.querySelectorAll('.dropdown-card-menu').forEach(m => m.classList.remove('show')));
-
         function dragTask(e, id) { e.dataTransfer.setData('text/plain', id); e.target.classList.add('dragging'); }
-        async function dropTask(e, newStatus) { e.preventDefault(); e.currentTarget.classList.remove('drag-over'); const id = e.dataTransfer.getData('text/plain'); if (!id) return; await fetch(`${API_BASE}/tasks/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ status: newStatus }) }); showToast('✅ تم تحديث الحالة'); loadKanban(); }
-        async function changeStatus(id, s) { await fetch(`${API_BASE}/tasks/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ status: s }) }); showToast('✅ تم'); loadKanban(); }
-        async function quickAdd(s) { const title = prompt('عنوان المهمة:'); if (!title) return; const pid = document.getElementById('projectFilter').value; await fetch(`${API_BASE}/tasks`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ title, status: s, projectId: pid || null }) }); showToast('✅ تمت الإضافة'); loadKanban(); }
-        async function deleteTask(id) { if (!confirm('حذف المهمة؟')) return; await fetch(`${API_BASE}/tasks/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); loadKanban(); }
+        async function dropTask(e, newStatus) { e.preventDefault(); e.currentTarget.classList.remove('drag-over'); const id = e.dataTransfer.getData('text/plain'); if (!id) return; await fetch(`${API_BASE}/tasks/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ status: newStatus }) }); showToast('✅ تم'); loadKanban(); }
+        async function quickAdd(s) { const title = prompt('عنوان المهمة:'); if (!title) return; const pid = document.getElementById('projectFilter').value; await fetch(`${API_BASE}/tasks`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ title, status: s, projectId: pid || null }) }); showToast('✅ تم'); loadKanban(); }
+        async function deleteTask(id) { if (!confirm('حذف؟')) return; await fetch(`${API_BASE}/tasks/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); loadKanban(); }
 
         function filterCards() {
             const search = document.getElementById('searchInput').value.toLowerCase();
@@ -280,34 +274,20 @@
             renderBoard(filtered);
         }
 
-        async function openTaskDetails(id) {
+        function openTaskDetails(id) {
             const t = allTasks.find(t => t._id === id); if (!t) return;
+            const statusLabel = labels[t.status] || t.status;
             const priorityLabels = { critical: '🔴 حرجة', high: '🟠 عالية', medium: '🟡 متوسطة', low: '🟢 منخفضة' };
-            const statusLabels = { 'new': '📥 جديدة', 'in-progress': '🔄 قيد التنفيذ', 'review': '👁️ مراجعة', 'done': '✅ مكتملة', 'blocked': '🚫 متعثرة' };
-            const dateInfo = getDateInfo(t.dueDate, t.status);
-            const doneCount = t.checklist?.filter(c => c.done).length || 0;
-            const totalChecklist = t.checklist?.length || 0;
-            const subtasks = allTasks.filter(st => st.parentTask === t._id);
-            
             document.getElementById('modalTitle').textContent = t.title;
             document.getElementById('modalBody').innerHTML = `
+                <div class="detail-section"><label>الوصف</label><p class="value">${t.description || 'لا يوجد وصف'}</p></div>
                 <div class="detail-grid">
-                    <div class="detail-item"><div class="detail-label">الحالة</div><div class="detail-value">${statusLabels[t.status] || t.status}</div></div>
-                    <div class="detail-item"><div class="detail-label">الأولوية</div><div class="detail-value">${priorityLabels[t.priority] || t.priority}</div></div>
-                    ${t.assignee ? `<div class="detail-item"><div class="detail-label">المسؤول</div><div class="detail-value">👤 ${t.assignee}</div></div>` : ''}
-                    ${t.project ? `<div class="detail-item"><div class="detail-label">المشروع</div><div class="detail-value">📁 ${t.project}</div></div>` : ''}
-                    ${dateInfo ? `<div class="detail-item"><div class="detail-label">التاريخ</div><div class="detail-value"><span class="date-chip ${dateInfo.cls}">${dateInfo.text}</span></div></div>` : ''}
-                    ${totalChecklist > 0 ? `<div class="detail-item"><div class="detail-label">Checklist</div><div class="detail-value">☑ ${doneCount}/${totalChecklist}</div></div>` : ''}
-                    ${subtasks.length > 0 ? `<div class="detail-item"><div class="detail-label">مهام فرعية</div><div class="detail-value">↳ ${subtasks.length}</div></div>` : ''}
-                    ${t.comments?.length > 0 ? `<div class="detail-item"><div class="detail-label">تعليقات</div><div class="detail-value">💬 ${t.comments.length}</div></div>` : ''}
-                    ${t.attachments?.length > 0 ? `<div class="detail-item"><div class="detail-label">مرفقات</div><div class="detail-value">📎 ${t.attachments.length}</div></div>` : ''}
+                    <div class="detail-section"><label>الحالة</label><p class="value">${statusIcons[t.status]} ${statusLabel}</p></div>
+                    <div class="detail-section"><label>الأولوية</label><p class="value">${priorityLabels[t.priority] || t.priority}</p></div>
+                    ${t.assignee ? `<div class="detail-section"><label>المسؤول</label><p class="value">👤 ${t.assignee}</p></div>` : ''}
+                    ${t.dueDate ? `<div class="detail-section"><label>التاريخ</label><p class="value">📅 ${new Date(t.dueDate).toLocaleDateString('ar-SA')}</p></div>` : ''}
                 </div>
-                ${t.description ? `<div class="detail-full"><div class="detail-label" style="margin-bottom:0.3rem;">الوصف</div><p style="font-size:0.85rem;color:var(--text-light);line-height:1.7;">${t.description}</p></div>` : ''}
-                <div style="display:flex;gap:0.5rem;margin-top:1rem;">
-                    <a href="task.html?id=${t._id}" class="btn btn-primary" style="flex:1;text-decoration:none;">📋 فتح كامل</a>
-                    <button class="btn btn-outline" onclick="closeModal()">إغلاق</button>
-                </div>
-            `;
+                <div style="display:flex;gap:0.5rem;margin-top:1rem;"><a href="task.html?id=${t._id}" class="btn btn-primary" style="flex:1;text-decoration:none;">📋 فتح كامل</a><button class="btn btn-outline" onclick="closeModal()">إغلاق</button></div>`;
             document.getElementById('taskModal').classList.add('show');
         }
         function closeModal() { document.getElementById('taskModal').classList.remove('show'); }
