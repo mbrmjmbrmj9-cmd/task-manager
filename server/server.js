@@ -26,25 +26,9 @@ connectDB();
 
 // ✅ أمان HTTP Headers مع CSP مخصص
 app.use(helmet({
-    contentSecurityPolicy: {
-        directives: {
-            defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.socket.io", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
-            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
-            fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
-            imgSrc: ["'self'", "data:", "blob:", "https:", "http:"],
-            connectSrc: ["'self'", "https://nivora-t9ov.onrender.com", "wss://nivora-t9ov.onrender.com", "ws://localhost:3000"],
-            mediaSrc: ["'self'"],
-            objectSrc: ["'none'"],
-            frameSrc: ["'none'"],
-            workerSrc: ["'self'", "blob:"],
-            formAction: ["'self'"],
-            upgradeInsecureRequests: []
-        }
-    },
+    contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false,
-    crossOriginResourcePolicy: { policy: "cross-origin" },
-    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" }
+    crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
 // CORS
