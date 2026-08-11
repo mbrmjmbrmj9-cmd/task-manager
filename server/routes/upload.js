@@ -177,7 +177,7 @@ function getFileType(mimetype) {
 }
 
 function getLocalFileData(req) {
-    const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`;
+    const baseUrl = process.env.BASE_URL || 'https://nivora-t9ov.onrender.com';
     return {
         name: req.file.filename,
         originalName: req.file.originalname,
