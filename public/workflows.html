@@ -19,21 +19,78 @@
         .sidebar a svg { width: 20px; height: 20px; flex-shrink: 0; }
         .sidebar .label { transition: opacity 0.2s; }
         .main { margin-right: var(--sidebar-w); padding: 1.5rem; min-height: 100vh; }
-        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; flex-wrap: wrap; gap: 0.5rem; }
         .topbar h1 { font-size: 1.5rem; font-weight: 800; }
-        .add-form { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
-        .add-form input { flex: 1; min-width: 150px; height: 42px; border-radius: 8px; border: 1px solid var(--border); padding: 0 0.75rem; font-family: inherit; background: var(--card); color: var(--text); }
-        .wf-card { margin-bottom: 0.75rem; padding: 1rem; }
-        .wf-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
-        .steps { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-        .step-tag { background: #EFF6FF; color: var(--primary); padding: 0.25rem 0.6rem; border-radius: 20px; font-size: 0.8rem; }
+        .page-desc { font-size: 0.85rem; color: var(--text-light); margin-bottom: 0.5rem; }
+        .view-nav { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 0.75rem; overflow-x: auto; }
+        .view-nav a { padding: 0.5rem 0.85rem; font-size: 0.8rem; font-weight: 600; color: var(--text-light); text-decoration: none; border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; }
+        .view-nav a:hover { color: var(--primary); }
+        .view-nav a.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .toolbar { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
+        .toolbar input { height: 34px; border-radius: 8px; border: 1px solid var(--border); padding: 0 0.5rem; font-family: inherit; font-size: 0.8rem; background: var(--card); color: var(--text); flex: 1; min-width: 150px; }
+        .spacer { flex: 1; }
+
+        .wf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
+        .wf-card { padding: 1.5rem; }
+        .wf-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
+        .wf-card-header h3 { font-size: 1rem; font-weight: 700; }
+        .wf-card-actions { display: flex; gap: 0.25rem; }
+        .wf-card-actions button { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 0.3rem 0.5rem; cursor: pointer; font-size: 0.8rem; color: var(--text-light); transition: all 0.15s; }
+        .wf-card-actions button:hover { background: #F1F5F9; color: var(--text); }
+        .wf-card-actions button.danger:hover { background: #FEE2E2; color: #DC2626; border-color: #FECACA; }
+        .wf-steps { display: flex; flex-direction: column; gap: 0.4rem; }
+        .wf-step { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.6rem; border-radius: 8px; background: #F8FAFC; font-size: 0.82rem; font-weight: 500; transition: background 0.1s; cursor: pointer; }
+        body.dark .wf-step { background: #0F172A; }
+        .wf-step:hover { background: #F1F5F9; }
+        body.dark .wf-step:hover { background: #1E293B; }
+        .wf-step-arrow { color: #94A3B8; font-size: 0.8rem; margin: 0 0.25rem; }
+        .wf-step-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .wf-step-icon { font-size: 1rem; flex-shrink: 0; width: 24px; text-align: center; }
+        .wf-step-name { flex: 1; }
+        .wf-step-count { font-size: 0.7rem; color: var(--text-light); background: var(--bg); padding: 0.15rem 0.5rem; border-radius: 10px; }
+        .wf-card-footer { margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--border); display: flex; gap: 0.75rem; font-size: 0.75rem; color: var(--text-light); }
+        .wf-empty { text-align: center; padding: 3rem; grid-column: 1 / -1; }
+        .wf-empty .icon { font-size: 3rem; margin-bottom: 1rem; }
+
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(2px); }
+        .modal-overlay.show { display: flex; }
+        .modal-content { background: var(--card); border-radius: 20px; width: 100%; max-width: 560px; max-height: 85vh; overflow-y: auto; box-shadow: 0 30px 60px rgba(0,0,0,0.2); animation: modalIn 0.2s ease; }
+        @keyframes modalIn { from { opacity: 0; transform: translateY(30px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); }
+        .modal-header h2 { font-size: 1.1rem; font-weight: 800; }
+        .modal-close { background: #F1F5F9; border: none; font-size: 1rem; cursor: pointer; color: #64748B; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .modal-close:hover { background: #E2E8F0; }
+        .modal-body { padding: 1.25rem 1.5rem; }
+        .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 0.5rem; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-light); margin-bottom: 0.35rem; }
+        .form-group input, .form-group select { width: 100%; height: 40px; border-radius: 8px; border: 1px solid var(--border); padding: 0 0.75rem; font-family: inherit; font-size: 0.88rem; background: var(--bg); color: var(--text); }
+        .step-input-row { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; align-items: center; }
+        .step-input-row input { flex: 1; height: 38px; }
+        .step-input-row input[type="color"] { width: 40px; padding: 0 2px; cursor: pointer; }
+        .step-input-row select { width: 50px; height: 38px; font-size: 1.1rem; text-align: center; }
+        .step-input-row button { background: none; border: none; cursor: pointer; color: #EF4444; font-size: 1.1rem; padding: 0.25rem; }
+        .btn-add-step { width: 100%; padding: 0.5rem; border: 2px dashed var(--border); border-radius: 8px; background: none; cursor: pointer; font-family: inherit; font-size: 0.85rem; color: var(--text-light); margin-top: 0.5rem; }
+        .btn-add-step:hover { border-color: var(--primary); color: var(--primary); }
+
+        .color-palette { display: flex; gap: 0.35rem; flex-wrap: wrap; margin-top: 0.5rem; }
+        .color-swatch { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; }
+        .color-swatch:hover { transform: scale(1.15); }
+        .color-swatch.selected { border-color: var(--text); transform: scale(1.15); }
+
+        .skeleton { background: linear-gradient(90deg, #E2E8F0 25%, #F1F5F9 50%, #E2E8F0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+        body.dark .skeleton { background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%); background-size: 200% 100%; }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #16A34A; color: #fff; padding: 0.75rem 1.5rem; border-radius: 12px; z-index: 9999; font-weight: 600; font-size: 0.9rem; animation: toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards; }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(-20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateX(-50%) translateY(-20px); } }
         .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
         .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); padding: 0.5rem 1rem; z-index: 90; justify-content: space-around; }
         .bottom-nav a { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-light); text-decoration: none; font-size: 0.65rem; font-weight: 500; }
         .bottom-nav a.active { color: var(--primary); }
         .bottom-nav a svg { width: 22px; height: 22px; }
         @media (max-width: 1024px) { :root { --sidebar-w: 72px; } .sidebar { padding: 1rem 0.5rem; } .sidebar .logo { font-size: 1rem; text-align: center; } .sidebar .label, .sidebar .logo span { display: none; } .sidebar a { justify-content: center; padding: 0.5rem; } }
-        @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 1rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } }
+        @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 0.75rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } .wf-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -48,15 +105,30 @@
         <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
         <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
         <a href="workflows.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg><span class="label">Workflows</span></a>
-        <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">القوالب</span></a>
-        <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">الأرشيف</span></a>
         <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
     </aside>
+
     <main class="main">
-        <div class="topbar"><h1>⚙️ Workflows</h1><div style="display:flex;gap:0.5rem;"><button class="btn btn-outline" onclick="toggleDark()" id="darkBtn" style="height:36px;">🌙</button><button class="btn btn-outline" onclick="logout()" style="height:36px;">خروج</button></div></div>
-        <div class="add-form"><input type="text" id="wfName" placeholder="اسم الـ Workflow"><input type="text" id="wfSteps" placeholder="الخطوات (مفصولة بفاصلة)"><button class="btn btn-primary" onclick="createWorkflow()">➕ إنشاء</button></div>
-        <div id="wfList"></div>
+        <div class="topbar">
+            <div><h1>⚙️ Workflows</h1><p class="page-desc">إدارة مسارات العمل وتخصيص حالات المهام</p></div>
+            <div style="display:flex;gap:0.5rem;">
+                <button class="btn btn-primary" onclick="openCreateModal()">➕ Workflow جديد</button>
+                <button class="btn btn-outline" onclick="toggleDark()" id="darkBtn" style="height:36px;">🌙</button>
+                <button class="btn btn-outline" onclick="logout()" style="height:36px;">خروج</button>
+            </div>
+        </div>
+        <div class="view-nav">
+            <a href="tasks.html">📋 قائمة</a><a href="kanban.html">📌 أعمدة</a><a href="tasks.html">📊 جدول</a><a href="gantt.html">📈 Gantt</a><a href="calendar.html">📅 تقويم</a><a href="reports.html">📉 إحصائيات</a><a href="chat.html">💬 محادثة</a>
+        </div>
+        <div class="toolbar">
+            <input type="text" id="searchInput" placeholder="🔍 بحث عن Workflow..." oninput="filterWorkflows()">
+            <span class="spacer"></span>
+            <button class="btn btn-outline" onclick="loadWorkflows()" style="height:34px;">🔄 تحديث</button>
+        </div>
+
+        <div class="wf-grid" id="wfGrid"></div>
     </main>
+
     <nav class="bottom-nav">
         <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>الرئيسية</a>
         <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg>مهام</a>
@@ -64,6 +136,16 @@
         <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>فريق</a>
         <a href="#" onclick="openSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>المزيد</a>
     </nav>
+
+    <!-- Modal إنشاء/تعديل -->
+    <div class="modal-overlay" id="wfModal" onclick="if(event.target===this)closeModal()">
+        <div class="modal-content">
+            <div class="modal-header"><h2 id="modalTitle">➕ Workflow جديد</h2><button class="modal-close" onclick="closeModal()">✕</button></div>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal()">إلغاء</button><button class="btn btn-primary" id="modalSaveBtn" onclick="saveWorkflow()">💾 حفظ</button></div>
+        </div>
+    </div>
+
     <script>
         function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
         function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
@@ -71,11 +153,145 @@
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'login.html';
         function logout() { localStorage.clear(); window.location.href = 'login.html'; }
-        function toggleDark() { document.body.classList.toggle('dark'); const isDark = document.body.classList.contains('dark'); localStorage.setItem('dark', isDark); document.getElementById('darkBtn').textContent = isDark ? '☀️' : '🌙'; }
+        function toggleDark() { document.body.classList.toggle('dark'); const d = document.body.classList.contains('dark'); localStorage.setItem('dark', d); document.getElementById('darkBtn').textContent = d ? '☀️' : '🌙'; }
         if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
-        async function loadWorkflows() { const res = await fetch(`${API_BASE}/workflows`, { headers: { 'Authorization': `Bearer ${token}` } }); const wfs = await res.json(); document.getElementById('wfList').innerHTML = wfs.map(w => `<div class="card wf-card"><h3>${w.name}</h3><div class="steps">${w.steps.map(s => `<span class="step-tag">${s}</span>`).join(' → ')}</div><button class="btn btn-outline" style="height:24px;font-size:0.7rem;margin-top:0.5rem;" onclick="deleteWF('${w._id}')">🗑️</button></div>`).join(''); }
-        async function createWorkflow() { const name = document.getElementById('wfName').value.trim(); const steps = document.getElementById('wfSteps').value.split(',').map(s => s.trim()).filter(s => s); if (!name || !steps.length) return alert('الاسم والخطوات مطلوبة'); await fetch(`${API_BASE}/workflows`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ name, steps }) }); document.getElementById('wfName').value = ''; document.getElementById('wfSteps').value = ''; loadWorkflows(); }
-        async function deleteWF(id) { await fetch(`${API_BASE}/workflows/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); loadWorkflows(); }
+        function showToast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 3000); }
+        function closeModal() { document.getElementById('wfModal').classList.remove('show'); }
+
+        const iconsList = ['📥','🔄','👁️','✅','🚫','📋','🔍','⚡','🎯','💡','🔧','📦','🚀','⭐','🔔','💬','📎','🏷️','📌','🔗'];
+        const defaultColors = ['#3B82F6','#22C55E','#D97706','#8B5CF6','#EF4444','#EC4899','#14B8A6','#64748B'];
+        let allWorkflows = [], editingId = null, wfSteps = [];
+
+        function showSkeleton() {
+            document.getElementById('wfGrid').innerHTML = Array(3).fill('<div class="card wf-card"><div class="skeleton" style="height:20px;width:60%;margin-bottom:1rem;"></div><div class="skeleton" style="height:12px;width:100%;margin-bottom:0.5rem;"></div><div class="skeleton" style="height:12px;width:100%;margin-bottom:0.5rem;"></div><div class="skeleton" style="height:12px;width:70%;"></div></div>').join('');
+        }
+
+        async function loadWorkflows() {
+            showSkeleton();
+            try {
+                const res = await fetch(`${API_BASE}/workflows`, { headers: { 'Authorization': `Bearer ${token}` } });
+                allWorkflows = await res.json();
+                renderWorkflows(allWorkflows);
+            } catch (err) {
+                document.getElementById('wfGrid').innerHTML = '<div class="wf-empty"><div class="icon">❌</div><p>تعذر تحميل Workflows</p></div>';
+            }
+        }
+
+        function renderWorkflows(wfs) {
+            if (wfs.length === 0) {
+                document.getElementById('wfGrid').innerHTML = '<div class="wf-empty"><div class="icon">⚙️</div><h3>لا توجد مسارات عمل</h3><p style="color:var(--text-light);">أنشئ أول Workflow لتخصيص مراحل العمل</p></div>';
+                return;
+            }
+            document.getElementById('wfGrid').innerHTML = wfs.map(w => `
+                <div class="card wf-card">
+                    <div class="wf-card-header">
+                        <h3>${w.name}</h3>
+                        <div class="wf-card-actions">
+                            <button onclick="openEditModal('${w._id}')" title="تعديل">✏️</button>
+                            <button class="danger" onclick="deleteWorkflow('${w._id}')" title="حذف">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="wf-steps">
+                        ${(w.steps || []).map((s, i) => {
+                            const stepObj = typeof s === 'object' ? s : { name: s, color: defaultColors[i % defaultColors.length], icon: iconsList[i % iconsList.length] };
+                            return `<div class="wf-step">
+                                <span class="wf-step-dot" style="background:${stepObj.color || '#94A3B8'};"></span>
+                                <span class="wf-step-icon">${stepObj.icon || '📋'}</span>
+                                <span class="wf-step-name">${stepObj.name || stepObj}</span>
+                            </div>`;
+                        }).join('<div class="wf-step-arrow">↓</div>') || '<p style="color:var(--text-light);font-size:0.8rem;">لا توجد خطوات</p>'}
+                    </div>
+                    <div class="wf-card-footer">
+                        <span>📊 ${(w.steps || []).length} خطوات</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterWorkflows() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            renderWorkflows(q ? allWorkflows.filter(w => w.name.toLowerCase().includes(q)) : allWorkflows);
+        }
+
+        function openCreateModal() {
+            editingId = null;
+            wfSteps = [{ name: '', color: defaultColors[0], icon: iconsList[0] }, { name: '', color: defaultColors[1], icon: iconsList[1] }, { name: '', color: defaultColors[2], icon: iconsList[2] }];
+            document.getElementById('modalTitle').textContent = '➕ Workflow جديد';
+            document.getElementById('modalSaveBtn').textContent = '💾 إنشاء';
+            renderModalForm();
+            document.getElementById('wfModal').classList.add('show');
+        }
+
+        function openEditModal(id) {
+            const w = allWorkflows.find(w => w._id === id); if (!w) return;
+            editingId = id;
+            wfSteps = (w.steps || []).map(s => typeof s === 'object' ? { ...s } : { name: s, color: defaultColors[0], icon: iconsList[0] });
+            document.getElementById('modalTitle').textContent = '✏️ تعديل Workflow';
+            document.getElementById('modalSaveBtn').textContent = '💾 حفظ التعديلات';
+            renderModalForm();
+            document.getElementById('wfModal').classList.add('show');
+        }
+
+        function renderModalForm() {
+            document.getElementById('modalBody').innerHTML = `
+                <div class="form-group">
+                    <label>اسم Workflow</label>
+                    <input type="text" id="wfName" placeholder="أدخل اسم Workflow" value="${editingId ? (allWorkflows.find(w => w._id === editingId)?.name || '') : ''}">
+                </div>
+                <label style="font-size:0.8rem;font-weight:700;color:var(--text-light);display:block;margin-bottom:0.5rem;">الخطوات (الحالات)</label>
+                <div id="stepsContainer">
+                    ${wfSteps.map((s, i) => `
+                        <div class="step-input-row">
+                            <input type="color" value="${s.color}" onchange="wfSteps[${i}].color = this.value" title="اللون">
+                            <select onchange="wfSteps[${i}].icon = this.value">
+                                ${iconsList.map(ic => `<option value="${ic}" ${s.icon === ic ? 'selected' : ''}>${ic}</option>`).join('')}
+                            </select>
+                            <input type="text" value="${s.name}" placeholder="اسم الخطوة" onchange="wfSteps[${i}].name = this.value">
+                            <button onclick="removeStep(${i})" title="حذف">✕</button>
+                        </div>
+                    `).join('')}
+                </div>
+                <button class="btn-add-step" onclick="addStep()">+ إضافة خطوة</button>
+                <div class="color-palette">
+                    ${defaultColors.map(c => `<span class="color-swatch" style="background:${c};" onclick="event.target.classList.toggle('selected')" title="${c}"></span>`).join('')}
+                </div>`;
+        }
+
+        function addStep() {
+            wfSteps.push({ name: '', color: defaultColors[wfSteps.length % defaultColors.length], icon: iconsList[wfSteps.length % iconsList.length] });
+            renderModalForm();
+        }
+
+        function removeStep(i) { wfSteps.splice(i, 1); renderModalForm(); }
+
+        async function saveWorkflow() {
+            const name = document.getElementById('wfName').value.trim();
+            if (!name) return alert('الاسم مطلوب');
+            const steps = wfSteps.filter(s => s.name.trim());
+            if (steps.length === 0) return alert('أضف خطوة واحدة على الأقل');
+
+            const url = editingId ? `${API_BASE}/workflows/${editingId}` : `${API_BASE}/workflows`;
+            const method = editingId ? 'PATCH' : 'POST';
+
+            try {
+                const res = await fetch(url, {
+                    method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ name, steps })
+                });
+                if (res.ok) {
+                    closeModal();
+                    showToast(editingId ? '✅ تم تحديث Workflow' : '✅ تم إنشاء Workflow');
+                    loadWorkflows();
+                }
+            } catch (err) { alert('خطأ في الحفظ'); }
+        }
+
+        async function deleteWorkflow(id) {
+            if (!confirm('حذف Workflow؟ قد يؤثر على المهام المرتبطة به.')) return;
+            await fetch(`${API_BASE}/workflows/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+            loadWorkflows();
+        }
+
         loadWorkflows();
     </script>
 </body>
