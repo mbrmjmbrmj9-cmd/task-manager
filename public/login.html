@@ -50,6 +50,7 @@
     </style>
 </head>
 <body>
+    <button class="btn btn-outline" onclick="toggleLang()" id="langBtn" style="height:36px;">🌐 EN</button>
     <button class="dark-toggle" onclick="toggleDark()" id="darkBtn">🌙</button>
     <div class="container">
         <div class="logo"><h1>Nivora</h1><p>نظّم مهامك، أدر فريقك، وأنجز أكثر</p></div>
@@ -87,6 +88,7 @@
             </div>
         </div>
     </div>
+    <script src="js/i18n.js"></script>
     <script>
         const API = 'https://nivora-t9ov.onrender.com/api/auth';
         function toggleDark() { document.body.classList.toggle('dark'); const isDark = document.body.classList.contains('dark'); localStorage.setItem('dark', isDark); document.getElementById('darkBtn').textContent = isDark ? '☀️' : '🌙'; }

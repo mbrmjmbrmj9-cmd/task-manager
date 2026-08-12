@@ -28,6 +28,7 @@
     </style>
 </head>
 <body>
+    <button class="btn btn-outline" onclick="toggleLang()" id="langBtn" style="height:36px;">🌐 EN</button>
     <button class="dark-toggle" onclick="toggleDark()" id="darkBtn">🌙</button>
     <div class="container">
         <div class="logo">📋 Nivora</div>
@@ -48,6 +49,7 @@
             </div>
         </div>
     </div>
+    <script src="js/i18n.js"></script>
     <script>
         function toggleDark() { document.body.classList.toggle('dark'); const d = document.body.classList.contains('dark'); localStorage.setItem('dark', d); document.getElementById('darkBtn').textContent = d ? '☀️' : '🌙'; }
         if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
