@@ -19,51 +19,62 @@
         .sidebar a svg { width: 20px; height: 20px; flex-shrink: 0; }
         .sidebar .label { transition: opacity 0.2s; }
         .main { margin-right: var(--sidebar-w); padding: 1.5rem; min-height: 100vh; }
-        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; flex-wrap: wrap; gap: 0.5rem; }
         .topbar h1 { font-size: 1.5rem; font-weight: 800; }
+        .page-desc { font-size: 0.85rem; color: var(--text-light); margin-bottom: 0.5rem; }
+        .view-nav { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 1rem; overflow-x: auto; }
+        .view-nav a { padding: 0.5rem 0.85rem; font-size: 0.8rem; font-weight: 600; color: var(--text-light); text-decoration: none; border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; }
+        .view-nav a:hover { color: var(--primary); }
+        .view-nav a.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+        .invite-card { margin-bottom: 1.5rem; padding: 1.25rem 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; }
+        .invite-code { background: #EFF6FF; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 800; letter-spacing: 2px; font-size: 1.1rem; }
+        body.dark .invite-code { background: #1E3A5F; }
+        .invite-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 0.75rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; text-align: right; }
-        th { color: var(--text-light); font-weight: 600; }
-        .role-badge { padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+        th, td { padding: 0.85rem 0.75rem; border-bottom: 1px solid var(--border); font-size: 0.85rem; text-align: right; }
+        th { color: var(--text-light); font-weight: 700; font-size: 0.75rem; background: #F8FAFC; }
+        body.dark .th { background: #0F172A; }
+        .role-badge { padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.72rem; font-weight: 600; }
         .role-owner { background: #FEF3C7; color: #92400E; }
         .role-admin { background: #EFF6FF; color: #2563EB; }
         .role-member { background: #F1F5F9; color: #64748B; }
-        .invite-code { background: #EFF6FF; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 800; letter-spacing: 2px; display: inline-block; }
+        .avatar-cell { width: 32px; height: 32px; border-radius: 50%; background: #E2E8F0; display: inline-flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; color: #64748B; margin-left: 0.5rem; vertical-align: middle; overflow: hidden; }
+        .avatar-cell img { width: 100%; height: 100%; object-fit: cover; }
+        select.role-select { padding: 0.25rem 0.4rem; border-radius: 6px; border: 1px solid var(--border); font-family: inherit; font-size: 0.78rem; background: var(--bg); color: var(--text); }
+
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(2px); }
+        .modal-overlay.show { display: flex; }
+        .modal-content { background: var(--card); border-radius: 20px; width: 100%; max-width: 440px; box-shadow: 0 30px 60px rgba(0,0,0,0.2); animation: modalIn 0.2s ease; }
+        @keyframes modalIn { from { opacity: 0; transform: translateY(30px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); }
+        .modal-header h2 { font-size: 1.1rem; font-weight: 800; }
+        .modal-close { background: #F1F5F9; border: none; font-size: 1rem; cursor: pointer; color: #64748B; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .modal-close:hover { background: #E2E8F0; }
+        .modal-body { padding: 1.25rem 1.5rem; }
+        .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 0.5rem; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-light); margin-bottom: 0.35rem; }
+        .form-group input { width: 100%; height: 42px; border-radius: 10px; border: 1px solid var(--border); padding: 0 0.75rem; font-family: inherit; font-size: 0.9rem; background: var(--bg); color: var(--text); }
+
+        .btn-leave { color: #DC2626 !important; border-color: #DC2626 !important; }
+        .btn-leave:hover { background: #FEE2E2 !important; }
+
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #16A34A; color: #fff; padding: 0.75rem 1.5rem; border-radius: 12px; z-index: 9999; font-weight: 600; font-size: 0.9rem; animation: toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards; }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(-20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateX(-50%) translateY(-20px); } }
         .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
         .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); padding: 0.5rem 1rem; z-index: 90; justify-content: space-around; }
         .bottom-nav a { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-light); text-decoration: none; font-size: 0.65rem; font-weight: 500; }
         .bottom-nav a.active { color: var(--primary); }
         .bottom-nav a svg { width: 22px; height: 22px; }
-        .btn-leave { color: #DC2626 !important; border-color: #DC2626 !important; }
-        .btn-leave:hover { background: #FEE2E2 !important; }
-
-        /* ========== Responsive ========== */
-        @media (max-width: 1024px) {
-            :root { --sidebar-w: 72px; }
-            .sidebar { padding: 1rem 0.5rem; }
-            .sidebar .logo { font-size: 1rem; text-align: center; }
-            .sidebar .label, .sidebar .logo span { display: none; }
-            .sidebar a { justify-content: center; padding: 0.5rem; }
-        }
-        @media (max-width: 768px) {
-            :root { --sidebar-w: 0; }
-            .sidebar { right: -260px; width: 260px; }
-            .sidebar.open { right: 0; }
-            .sidebar .label { display: inline; }
-            .sidebar .logo span { display: inline; }
-            .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; }
-            .overlay.show { display: block; }
-            .main { margin-right: 0; padding: 1rem; padding-bottom: 5rem; }
-            .bottom-nav { display: flex; }
-            table { font-size: 0.75rem; }
-            th, td { padding: 0.5rem; }
-        }
+        @media (max-width: 1024px) { :root { --sidebar-w: 72px; } .sidebar { padding: 1rem 0.5rem; } .sidebar .logo { font-size: 1rem; text-align: center; } .sidebar .label, .sidebar .logo span { display: none; } .sidebar a { justify-content: center; padding: 0.5rem; } }
+        @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 0.75rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } table { font-size: 0.7rem; } th, td { padding: 0.5rem; } .invite-card { flex-direction: column; align-items: flex-start; } }
     </style>
 </head>
 <body>
     <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
-
-    <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
         <div class="logo"><span>📋 Nivora</span></div>
         <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="label">لوحة القيادة</span></a>
@@ -73,27 +84,12 @@
         <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">Gantt</span></a>
         <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
         <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
-        <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg><span class="label">Workflows</span></a>
-        <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">القوالب</span></a>
-        <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">الأرشيف</span></a>
         <a href="team.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
     </aside>
 
-    <!-- ✅ قبل الـ main، نضيف View Navigation -->
-<div class="view-nav">
-    <a href="tasks.html">📋 قائمة</a>
-    <a href="kanban.html">📌 أعمدة</a>
-    <a href="tasks.html">📊 جدول</a>
-    <a href="gantt.html">📈 Gantt</a>
-    <a href="calendar.html">📅 تقويم</a>
-    <a href="reports.html">📉 إحصائيات</a>
-    <a href="chat.html">💬 محادثة</a>
-</div>
-
-    <!-- Main Content -->
     <main class="main">
         <div class="topbar">
-            <h1>👥 إدارة الفريق</h1>
+            <div><h1>👥 إدارة الفريق</h1><p class="page-desc">أعضاء فريقك الحالي</p></div>
             <div style="display:flex;gap:0.5rem;">
                 <!-- أيقونة المستخدم في الـ Topbar -->
 <div style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;" onclick="window.location.href='profile.html'">
@@ -104,33 +100,32 @@
                 <button class="btn btn-outline" onclick="logout()" style="height:36px;">خروج</button>
             </div>
         </div>
+        <div class="view-nav">
+            <a href="tasks.html">📋 قائمة</a><a href="kanban.html">📌 أعمدة</a><a href="tasks.html">📊 جدول</a><a href="gantt.html">📈 Gantt</a><a href="calendar.html">📅 تقويم</a><a href="reports.html">📉 إحصائيات</a><a href="chat.html">💬 محادثة</a>
+        </div>
 
-        <!-- بطاقة رمز الدعوة + مغادرة الفريق -->
-        <div class="card" style="margin-bottom:1.5rem;">
-            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
-                <div>
-                    <span style="color:var(--text-light);">رمز الدعوة:</span>
-                    <span class="invite-code" id="inviteCodeDisplay">---</span>
-                </div>
-                <button class="btn btn-outline btn-leave" id="leaveWorkspaceBtn" onclick="leaveWorkspace()" style="height:36px;font-size:0.85rem;">
-                    🚪 مغادرة الفريق
-                </button>
+        <!-- بطاقة الدعوة -->
+        <div class="card invite-card">
+            <div>
+                <span style="color:var(--text-light);font-size:0.85rem;">رمز الدعوة:</span>
+                <span class="invite-code" id="inviteCodeDisplay">---</span>
+            </div>
+            <div class="invite-actions">
+                <button class="btn btn-primary" onclick="openInviteModal()" style="height:36px;font-size:0.8rem;">📧 دعوة بالبريد</button>
+                <button class="btn btn-outline" onclick="copyInviteCode()" style="height:36px;font-size:0.8rem;">📋 نسخ الرمز</button>
+                <button class="btn btn-outline btn-leave" id="leaveBtn" onclick="leaveWorkspace()" style="height:36px;font-size:0.8rem;">🚪 مغادرة</button>
             </div>
         </div>
 
-        <!-- قائمة الأعضاء -->
+        <!-- جدول الأعضاء -->
         <div class="card">
-            <h2 style="margin-bottom:1rem;">الأعضاء</h2>
             <table>
-                <thead>
-                    <tr><th>المستخدم</th><th>الدور</th><th>تاريخ الانضمام</th><th></th></tr>
-                </thead>
+                <thead><tr><th>المستخدم</th><th>الدور</th><th>تاريخ الانضمام</th><th></th></tr></thead>
                 <tbody id="membersBody"></tbody>
             </table>
         </div>
     </main>
 
-    <!-- Bottom Navigation (Mobile) -->
     <nav class="bottom-nav">
         <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>الرئيسية</a>
         <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg>مهام</a>
@@ -139,18 +134,37 @@
         <a href="#" onclick="openSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>المزيد</a>
     </nav>
 
+    <!-- Modal دعوة بالبريد -->
+    <div class="modal-overlay" id="inviteModal" onclick="if(event.target===this)closeInviteModal()">
+        <div class="modal-content">
+            <div class="modal-header"><h2>📧 دعوة عضو جديد</h2><button class="modal-close" onclick="closeInviteModal()">✕</button></div>
+            <div class="modal-body">
+                <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="inviteEmail" placeholder="أدخل البريد الإلكتروني"></div>
+                <div class="form-group"><label>الدور</label><select id="inviteRole" style="width:100%;height:42px;border-radius:10px;border:1px solid var(--border);padding:0 0.75rem;font-family:inherit;font-size:0.9rem;background:var(--bg);color:var(--text);"><option value="member">عضو</option><option value="admin">مدير</option></select></div>
+                <p style="font-size:0.8rem;color:var(--text-light);margin-top:0.5rem;">أو شارك رمز الدعوة: <strong id="modalInviteCode">---</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeInviteModal()">إلغاء</button>
+                <button class="btn btn-primary" onclick="sendInvite()">📧 إرسال الدعوة</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
         function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
-
         const API = 'https://nivora-t9ov.onrender.com/api';
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'login.html';
         function logout() { localStorage.clear(); window.location.href = 'login.html'; }
-        function toggleDark() { document.body.classList.toggle('dark'); const isDark = document.body.classList.contains('dark'); localStorage.setItem('dark', isDark); document.getElementById('darkBtn').textContent = isDark ? '☀️' : '🌙'; }
+        function toggleDark() { document.body.classList.toggle('dark'); const d = document.body.classList.contains('dark'); localStorage.setItem('dark', d); document.getElementById('darkBtn').textContent = d ? '☀️' : '🌙'; }
         if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
+        function showToast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 3000); }
+        function closeInviteModal() { document.getElementById('inviteModal').classList.remove('show'); }
+        function openInviteModal() { document.getElementById('modalInviteCode').textContent = localStorage.getItem('inviteCode') || '---'; document.getElementById('inviteModal').classList.add('show'); }
 
         let wsId = localStorage.getItem('workspaceId');
+        let currentUserRole = 'member';
 
         async function getUserRole() {
             if (!wsId) return 'member';
@@ -166,80 +180,92 @@
 
         async function loadMembers() {
             document.getElementById('inviteCodeDisplay').textContent = localStorage.getItem('inviteCode') || '---';
-            const res = await fetch(`${API}/workspaces/${wsId}/members`, { headers: { 'Authorization': `Bearer ${token}` } });
-            const members = await res.json();
-            if (!members.length) { document.getElementById('membersBody').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:2rem;">لا يوجد أعضاء</td></tr>'; return; }
-            const role = await getUserRole();
-            const isOwner = role === 'owner';
-            const isAdmin = role === 'owner' || role === 'admin';
-            document.getElementById('membersBody').innerHTML = members.map(m => {
-                const mid = m.userId?._id || m.userId;
-                return `<tr>
-                    <td>${m.userId?.username || m.userId?.email || 'مستخدم'}</td>
-                    <td>${m.role === 'owner' ? '<span class="role-badge role-owner">مالك</span>' : isOwner ? `<select onchange="changeRole('${mid}', this.value)" style="padding:0.2rem;border-radius:6px;border:1px solid var(--border);font-family:inherit;font-size:0.8rem;"><option value="admin" ${m.role==='admin'?'selected':''}>مدير</option><option value="member" ${m.role==='member'?'selected':''}>عضو</option></select>` : `<span class="role-badge role-${m.role}">${m.role==='admin'?'مدير':'عضو'}</span>`}</td>
-                    <td>${new Date(m.joinedAt).toLocaleDateString('ar-SA')}</td>
-                    <td>${m.role !== 'owner' && isAdmin ? `<button class="btn btn-outline" style="height:24px;font-size:0.7rem;" onclick="removeMember('${mid}')">✕</button>` : ''}</td>
-                </tr>`;
-            }).join('');
-
+            currentUserRole = await getUserRole();
+            
             // إخفاء زر المغادرة للمالك
-            if (role === 'owner') {
-                document.getElementById('leaveWorkspaceBtn').style.display = 'none';
-            }
-        }
-
-        async function changeRole(uid, role) { await fetch(`${API}/workspaces/${wsId}/members/${uid}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ role }) }); loadMembers(); }
-        async function removeMember(uid) { if (!confirm('إزالة العضو؟')) return; await fetch(`${API}/workspaces/${wsId}/members/${uid}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); loadMembers(); }
-
-        // ✅ مغادرة Workspace
-        async function leaveWorkspace() {
-            if (!wsId) return alert('لا توجد مساحة عمل');
-            
-            const role = await getUserRole();
-            if (role === 'owner') {
-                return alert('❌ المالك لا يستطيع مغادرة الفريق. يجب نقل الملكية أولاً أو حذف مساحة العمل.');
-            }
-            
-            if (!confirm('هل أنت متأكد من مغادرة الفريق؟ لن تتمكن من الوصول إلى محتوياته إلا بدعوة جديدة.')) return;
+            if (currentUserRole === 'owner') document.getElementById('leaveBtn').style.display = 'none';
             
             try {
-                const res = await fetch(`${API}/workspaces/${wsId}/leave`, {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                const res = await fetch(`${API}/workspaces/${wsId}/members`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const members = await res.json();
                 
-                const data = await res.json();
-                
-                if (res.ok) {
-                    alert('✅ تمت مغادرة الفريق بنجاح');
-                    
-                    const wssRes = await fetch(`${API}/workspaces`, {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    const wss = await wssRes.json();
-                    
-                    const otherWs = wss.filter(w => w._id !== wsId);
-                    
-                    if (otherWs.length > 0) {
-                        localStorage.setItem('workspaceId', otherWs[0]._id);
-                        localStorage.setItem('inviteCode', otherWs[0].inviteCode || '');
-                        window.location.href = 'index.html';
-                    } else {
-                        localStorage.removeItem('workspaceId');
-                        localStorage.removeItem('inviteCode');
-                        window.location.href = 'workspace.html';
-                    }
-                } else {
-                    alert('❌ ' + (data.error || 'خطأ في مغادرة الفريق'));
+                if (!members.length) {
+                    document.getElementById('membersBody').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:2rem;">لا يوجد أعضاء</td></tr>';
+                    return;
                 }
+                
+                const isOwner = currentUserRole === 'owner';
+                const isAdmin = currentUserRole === 'owner' || currentUserRole === 'admin';
+                
+                document.getElementById('membersBody').innerHTML = members.map(m => {
+                    const mid = m.userId?._id || m.userId;
+                    const avatar = m.userId?.avatar || '';
+                    const name = m.userId?.fullName || m.userId?.username || m.userId?.email || 'مستخدم';
+                    const initial = name[0];
+                    const avatarHTML = avatar ? `<img src="${avatar}">` : initial;
+                    
+                    return `<tr>
+                        <td><span class="avatar-cell">${avatarHTML}</span>${name}</td>
+                        <td>${m.role === 'owner' ? '<span class="role-badge role-owner">مالك</span>' : 
+                            isOwner ? `<select class="role-select" onchange="changeRole('${mid}', this.value)"><option value="admin" ${m.role==='admin'?'selected':''}>مدير</option><option value="member" ${m.role==='member'?'selected':''}>عضو</option></select>` : 
+                            `<span class="role-badge role-${m.role}">${m.role==='admin'?'مدير':'عضو'}</span>`}</td>
+                        <td>${new Date(m.joinedAt).toLocaleDateString('ar-SA')}</td>
+                        <td>${m.role !== 'owner' && isAdmin ? `<button class="btn btn-outline" style="height:24px;font-size:0.7rem;color:#DC2626;" onclick="removeMember('${mid}')">✕</button>` : ''}</td>
+                    </tr>`;
+                }).join('');
             } catch (err) {
-                alert('❌ تعذر الاتصال بالخادم');
+                document.getElementById('membersBody').innerHTML = '<tr><td colspan="4" style="text-align:center;color:#DC2626;">خطأ في تحميل الأعضاء</td></tr>';
             }
         }
 
-        if (!wsId || wsId === 'null') { fetch(`${API}/workspaces`, { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json()).then(wss => { if (wss.length) { localStorage.setItem('workspaceId', wss[0]._id); localStorage.setItem('inviteCode', wss[0].inviteCode); wsId = wss[0]._id; loadMembers(); } else { window.location.href = 'workspace.html'; } }); }
-        else { loadMembers(); }
-   document.addEventListener('DOMContentLoaded', () => {
+        async function changeRole(uid, role) {
+            await fetch(`${API}/workspaces/${wsId}/members/${uid}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ role }) });
+            showToast('✅ تم تغيير الدور');
+            loadMembers();
+        }
+
+        async function removeMember(uid) {
+            if (!confirm('إزالة العضو؟')) return;
+            await fetch(`${API}/workspaces/${wsId}/members/${uid}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+            showToast('✅ تم إزالة العضو');
+            loadMembers();
+        }
+
+        async function leaveWorkspace() {
+            if (currentUserRole === 'owner') return alert('المالك لا يستطيع المغادرة');
+            if (!confirm('مغادرة الفريق؟')) return;
+            const res = await fetch(`${API}/workspaces/${wsId}/leave`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+            if (res.ok) {
+                const wssRes = await fetch(`${API}/workspaces`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const wss = await wssRes.json();
+                const other = wss.filter(w => w._id !== wsId);
+                if (other.length > 0) { localStorage.setItem('workspaceId', other[0]._id); localStorage.setItem('inviteCode', other[0].inviteCode || ''); }
+                else { localStorage.removeItem('workspaceId'); localStorage.removeItem('inviteCode'); }
+                window.location.href = 'index.html';
+            }
+        }
+
+        function copyInviteCode() {
+            const code = localStorage.getItem('inviteCode') || '';
+            navigator.clipboard.writeText(code).then(() => showToast('📋 تم نسخ الرمز'));
+        }
+
+        function sendInvite() {
+            const email = document.getElementById('inviteEmail').value.trim();
+            if (!email) return alert('البريد مطلوب');
+            const code = localStorage.getItem('inviteCode') || '';
+            alert(`تم إرسال دعوة إلى ${email}\nرمز الدعوة: ${code}`);
+            closeInviteModal();
+            showToast('✅ تم إرسال الدعوة');
+        }
+
+        if (!wsId || wsId === 'null') {
+            fetch(`${API}/workspaces`, { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json()).then(wss => {
+                if (wss.length) { localStorage.setItem('workspaceId', wss[0]._id); localStorage.setItem('inviteCode', wss[0].inviteCode); wsId = wss[0]._id; loadMembers(); }
+                else { window.location.href = 'workspace.html'; }
+            });
+        } else { loadMembers(); }
+        document.addEventListener('DOMContentLoaded', () => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const avatar = document.getElementById('topAvatar');
     const username = document.getElementById('topUsername');
@@ -255,7 +281,7 @@
             avatar.textContent = (user.fullName || user.username || 'م')[0];
         }
     }
-});     
+});
     </script>
 </body>
 </html>
