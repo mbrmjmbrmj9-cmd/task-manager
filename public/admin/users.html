@@ -6,60 +6,43 @@
     <title>Nivora | المستخدمون</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { display: flex; min-height: 100vh; background: #0F172A; font-family: 'Cairo', sans-serif; color: white; }
-        .sidebar { width: 240px; background: #1E293B; padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; }
-        .sidebar h2 { color: #EF4444; margin-bottom: 1.5rem; }
+        body { display: flex; min-height: 100vh; background: #0F172A; font-family: 'Cairo', sans-serif; color: white; margin: 0; }
+        .sidebar { width: 240px; background: #1E293B; padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 200; transition: right 0.3s ease; }
+        .sidebar h2 { color: #EF4444; margin-bottom: 1.5rem; font-size: 1.1rem; }
         .sidebar a { display: block; padding: 0.6rem 0.75rem; color: #94A3B8; text-decoration: none; border-radius: 8px; margin-bottom: 0.25rem; font-size: 0.9rem; }
         .sidebar a:hover, .sidebar a.active { background: #334155; color: white; }
         .main { margin-right: 240px; flex: 1; padding: 2rem; }
-        h1 { margin-bottom: 2rem; }
+        h1 { margin-bottom: 1.5rem; font-size: 1.4rem; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 0.75rem; border-bottom: 1px solid #334155; text-align: right; font-size: 0.85rem; }
-        th { color: #94A3B8; }
+        th { color: #94A3B8; font-weight: 600; }
         .badge { padding: 0.2rem 0.5rem; border-radius: 6px; font-size: 0.75rem; }
         .badge-admin { background: #EF4444; color: white; }
         .badge-user { background: #3B82F6; color: white; }
-        @media (max-width: 1024px) {
-    .sidebar { width: 60px; padding: 1rem 0.5rem; }
-    .sidebar h2 { font-size: 0.8rem; text-align: center; }
-    .sidebar a { font-size: 0; justify-content: center; padding: 0.5rem; }
-    .main { margin-right: 60px; padding: 1.5rem; }
-}
-@media (max-width: 768px) {
-    body { flex-direction: column; }
-    .sidebar { position: fixed; right: -260px; width: 260px; top: 0; bottom: 0; z-index: 200; transition: right 0.3s ease; padding: 1.5rem 1rem; }
-    .sidebar.open { right: 0; }
-    .sidebar h2 { font-size: 1rem; }
-    .sidebar a { font-size: 0.9rem; justify-content: flex-start; padding: 0.6rem 0.75rem; }
-    .main { margin-right: 0; padding: 1rem; }
-    h1 { font-size: 1.2rem; }
-    table { font-size: 0.75rem; }
-    th, td { padding: 0.5rem; }
-    .admin-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; }
-    .admin-overlay.show { display: block; }
-    .admin-menu-btn { display: flex !important; position: fixed; top: 12px; right: 12px; z-index: 150; background: #1E293B; color: white; border: 1px solid #334155; border-radius: 8px; padding: 0.4rem 0.6rem; cursor: pointer; font-size: 1.2rem; }
-}
-@media (max-width: 480px) {
-    table { display: block; overflow-x: auto; }
-}
+        .admin-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; }
+        .admin-overlay.show { display: block; }
+        .admin-menu-btn { display: none; position: fixed; top: 12px; right: 12px; z-index: 150; background: #1E293B; color: white; border: 1px solid #334155; border-radius: 8px; padding: 0.4rem 0.6rem; cursor: pointer; font-size: 1.2rem; }
+        .skeleton { background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        @media (max-width: 1024px) { .sidebar { width: 60px; padding: 1rem 0.5rem; } .sidebar h2 { font-size: 0.8rem; text-align: center; } .sidebar a { font-size: 0; justify-content: center; padding: 0.5rem; } .main { margin-right: 60px; } }
+        @media (max-width: 768px) { body { flex-direction: column; } .sidebar { right: -260px; width: 260px; padding: 1.5rem 1rem; } .sidebar.open { right: 0; } .sidebar h2 { font-size: 1rem; } .sidebar a { font-size: 0.9rem; justify-content: flex-start; padding: 0.6rem 0.75rem; } .main { margin-right: 0; padding: 1rem; } .admin-menu-btn { display: flex; } h1 { font-size: 1.2rem; } table { font-size: 0.7rem; } th, td { padding: 0.5rem; } }
     </style>
 </head>
 <body>
     <div class="admin-overlay" id="adminOverlay" onclick="closeSidebar()"></div>
-<button class="admin-menu-btn" id="adminMenuBtn" onclick="openSidebar()" style="display:none;">☰</button>
-    <aside class="sidebar">
-    <h2>🔐 Nivora Admin</h2>
-    <a href="dashboard.html">📊 لوحة القيادة</a>
-    <a href="organizations.html">🏢 المؤسسات</a>
-    <a href="subscriptions.html">💳 الاشتراكات</a>
-    <a href="users.html">👥 المستخدمون</a>
-    <a href="features.html">🚩 Feature Flags</a>
-    <a href="usage.html">📊 الاستخدام</a>
-    <a href="tickets.html">🎫 التذاكر</a>
-    <a href="health.html">🖥 صحة النظام</a>
-    <a href="#" onclick="logout()">🚪 خروج</a>
-</aside>
-
+    <button class="admin-menu-btn" id="adminMenuBtn" onclick="openSidebar()">☰</button>
+    <aside class="sidebar" id="sidebar">
+        <h2>🔐 Nivora Admin</h2>
+        <a href="dashboard.html">📊 لوحة القيادة</a>
+        <a href="organizations.html">🏢 المؤسسات</a>
+        <a href="subscriptions.html">💳 الاشتراكات</a>
+        <a href="users.html" class="active">👥 المستخدمون</a>
+        <a href="features.html">🚩 Feature Flags</a>
+        <a href="usage.html">📊 الاستخدام</a>
+        <a href="tickets.html">🎫 التذاكر</a>
+        <a href="health.html">🖥 صحة النظام</a>
+        <a href="#" onclick="logout()">🚪 خروج</a>
+    </aside>
     <div class="main">
         <h1>👥 المستخدمون</h1>
         <table>
@@ -67,30 +50,18 @@
             <tbody id="userBody"></tbody>
         </table>
     </div>
-
     <script>
         const API = 'https://nivora-t9ov.onrender.com/api/admin';
         const token = localStorage.getItem('adminToken');
         if (!token) window.location.href = 'login.html';
         function logout() { localStorage.removeItem('adminToken'); window.location.href = 'login.html'; }
+        function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('adminOverlay').classList.add('show'); }
+        function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('adminOverlay').classList.remove('show'); }
+        function updateMobileUI() { const btn = document.getElementById('adminMenuBtn'); btn.style.display = window.innerWidth <= 768 ? 'flex' : 'none'; if (window.innerWidth > 768) closeSidebar(); }
+        window.addEventListener('resize', updateMobileUI); updateMobileUI();
 
-        async function loadUsers() {
-            const res = await fetch(`${API}/users`, { headers: { 'Authorization': `Bearer ${token}` } });
-            const users = await res.json();
-            document.getElementById('userBody').innerHTML = users.map(u => `
-                <tr>
-                    <td>${u.username}</td>
-                    <td>${u.email || '-'}</td>
-                    <td><span class="badge ${u.role === 'super_admin' ? 'badge-admin' : 'badge-user'}">${u.role}</span></td>
-                    <td>${new Date(u.createdAt).toLocaleDateString('ar-SA')}</td>
-                </tr>
-            `).join('');
-        }
-function openSidebar() { document.querySelector('.sidebar').classList.add('open'); document.getElementById('adminOverlay').classList.add('show'); }
-function closeSidebar() { document.querySelector('.sidebar').classList.remove('open'); document.getElementById('adminOverlay').classList.remove('show'); }
-function updateMobileUI() { const btn = document.getElementById('adminMenuBtn'); if (window.innerWidth <= 768) { btn.style.display = 'flex'; } else { btn.style.display = 'none'; closeSidebar(); } }
-window.addEventListener('resize', updateMobileUI);
-updateMobileUI();
+        function showSkeleton() { document.getElementById('userBody').innerHTML = Array(5).fill('<tr><td><div class="skeleton" style="height:14px;width:70%;"></div></td><td><div class="skeleton" style="height:14px;width:80%;"></div></td><td><div class="skeleton" style="height:14px;width:50px;"></div></td><td><div class="skeleton" style="height:14px;width:60px;"></div></td></tr>').join(''); }
+        async function loadUsers() { showSkeleton(); try { const res = await fetch(`${API}/users`, { headers: { 'Authorization': `Bearer ${token}` } }); const users = await res.json(); document.getElementById('userBody').innerHTML = users.length === 0 ? '<tr><td colspan="4" style="text-align:center;padding:3rem;">لا يوجد مستخدمون</td></tr>' : users.map(u => `<tr><td>${u.username}</td><td>${u.email||'-'}</td><td><span class="badge ${u.role==='super_admin'?'badge-admin':'badge-user'}">${u.role}</span></td><td>${new Date(u.createdAt).toLocaleDateString('ar-SA')}</td></tr>`).join(''); } catch (err) { document.getElementById('userBody').innerHTML = '<tr><td colspan="4" style="text-align:center;color:#EF4444;">خطأ في تحميل البيانات</td></tr>'; } }
         loadUsers();
     </script>
 </body>
