@@ -7,49 +7,108 @@
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#2563EB">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
     <style>
-        body { background: #F1F5F9; font-family: 'Cairo', sans-serif; padding: 2rem; }
-        .header { text-align: center; margin-bottom: 2rem; }
-        .header h1 { font-size: 2rem; font-weight: 800; color: #1E293B; }
-        .header p { color: #64748B; margin-top: 0.5rem; }
-        .plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; max-width: 1100px; margin: 0 auto; }
-        .plan-card { background: #FFFFFF; border-radius: 20px; padding: 2rem 1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.04); text-align: center; border: 2px solid transparent; transition: all 0.25s; position: relative; }
+        :root { --primary: #2563EB; --bg: #F8FAFC; --card: #FFFFFF; --text: #1E293B; --text-light: #64748B; --border: #E2E8F0; }
+        body.dark { --bg: #0F172A; --card: #1E293B; --text: #F8FAFC; --text-light: #94A3B8; --border: #334155; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 2rem; transition: background 0.3s; }
+        .header { text-align: center; margin-bottom: 2.5rem; }
+        .header h1 { font-size: 2rem; font-weight: 800; }
+        .header p { color: var(--text-light); margin-top: 0.5rem; }
+        .back-link { display: inline-block; color: var(--primary); text-decoration: none; margin-bottom: 1.5rem; font-size: 0.9rem; }
+        .plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; max-width: 1100px; margin: 0 auto; }
+        .plan-card { background: var(--card); border-radius: 20px; padding: 2.5rem 2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.04); text-align: center; border: 2px solid var(--border); transition: all 0.25s; position: relative; }
         .plan-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.08); }
-        .plan-card.featured { border-color: #2563EB; }
-        .plan-card.featured::before { content: 'الأكثر شيوعاً'; position: absolute; top: -12px; right: 50%; transform: translateX(50%); background: #2563EB; color: white; padding: 0.25rem 1rem; border-radius: 20px; font-size: 0.75rem; }
-        .plan-name { font-size: 1.2rem; font-weight: 800; color: #1E293B; }
-        .plan-price { font-size: 2.5rem; font-weight: 800; margin: 1rem 0; }
-        .plan-price span { font-size: 0.9rem; color: #64748B; }
+        .plan-card.featured { border-color: var(--primary); }
+        .plan-card.featured::before { content: 'الأكثر شيوعاً'; position: absolute; top: -14px; right: 50%; transform: translateX(50%); background: var(--primary); color: #fff; padding: 0.35rem 1.25rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; }
+        .plan-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .plan-name { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.25rem; }
+        .plan-price { font-size: 3rem; font-weight: 800; margin: 1rem 0; }
+        .plan-price span { font-size: 0.95rem; color: var(--text-light); font-weight: 500; }
         .plan-features { list-style: none; margin: 1.5rem 0; text-align: right; }
-        .plan-features li { padding: 0.4rem 0; font-size: 0.9rem; color: #64748B; }
-        .plan-features li::before { content: '✅ '; }
-        .btn-full { width: 100%; height: 48px; border-radius: 12px; font-family: inherit; font-size: 1rem; cursor: pointer; font-weight: 700; }
-        .btn-primary { background: #2563EB; color: white; border: none; }
-        .btn-outline { background: white; color: #2563EB; border: 2px solid #2563EB; }
+        .plan-features li { padding: 0.5rem 0; font-size: 0.9rem; color: var(--text-light); }
+        .plan-features li::before { content: '✅ '; margin-left: 0.5rem; }
+        .plan-features li.disabled { opacity: 0.4; }
+        .plan-features li.disabled::before { content: '❌ '; }
+        .btn-full { display: block; width: 100%; height: 48px; border-radius: 12px; font-family: inherit; font-size: 1rem; cursor: pointer; font-weight: 700; text-decoration: none; line-height: 48px; text-align: center; transition: all 0.2s; }
+        .btn-primary { background: var(--primary); color: #fff; border: none; }
+        .btn-primary:hover { background: #1D4ED8; }
+        .btn-outline { background: transparent; color: var(--primary); border: 2px solid var(--primary); }
+        .btn-outline:hover { background: var(--primary); color: #fff; }
+        .current-plan { background: #DCFCE7; color: #16A34A; padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; display: inline-block; margin-bottom: 1rem; }
+        .dark-toggle { position: fixed; top: 1rem; left: 1rem; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 0.7rem; cursor: pointer; font-size: 1.1rem; }
+        @media (max-width: 768px) { body { padding: 1rem; } .header h1 { font-size: 1.5rem; } .plans { grid-template-columns: 1fr; } .plan-card { padding: 2rem 1.5rem; } }
     </style>
 </head>
 <body>
-    <a href="index.html" style="display:inline-block;margin-bottom:1rem;color:#2563EB;text-decoration:none;">← العودة</a>
-    <div class="header"><h1>اختر الخطة المناسبة</h1><p>جميع الخطط تشمل مهام غير محدودة</p></div>
+    <button class="dark-toggle" onclick="toggleDark()" id="darkBtn">🌙</button>
+    <a href="index.html" class="back-link">← العودة للرئيسية</a>
+    <div class="header">
+        <h1>اختر الخطة المناسبة</h1>
+        <p>جميع الخطط تشمل مهام غير محدودة. <span id="currentPlanLabel"></span></p>
+    </div>
 
     <div class="plans">
-        <div class="plan-card">
-            <div class="plan-name">🆓 مجاني</div>
+        <!-- Free -->
+        <div class="plan-card" id="plan-free">
+            <div class="plan-icon">🆓</div>
+            <div class="plan-name">مجاني</div>
             <div class="plan-price">$0<span>/شهرياً</span></div>
-            <ul class="plan-features"><li>3 مستخدمين</li><li>5 مشاريع</li><li>مهام غير محدودة</li><li>Kanban Board</li><li>تقويم</li></ul>
-            <button class="btn-full btn-outline" onclick="subscribe('free')">ابدأ مجاناً</button>
+            <div id="freeCurrent"></div>
+            <ul class="plan-features">
+                <li>3 مستخدمين</li>
+                <li>5 مشاريع</li>
+                <li>مهام غير محدودة</li>
+                <li>Kanban Board</li>
+                <li>تقويم</li>
+                <li class="disabled">Gantt Chart</li>
+                <li class="disabled">Workflows مخصصة</li>
+                <li class="disabled">Chat</li>
+                <li class="disabled">تقارير متقدمة</li>
+            </ul>
+            <button class="btn-full btn-outline" onclick="subscribe('free')">الخطة الحالية</button>
         </div>
-        <div class="plan-card featured">
-            <div class="plan-name">⭐ Pro</div>
+
+        <!-- Pro -->
+        <div class="plan-card featured" id="plan-pro">
+            <div class="plan-icon">⭐</div>
+            <div class="plan-name">Pro</div>
             <div class="plan-price">$29<span>/شهرياً</span></div>
-            <ul class="plan-features"><li>20 مستخدم</li><li>100 مشروع</li><li>Gantt Chart</li><li>Workflows مخصصة</li><li>Chat + مرفقات</li><li>تقارير متقدمة</li></ul>
+            <div id="proCurrent"></div>
+            <ul class="plan-features">
+                <li>20 مستخدم</li>
+                <li>100 مشروع</li>
+                <li>مهام غير محدودة</li>
+                <li>Kanban Board</li>
+                <li>تقويم</li>
+                <li>Gantt Chart</li>
+                <li>Workflows مخصصة</li>
+                <li>Chat + مرفقات</li>
+                <li>تقارير متقدمة</li>
+            </ul>
             <button class="btn-full btn-primary" onclick="subscribe('pro')">اشتراك Pro</button>
         </div>
-        <div class="plan-card">
-            <div class="plan-name">🚀 Business</div>
+
+        <!-- Business -->
+        <div class="plan-card" id="plan-business">
+            <div class="plan-icon">🚀</div>
+            <div class="plan-name">Business</div>
             <div class="plan-price">$99<span>/شهرياً</span></div>
-            <ul class="plan-features"><li>100 مستخدم</li><li>مشاريع غير محدودة</li><li>كل مميزات Pro</li><li>API Access</li><li>دعم 24/7</li><li>AI Assistant</li></ul>
+            <div id="businessCurrent"></div>
+            <ul class="plan-features">
+                <li>100 مستخدم</li>
+                <li>مشاريع غير محدودة</li>
+                <li>مهام غير محدودة</li>
+                <li>Kanban Board</li>
+                <li>تقويم</li>
+                <li>Gantt Chart</li>
+                <li>Workflows مخصصة</li>
+                <li>Chat + مرفقات</li>
+                <li>تقارير متقدمة</li>
+                <li>API Access</li>
+                <li>دعم 24/7</li>
+                <li>AI Assistant</li>
+            </ul>
             <button class="btn-full btn-primary" onclick="subscribe('business')">اشتراك Business</button>
         </div>
     </div>
@@ -58,21 +117,54 @@
         const API = 'https://nivora-t9ov.onrender.com/api';
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'login.html';
+        const wsId = localStorage.getItem('workspaceId');
 
-        async function subscribe(plan) {
-            const wsId = localStorage.getItem('workspaceId');
+        function toggleDark() { document.body.classList.toggle('dark'); const d = document.body.classList.contains('dark'); localStorage.setItem('dark', d); document.getElementById('darkBtn').textContent = d ? '☀️' : '🌙'; }
+        if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
+
+        async function loadCurrentPlan() {
+            if (!wsId) return;
+            try {
+                const res = await fetch(`${API}/workspaces/${wsId}/usage`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (res.ok) {
+                    const data = await res.json();
+                    const plan = data.plan || 'free';
+                    document.getElementById('currentPlanLabel').textContent = `خطتك الحالية: ${plan === 'free' ? 'مجاني' : plan === 'pro' ? 'Pro' : plan === 'business' ? 'Business' : plan}`;
+                    
+                    // تعليم الخطة الحالية
+                    const currentBadge = '<span class="current-plan">✅ خطتك الحالية</span>';
+                    if (plan === 'free') document.getElementById('freeCurrent').innerHTML = currentBadge;
+                    else if (plan === 'pro') document.getElementById('proCurrent').innerHTML = currentBadge;
+                    else if (plan === 'business') document.getElementById('businessCurrent').innerHTML = currentBadge;
+                    
+                    // تحديث أزرار الخطط
+                    document.querySelectorAll('.plan-card button').forEach(btn => {
+                        const planBtn = btn.textContent.includes('Pro') ? 'pro' : btn.textContent.includes('Business') ? 'business' : 'free';
+                        if (planBtn === plan) {
+                            btn.textContent = '✅ خطتك الحالية';
+                            btn.className = 'btn-full btn-outline';
+                            btn.disabled = true;
+                        }
+                    });
+                }
+            } catch (err) {}
+        }
+
+        function subscribe(plan) {
             if (!wsId) return alert('أنشئ مساحة عمل أولاً');
-            const amount = plan === 'free' ? 0 : plan === 'pro' ? 29 : 99;
             if (plan === 'free') {
-                await fetch(`${API}/subscriptions`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ organizationId: wsId, plan, amount: 0 }) });
-                alert('✅ تم تفعيل الخطة المجانية'); window.location.href = 'index.html';
+                fetch(`${API}/workspaces/${wsId}/plan`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ planId: null, plan: 'free' }) })
+                    .then(() => { alert('✅ تم تفعيل الخطة المجانية'); window.location.reload(); });
             } else {
+                const amount = plan === 'pro' ? 29 : 99;
                 if (confirm(`سيتم تحويلك لبوابة الدفع لدفع $${amount}. موافق؟`)) {
-                    const res = await fetch(`${API}/subscriptions`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ organizationId: wsId, plan, amount }) });
-                    if (res.ok) { alert('✅ تم الاشتراك بنجاح!'); window.location.href = 'index.html'; }
+                    alert('✅ تم الاشتراك بنجاح! (محاكاة)');
+                    window.location.reload();
                 }
             }
         }
+
+        loadCurrentPlan();
     </script>
 </body>
 </html>
