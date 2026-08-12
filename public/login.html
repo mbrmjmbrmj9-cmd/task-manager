@@ -7,119 +7,276 @@
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#2563EB">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
     <style>
-        :root { --primary: #2563EB; --primary-hover: #1D4ED8; --bg: #F8FAFC; --card: #FFFFFF; --text: #1E293B; --text-light: #64748B; --border: #E2E8F0; --danger: #DC2626; --success: #16A34A; }
-        body.dark { --bg: #0F172A; --card: #1E293B; --text: #F8FAFC; --text-light: #94A3B8; --border: #334155; }
+        :root { --sidebar-w: 0px; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; transition: background 0.3s; padding: 1rem; }
-        .container { width: 100%; max-width: 440px; }
-        .logo { text-align: center; margin-bottom: 2rem; }
-        .logo h1 { font-size: 2rem; font-weight: 800; color: var(--primary); }
-        .logo p { color: var(--text-light); font-size: 0.9rem; margin-top: 0.25rem; }
-        .card { background: var(--card); border-radius: 24px; padding: 2.5rem 2rem; box-shadow: 0 20px 50px rgba(0,0,0,0.06); border: 1px solid var(--border); }
-        .card h2 { font-size: 1.3rem; font-weight: 800; text-align: center; margin-bottom: 1.5rem; }
-        .google-btn { width: 100%; height: 46px; border-radius: 12px; border: 2px solid var(--border); background: var(--card); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-family: inherit; font-weight: 600; font-size: 0.9rem; color: var(--text); margin-bottom: 1rem; transition: all 0.2s; }
-        .google-btn:hover { background: var(--bg); }
-        .divider { display: flex; align-items: center; gap: 1rem; margin: 1.25rem 0; color: #94A3B8; font-size: 0.8rem; }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; transition: background var(--transition); position: relative; overflow-x: hidden; }
+
+        /* خلفية زخرفية */
+        body::before { content: ''; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 20% 50%, var(--primary-light) 0%, transparent 50%), radial-gradient(circle at 80% 80%, var(--primary-light) 0%, transparent 50%); opacity: 0.5; z-index: -1; }
+
+        .auth-container { width: 100%; max-width: 460px; }
+        .auth-logo { text-align: center; margin-bottom: 2rem; }
+        .auth-logo .logo-icon { width: 64px; height: 64px; border-radius: var(--radius-lg); background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800; margin: 0 auto 1rem; box-shadow: var(--shadow-md); }
+        .auth-logo h1 { font-size: 1.8rem; font-weight: 800; color: var(--primary); }
+        .auth-logo p { color: var(--text-light); font-size: 0.9rem; margin-top: 0.3rem; }
+
+        .auth-card { background: var(--card); border-radius: var(--radius-xl); padding: 2.5rem 2rem; box-shadow: var(--shadow-xl); border: 1px solid var(--border); position: relative; }
+        .auth-card h2 { font-size: 1.4rem; font-weight: 800; text-align: center; margin-bottom: 0.4rem; }
+        .auth-card .auth-sub { text-align: center; color: var(--text-light); font-size: 0.85rem; margin-bottom: 1.5rem; }
+
+        .google-btn { width: 100%; height: 48px; border-radius: var(--radius-sm); border: 2px solid var(--border); background: var(--card); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.75rem; font-family: inherit; font-weight: 600; font-size: 0.9rem; color: var(--text); margin-bottom: 1.25rem; transition: all var(--transition); }
+        .google-btn:hover { background: var(--secondary-light); border-color: var(--text-muted); transform: translateY(-1px); }
+        .google-btn .g-icon { width: 22px; height: 22px; flex-shrink: 0; }
+
+        .divider { display: flex; align-items: center; gap: 1rem; margin: 1.5rem 0; color: var(--text-muted); font-size: 0.8rem; }
         .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-        .input-group { position: relative; margin-bottom: 1rem; }
-        .input-group .icon { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #94A3B8; width: 20px; height: 20px; pointer-events: none; z-index: 1; }
-        .input-group input { width: 100%; height: 48px; padding: 0 2.5rem; border-radius: 12px; border: 1px solid var(--border); font-family: inherit; font-size: 0.9rem; background: var(--bg); color: var(--text); transition: all 0.2s; }
-        .input-group input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
-        .input-group .toggle-password { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #94A3B8; font-size: 1.1rem; background: none; border: none; }
+
+        .input-group { position: relative; margin-bottom: 1.1rem; }
+        .input-group .icon { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); width: 20px; height: 20px; pointer-events: none; z-index: 1; }
+        .input-group input { width: 100%; height: 50px; padding: 0 2.75rem; border-radius: var(--radius-sm); border: 1.5px solid var(--border); font-family: inherit; font-size: 0.9rem; background: var(--bg); color: var(--text); transition: all var(--transition); }
+        .input-group input:hover { border-color: var(--text-muted); }
+        .input-group input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37,99,235,0.1); }
+        .input-group input::placeholder { color: var(--text-muted); }
+        .input-group .toggle-password { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-muted); font-size: 1.1rem; background: none; border: none; padding: 0.25rem; transition: color var(--transition-fast); }
+        .input-group .toggle-password:hover { color: var(--text); }
+
         .options-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; font-size: 0.85rem; }
-        .options-row label { display: flex; align-items: center; gap: 0.4rem; cursor: pointer; color: var(--text-light); }
-        .options-row input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary); }
-        .options-row a { color: var(--primary); text-decoration: none; font-weight: 600; }
+        .options-row label { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--text-light); }
+        .options-row input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--primary); cursor: pointer; }
+        .options-row a { color: var(--primary); text-decoration: none; font-weight: 600; transition: color var(--transition-fast); }
         .options-row a:hover { text-decoration: underline; }
-        .btn { width: 100%; height: 48px; border-radius: 12px; border: none; cursor: pointer; font-family: inherit; font-weight: 700; font-size: 1rem; transition: all 0.2s; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: var(--primary-hover); }
-        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-        .switch-text { text-align: center; margin-top: 1.25rem; color: var(--text-light); font-size: 0.85rem; }
+
+        .btn-auth { width: 100%; height: 52px; border-radius: var(--radius-sm); border: none; cursor: pointer; font-family: inherit; font-weight: 700; font-size: 1rem; transition: all var(--transition); background: var(--primary); color: #fff; position: relative; overflow: hidden; }
+        .btn-auth:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 8px 25px rgba(37,99,235,0.25); }
+        .btn-auth:active { transform: translateY(0); }
+        .btn-auth:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .switch-text { text-align: center; margin-top: 1.5rem; color: var(--text-light); font-size: 0.88rem; }
         .switch-text a { color: var(--primary); font-weight: 700; text-decoration: none; }
         .switch-text a:hover { text-decoration: underline; }
-        .error-msg { background: #FEE2E2; color: #DC2626; padding: 0.6rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.85rem; display: none; }
-        .success-msg { background: #DCFCE7; color: #16A34A; padding: 0.6rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.85rem; display: none; }
+
+        .error-msg { background: var(--danger-light); color: var(--danger); padding: 0.75rem 1rem; border-radius: var(--radius-sm); margin-bottom: 1.1rem; font-size: 0.85rem; display: none; border-right: 3px solid var(--danger); animation: shake 0.3s ease; }
+        .success-msg { background: var(--success-light); color: var(--success); padding: 0.75rem 1rem; border-radius: var(--radius-sm); margin-bottom: 1.1rem; font-size: 0.85rem; display: none; border-right: 3px solid var(--success); }
+
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
         .hidden { display: none !important; }
-        .dark-toggle { position: fixed; top: 1rem; left: 1rem; background: var(--card); border: 1px solid var(--border); border-radius: 50%; width: 40px; height: 40px; cursor: pointer; font-size: 1.2rem; }
-        .password-strength { height: 4px; border-radius: 2px; margin-top: 0.4rem; transition: all 0.3s; }
-        .strength-weak { background: #DC2626; width: 33%; }
-        .strength-medium { background: #F59E0B; width: 66%; }
-        .strength-strong { background: #16A34A; width: 100%; }
+        .dark-toggle { position: fixed; top: 1.2rem; left: 1.2rem; background: var(--card); border: 1px solid var(--border); border-radius: 50%; width: 42px; height: 42px; cursor: pointer; font-size: 1.2rem; z-index: 10; box-shadow: var(--shadow-sm); transition: all var(--transition); }
+        .dark-toggle:hover { transform: scale(1.05); }
+
+        .lang-toggle { position: fixed; top: 1.2rem; right: 1.2rem; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); height: 42px; padding: 0 1rem; cursor: pointer; font-size: 0.85rem; font-weight: 600; z-index: 10; box-shadow: var(--shadow-sm); color: var(--text); font-family: inherit; transition: all var(--transition); }
+        .lang-toggle:hover { transform: scale(1.05); }
+
+        .password-strength { height: 4px; border-radius: 2px; margin-top: 0.4rem; transition: all 0.3s; background: var(--border); }
+        .strength-weak { background: var(--danger); width: 33%; }
+        .strength-medium { background: var(--warning); width: 66%; }
+        .strength-strong { background: var(--success); width: 100%; }
+
+        @media (max-width: 480px) {
+            .auth-card { padding: 2rem 1.5rem; }
+            .auth-logo .logo-icon { width: 52px; height: 52px; font-size: 1.5rem; }
+            .auth-logo h1 { font-size: 1.5rem; }
+        }
     </style>
 </head>
 <body>
-<button class="btn btn-outline" onclick="toggleLang()" id="langBtn" style="position:fixed;top:1rem;right:1rem;height:36px;z-index:10;">🌐 EN</button>    <button class="dark-toggle" onclick="toggleDark()" id="darkBtn">🌙</button>
-    <div class="container">
-        <div class="logo"><h1>Nivora</h1><p>نظّم مهامك، أدر فريقك، وأنجز أكثر</p></div>
-        <div class="card">
+    <!-- أزرار التحكم -->
+    <button class="dark-toggle" onclick="toggleDark()" id="darkBtn">🌙</button>
+    <button class="lang-toggle" onclick="toggleLang()" id="langBtn">🌐 EN</button>
+
+    <div class="auth-container">
+        <!-- الشعار -->
+        <div class="auth-logo">
+            <div class="logo-icon">N</div>
+            <h1>Nivora</h1>
+            <p>نظّم مهامك، أدر فريقك، وأنجز أكثر</p>
+        </div>
+
+        <!-- البطاقة -->
+        <div class="auth-card">
+            <!-- نموذج تسجيل الدخول -->
             <div id="loginForm">
                 <h2>تسجيل الدخول</h2>
+                <p class="auth-sub">مرحباً بعودتك! سجّل دخولك للمتابعة</p>
                 <div class="error-msg" id="loginError"></div>
-                <button class="google-btn" onclick="location.href='https://nivora-t9ov.onrender.com/api/auth/google'"><span style="font-size:1.2rem;font-weight:700;color:#4285F4;">G</span> المتابعة باستخدام Google</button>
-                <div class="divider">أو الدخول باستخدام البريد</div>
-                <div class="input-group"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/></svg><input type="email" id="loginEmail" placeholder="البريد الإلكتروني" autocomplete="email" autofocus></div>
-                <div class="input-group"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><input type="password" id="loginPassword" placeholder="كلمة المرور" autocomplete="current-password"><button class="toggle-password" onclick="togglePassword('loginPassword', this)">👁️</button></div>
-                <div class="options-row"><label><input type="checkbox" id="rememberMe"> تذكرني</label><a href="#" onclick="showForgotPassword()">نسيت كلمة المرور؟</a></div>
-                <button class="btn btn-primary" id="loginBtn" onclick="login()">تسجيل الدخول</button>
+
+                <button class="google-btn" onclick="location.href='https://nivora-t9ov.onrender.com/api/auth/google'">
+                    <svg class="g-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                    المتابعة باستخدام Google
+                </button>
+
+                <div class="divider">أو الدخول بالبريد</div>
+
+                <div class="input-group">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/></svg>
+                    <input type="email" id="loginEmail" placeholder="البريد الإلكتروني" autocomplete="email" autofocus>
+                </div>
+
+                <div class="input-group">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    <input type="password" id="loginPassword" placeholder="كلمة المرور" autocomplete="current-password">
+                    <button class="toggle-password" onclick="togglePassword('loginPassword', this)">👁️</button>
+                </div>
+
+                <div class="options-row">
+                    <label><input type="checkbox" id="rememberMe"> تذكرني</label>
+                    <a href="#" onclick="showForgotPassword()">نسيت كلمة المرور؟</a>
+                </div>
+
+                <button class="btn-auth" id="loginBtn" onclick="login()">تسجيل الدخول</button>
                 <p class="switch-text">ليس لديك حساب؟ <a href="#" id="showRegister">إنشاء حساب</a></p>
             </div>
+
+            <!-- نموذج التسجيل -->
             <div id="registerForm" class="hidden">
                 <h2>إنشاء حساب</h2>
+                <p class="auth-sub">ابدأ رحلتك مع Nivora مجاناً</p>
                 <div class="error-msg" id="registerError"></div>
-                <button class="google-btn" onclick="location.href='https://nivora-t9ov.onrender.com/api/auth/google'"><span style="font-size:1.2rem;font-weight:700;color:#4285F4;">G</span> التسجيل بـ Google</button>
+
+                <button class="google-btn" onclick="location.href='https://nivora-t9ov.onrender.com/api/auth/google'">
+                    <svg class="g-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                    التسجيل بـ Google
+                </button>
+
                 <div class="divider">أو</div>
-                <div class="input-group"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 0 0-16 0"/></svg><input type="text" id="regFullName" placeholder="الاسم الكامل"></div>
-                <div class="input-group"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/></svg><input type="email" id="regEmail" placeholder="البريد الإلكتروني"></div>
-                <div class="input-group"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><input type="password" id="regPassword" placeholder="كلمة المرور" oninput="checkStrength()"><button class="toggle-password" onclick="togglePassword('regPassword', this)">👁️</button><div class="password-strength" id="strengthBar"></div></div>
-                <div class="input-group"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><input type="password" id="regConfirm" placeholder="تأكيد كلمة المرور"></div>
-                <button class="btn btn-primary" onclick="register()">إنشاء حساب</button>
+
+                <div class="input-group">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>
+                    <input type="text" id="regFullName" placeholder="الاسم الكامل">
+                </div>
+                <div class="input-group">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/></svg>
+                    <input type="email" id="regEmail" placeholder="البريد الإلكتروني">
+                </div>
+                <div class="input-group">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    <input type="password" id="regPassword" placeholder="كلمة المرور" oninput="checkStrength()">
+                    <button class="toggle-password" onclick="togglePassword('regPassword', this)">👁️</button>
+                    <div class="password-strength" id="strengthBar"></div>
+                </div>
+                <div class="input-group">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    <input type="password" id="regConfirm" placeholder="تأكيد كلمة المرور">
+                </div>
+
+                <button class="btn-auth" onclick="register()">إنشاء حساب</button>
                 <p class="switch-text">لديك حساب؟ <a href="#" id="showLogin">سجّل دخولك</a></p>
             </div>
+
+            <!-- نموذج الاستعادة -->
             <div id="forgotForm" class="hidden">
                 <h2>استعادة كلمة المرور</h2>
+                <p class="auth-sub">سنرسل لك رابطاً لإعادة التعيين</p>
                 <div class="success-msg" id="forgotSuccess"></div>
                 <div class="error-msg" id="forgotError"></div>
-                <div class="input-group"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/></svg><input type="email" id="forgotEmail" placeholder="البريد الإلكتروني"></div>
-                <button class="btn btn-primary" onclick="forgotPassword()">إرسال رابط الاستعادة</button>
+                <div class="input-group">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/></svg>
+                    <input type="email" id="forgotEmail" placeholder="البريد الإلكتروني">
+                </div>
+                <button class="btn-auth" onclick="forgotPassword()">إرسال الرابط</button>
                 <p class="switch-text"><a href="#" id="showLoginFromForgot">العودة لتسجيل الدخول</a></p>
             </div>
         </div>
     </div>
+
+    <script src="js/components.js"></script>
     <script src="js/i18n.js"></script>
     <script>
         const API = 'https://nivora-t9ov.onrender.com/api/auth';
-        function toggleDark() { document.body.classList.toggle('dark'); const isDark = document.body.classList.contains('dark'); localStorage.setItem('dark', isDark); document.getElementById('darkBtn').textContent = isDark ? '☀️' : '🌙'; }
+        function toggleDark() { document.body.classList.toggle('dark'); const d = document.body.classList.contains('dark'); localStorage.setItem('dark', d); document.getElementById('darkBtn').textContent = d ? '☀️' : '🌙'; }
         if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
+
         const urlParams = new URLSearchParams(window.location.search);
-        const googleToken = urlParams.get('token'); const googleUser = urlParams.get('username');
+        const googleToken = urlParams.get('token');
+        const googleUser = urlParams.get('username');
         if (googleToken) { localStorage.setItem('token', googleToken); localStorage.setItem('user', JSON.stringify({ username: googleUser || 'مستخدم' })); checkWorkspace(googleToken); }
+
         document.getElementById('showRegister').addEventListener('click', e => { e.preventDefault(); toggleForms('register'); });
         document.getElementById('showLogin').addEventListener('click', e => { e.preventDefault(); toggleForms('login'); });
         document.getElementById('showLoginFromForgot').addEventListener('click', e => { e.preventDefault(); toggleForms('login'); });
-        function toggleForms(form) { document.getElementById('loginForm').classList.add('hidden'); document.getElementById('registerForm').classList.add('hidden'); document.getElementById('forgotForm').classList.add('hidden'); if (form === 'login') document.getElementById('loginForm').classList.remove('hidden'); if (form === 'register') document.getElementById('registerForm').classList.remove('hidden'); if (form === 'forgot') document.getElementById('forgotForm').classList.remove('hidden'); }
+
+        function toggleForms(form) {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.add('hidden');
+            document.getElementById('forgotForm').classList.add('hidden');
+            if (form === 'login') document.getElementById('loginForm').classList.remove('hidden');
+            if (form === 'register') document.getElementById('registerForm').classList.remove('hidden');
+            if (form === 'forgot') document.getElementById('forgotForm').classList.remove('hidden');
+        }
+
         function showForgotPassword() { toggleForms('forgot'); }
-        function togglePassword(inputId, btn) { const input = document.getElementById(inputId); const isPassword = input.type === 'password'; input.type = isPassword ? 'text' : 'password'; btn.textContent = isPassword ? '🙈' : '👁️'; }
-        function checkStrength() { const p = document.getElementById('regPassword').value; const bar = document.getElementById('strengthBar'); bar.className = 'password-strength'; if (p.length === 0) return; let score = 0; if (p.length >= 8) score++; if (/[A-Z]/.test(p)) score++; if (/[0-9]/.test(p)) score++; if (/[^A-Za-z0-9]/.test(p)) score++; if (score <= 2) bar.classList.add('strength-weak'); else if (score === 3) bar.classList.add('strength-medium'); else bar.classList.add('strength-strong'); }
-        
+        function togglePassword(id, btn) { const input = document.getElementById(id); const isPassword = input.type === 'password'; input.type = isPassword ? 'text' : 'password'; btn.textContent = isPassword ? '🙈' : '👁️'; }
+
+        function checkStrength() {
+            const p = document.getElementById('regPassword').value;
+            const bar = document.getElementById('strengthBar');
+            bar.className = 'password-strength';
+            if (!p.length) return;
+            let score = 0;
+            if (p.length >= 8) score++;
+            if (/[A-Z]/.test(p)) score++;
+            if (/[0-9]/.test(p)) score++;
+            if (/[^A-Za-z0-9]/.test(p)) score++;
+            if (score <= 2) bar.classList.add('strength-weak');
+            else if (score === 3) bar.classList.add('strength-medium');
+            else bar.classList.add('strength-strong');
+        }
+
         async function checkWorkspace(token) {
             const res = await fetch('https://nivora-t9ov.onrender.com/api/workspaces', { headers: { 'Authorization': `Bearer ${token}` } });
             const workspaces = await res.json();
-            if (workspaces.length > 0) {
-                localStorage.setItem('workspaceId', workspaces[0]._id);
-                localStorage.setItem('inviteCode', workspaces[0].inviteCode || '');
-                window.location.href = 'dashboard.html';
-            } else {
-                window.location.href = 'workspace.html';
-            }
+            if (workspaces.length > 0) { localStorage.setItem('workspaceId', workspaces[0]._id); localStorage.setItem('inviteCode', workspaces[0].inviteCode || ''); window.location.href = 'dashboard.html'; }
+            else { window.location.href = 'workspace.html'; }
         }
-        
-        async function login() { const email = document.getElementById('loginEmail').value.trim(); const password = document.getElementById('loginPassword').value; const err = document.getElementById('loginError'); const btn = document.getElementById('loginBtn'); if (!email || !password) { err.textContent = 'املأ جميع الحقول'; err.style.display = 'block'; return; } btn.disabled = true; btn.textContent = '⟳ جارٍ تسجيل الدخول...'; try { const res = await fetch(`${API}/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: email, password }) }); const data = await res.json(); if (res.ok) { localStorage.setItem('token', data.token); localStorage.setItem('user', JSON.stringify(data.user)); checkWorkspace(data.token); } else { err.textContent = data.error || 'البريد الإلكتروني أو كلمة المرور غير صحيحة'; err.style.display = 'block'; } } catch (e) { err.textContent = 'تعذر الاتصال بالخادم'; err.style.display = 'block'; } btn.disabled = false; btn.textContent = 'تسجيل الدخول'; }
-        async function register() { const fullName = document.getElementById('regFullName').value.trim(); const email = document.getElementById('regEmail').value.trim(); const password = document.getElementById('regPassword').value; const confirm = document.getElementById('regConfirm').value; const err = document.getElementById('registerError'); if (!fullName || !email || !password || !confirm) { err.textContent = 'املأ جميع الحقول'; err.style.display = 'block'; return; } if (password !== confirm) { err.textContent = 'كلمتا المرور غير متطابقتين'; err.style.display = 'block'; return; } if (password.length < 8) { err.textContent = 'كلمة المرور يجب أن تكون 8 أحرف على الأقل'; err.style.display = 'block'; return; } try { const res = await fetch(`${API}/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: email, password, fullName }) }); const data = await res.json(); if (res.ok) { alert('تم إنشاء الحساب! سجّل دخولك.'); toggleForms('login'); document.getElementById('loginEmail').value = email; } else { err.textContent = data.error; err.style.display = 'block'; } } catch (e) { err.textContent = 'تعذر الاتصال بالخادم'; err.style.display = 'block'; } }
-        async function forgotPassword() { const email = document.getElementById('forgotEmail').value.trim(); const err = document.getElementById('forgotError'); const success = document.getElementById('forgotSuccess'); if (!email) { err.textContent = 'أدخل البريد الإلكتروني'; err.style.display = 'block'; return; } try { const res = await fetch(`${API}/forgot-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) }); if (res.ok) { success.textContent = 'تم إرسال رابط الاستعادة إلى بريدك الإلكتروني'; success.style.display = 'block'; err.style.display = 'none'; } else { const data = await res.json(); err.textContent = data.error; err.style.display = 'block'; } } catch (e) { err.textContent = 'تعذر الاتصال بالخادم'; err.style.display = 'block'; } }
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const err = document.getElementById('loginError');
+            const btn = document.getElementById('loginBtn');
+            if (!email || !password) { err.textContent = 'املأ جميع الحقول'; err.style.display = 'block'; return; }
+            setButtonLoading(btn, true, 'جارٍ الدخول...');
+            try {
+                const res = await fetch(`${API}/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: email, password }) });
+                const data = await res.json();
+                if (res.ok) { localStorage.setItem('token', data.token); localStorage.setItem('user', JSON.stringify(data.user)); checkWorkspace(data.token); }
+                else { err.textContent = data.error || 'بيانات غير صحيحة'; err.style.display = 'block'; }
+            } catch (e) { err.textContent = 'تعذر الاتصال'; err.style.display = 'block'; }
+            setButtonLoading(btn, false);
+        }
+
+        async function register() {
+            const fullName = document.getElementById('regFullName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const confirm = document.getElementById('regConfirm').value;
+            const err = document.getElementById('registerError');
+            if (!fullName || !email || !password || !confirm) { err.textContent = 'املأ جميع الحقول'; err.style.display = 'block'; return; }
+            if (password !== confirm) { err.textContent = 'كلمتا المرور غير متطابقتين'; err.style.display = 'block'; return; }
+            if (password.length < 8) { err.textContent = '8 أحرف على الأقل'; err.style.display = 'block'; return; }
+            try {
+                const res = await fetch(`${API}/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: email, password, fullName }) });
+                const data = await res.json();
+                if (res.ok) { showToast('تم إنشاء الحساب', 'success'); toggleForms('login'); document.getElementById('loginEmail').value = email; }
+                else { err.textContent = data.error; err.style.display = 'block'; }
+            } catch (e) { err.textContent = 'تعذر الاتصال'; err.style.display = 'block'; }
+        }
+
+        async function forgotPassword() {
+            const email = document.getElementById('forgotEmail').value.trim();
+            const err = document.getElementById('forgotError');
+            const success = document.getElementById('forgotSuccess');
+            if (!email) { err.textContent = 'أدخل البريد'; err.style.display = 'block'; return; }
+            try {
+                const res = await fetch(`${API}/forgot-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+                if (res.ok) { success.textContent = 'تم الإرسال'; success.style.display = 'block'; err.style.display = 'none'; }
+                else { const data = await res.json(); err.textContent = data.error; err.style.display = 'block'; }
+            } catch (e) { err.textContent = 'تعذر الاتصال'; err.style.display = 'block'; }
+        }
+
         document.querySelectorAll('input').forEach(input => { input.addEventListener('input', () => { document.querySelectorAll('.error-msg').forEach(e => e.style.display = 'none'); }); });
     </script>
 </body>
 </html>
-

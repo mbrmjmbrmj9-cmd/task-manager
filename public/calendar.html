@@ -10,12 +10,11 @@
     <link rel="stylesheet" href="css/style.css">
     <style>
         :root { --sidebar-w: 240px; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+        body { min-height: 100vh; }
         .sidebar { width: var(--sidebar-w); background: var(--card); border-left: 1px solid var(--border); padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 100; overflow-y: auto; display: flex; flex-direction: column; gap: 0.25rem; }
         .sidebar .logo { font-size: 1.3rem; font-weight: 800; padding: 0 0.75rem; margin-bottom: 1rem; color: var(--primary); }
         .sidebar a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 0.9rem; white-space: nowrap; }
-        .sidebar a:hover, .sidebar a.active { background: #EFF6FF; color: var(--primary); }
+        .sidebar a:hover, .sidebar a.active { background: var(--primary-light); color: var(--primary); }
         .sidebar a svg { width: 20px; height: 20px; flex-shrink: 0; }
         .sidebar .label { transition: opacity 0.2s; }
         .main { margin-right: var(--sidebar-w); padding: 1.5rem; min-height: 100vh; display: flex; flex-direction: column; }
@@ -26,106 +25,100 @@
         .view-nav a { padding: 0.5rem 0.85rem; font-size: 0.8rem; font-weight: 600; color: var(--text-light); text-decoration: none; border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; }
         .view-nav a:hover { color: var(--primary); }
         .view-nav a.active { color: var(--primary); border-bottom-color: var(--primary); }
-
         .toolbar { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap; align-items: center; }
-        .toolbar input, .toolbar select { height: 34px; border-radius: 8px; border: 1px solid var(--border); padding: 0 0.5rem; font-family: inherit; font-size: 0.8rem; background: var(--card); color: var(--text); }
+        .toolbar input, .toolbar select { height: 34px; border-radius: var(--radius-sm); border: 1px solid var(--border); padding: 0 0.5rem; font-family: inherit; font-size: 0.8rem; background: var(--bg); color: var(--text); }
         .toolbar input { flex: 1; min-width: 140px; }
-        .toolbar button { height: 34px; border-radius: 8px; border: 1px solid var(--border); padding: 0 0.6rem; font-family: inherit; font-size: 0.8rem; background: var(--card); color: var(--text); cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 0.25rem; }
-        .toolbar button:hover { background: #F1F5F9; }
-        .toolbar button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .toolbar button { height: 34px; border-radius: var(--radius-sm); border: 1px solid var(--border); padding: 0 0.6rem; font-family: inherit; font-size: 0.8rem; background: var(--bg); color: var(--text); cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 0.25rem; }
+        .toolbar button:hover { background: var(--secondary-light); }
         .spacer { flex: 1; }
-
         .cal-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
         .cal-nav h2 { font-size: 1.1rem; font-weight: 800; }
-        .cal-nav button { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.35rem 0.75rem; cursor: pointer; font-family: inherit; color: var(--text); font-size: 0.85rem; font-weight: 600; }
-        .cal-nav button:hover { background: #F1F5F9; }
-
-        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: var(--border); border-radius: 12px; overflow: hidden; }
-        .cal-day-header { background: #F8FAFC; padding: 0.6rem 0.3rem; text-align: center; font-weight: 700; font-size: 0.75rem; color: var(--text-light); }
-        body.dark .cal-day-header { background: #0F172A; }
-        .cal-day-header.weekend { color: #EF4444; }
-        .cal-day { background: var(--card); min-height: 100px; padding: 0.4rem; font-size: 0.75rem; transition: background 0.15s; }
-        .cal-day:hover { background: #F8FAFC; }
-        body.dark .cal-day:hover { background: #1E293B; }
-        .cal-day.other-month { background: #F8FAFC; opacity: 0.5; }
-        body.dark .cal-day.other-month { background: #0F172A; }
-        .cal-day.today { background: #EFF6FF; }
-        body.dark .cal-day.today { background: #1E3A5F; }
+        .cal-nav button { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.35rem 0.75rem; cursor: pointer; font-family: inherit; color: var(--text); font-size: 0.85rem; font-weight: 600; transition: all var(--transition-fast); }
+        .cal-nav button:hover { background: var(--secondary-light); }
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: var(--border); border-radius: var(--radius); overflow: hidden; }
+        .cal-day-header { background: var(--secondary-light); padding: 0.6rem 0.3rem; text-align: center; font-weight: 700; font-size: 0.75rem; color: var(--text-light); }
+        .cal-day-header.weekend { color: var(--danger); }
+        .cal-day { background: var(--card); min-height: 100px; padding: 0.4rem; font-size: 0.75rem; transition: background var(--transition-fast); }
+        .cal-day:hover { background: var(--secondary-light); }
+        .cal-day.other-month { background: var(--secondary-light); opacity: 0.5; }
+        .cal-day.today { background: var(--primary-light); }
         .cal-day .day-num { display: inline-block; width: 26px; height: 26px; line-height: 26px; text-align: center; border-radius: 50%; font-weight: 700; margin-bottom: 0.2rem; }
-        .cal-day.today .day-num { background: #2563EB; color: #fff; }
-
-        .cal-task { display: block; padding: 0.2rem 0.4rem; border-radius: 5px; margin-bottom: 0.15rem; font-size: 0.65rem; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; transition: filter 0.1s; }
+        .cal-day.today .day-num { background: var(--primary); color: #fff; }
+        .cal-task { display: block; padding: 0.2rem 0.4rem; border-radius: var(--radius-xs); margin-bottom: 0.15rem; font-size: 0.65rem; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; transition: filter var(--transition-fast); }
         .cal-task:hover { filter: brightness(0.9); }
-        .cal-task.priority-critical { background: #FEE2E2; color: #DC2626; border-right: 3px solid #DC2626; }
-        .cal-task.priority-high { background: #FFF7ED; color: #EA580C; border-right: 3px solid #EA580C; }
+        .cal-task.priority-critical { background: var(--danger-light); color: var(--danger); border-right: 3px solid var(--danger); }
+        .cal-task.priority-high { background: var(--warning-light); color: var(--warning); border-right: 3px solid var(--warning); }
         .cal-task.priority-medium { background: #FEF9C3; color: #A16207; border-right: 3px solid #EAB308; }
-        .cal-task.priority-low { background: #F0FDF4; color: #16A34A; border-right: 3px solid #16A34A; }
-        .cal-task.overdue { background: #FEE2E2; color: #DC2626; font-weight: 700; }
+        .cal-task.priority-low { background: var(--success-light); color: var(--success); border-right: 3px solid var(--success); }
+        .cal-task.overdue { background: var(--danger-light); color: var(--danger); font-weight: 700; }
         .cal-more { font-size: 0.6rem; color: var(--primary); cursor: pointer; padding: 0.1rem 0.3rem; font-weight: 600; }
-
+        .cal-skeleton { background: linear-gradient(90deg, var(--border) 25%, var(--secondary-light) 50%, var(--border) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: var(--radius); grid-column: 1 / -1; height: 500px; }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
         .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
         .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); padding: 0.5rem 1rem; z-index: 90; justify-content: space-around; }
         .bottom-nav a { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-light); text-decoration: none; font-size: 0.65rem; font-weight: 500; }
         .bottom-nav a.active { color: var(--primary); }
         .bottom-nav a svg { width: 22px; height: 22px; }
-        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #16A34A; color: #fff; padding: 0.75rem 1.5rem; border-radius: 12px; z-index: 9999; font-weight: 600; font-size: 0.9rem; animation: toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards; }
-        @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(-20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-        @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateX(-50%) translateY(-20px); } }
-        .spinner { width: 30px; height: 30px; border: 3px solid #E2E8F0; border-top-color: #2563EB; border-radius: 50%; animation: spin 0.6s linear infinite; margin: 2rem auto; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
         @media (max-width: 1024px) { :root { --sidebar-w: 72px; } .sidebar { padding: 1rem 0.5rem; } .sidebar .logo { font-size: 1rem; text-align: center; } .sidebar .label, .sidebar .logo span { display: none; } .sidebar a { justify-content: center; padding: 0.5rem; } }
         @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 0.75rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } .cal-day { min-height: 70px; padding: 0.25rem; } .cal-task { font-size: 0.55rem; padding: 0.1rem 0.25rem; } .cal-day-header { font-size: 0.65rem; padding: 0.4rem 0.1rem; } }
     </style>
 </head>
 <body>
     <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
-<aside class="sidebar" id="sidebar">
-    <div class="logo"><span>📋 Nivora</span></div>
-    <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="label">لوحة القيادة</span></a>
-    <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg><span class="label">المهام</span></a>
-    <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">المشاريع</span></a>
-    <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg><span class="label">Kanban</span></a>
-    <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">Gantt</span></a>
-    <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
-    <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
-    <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg><span class="label">Workflows</span></a>
-    <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">القوالب</span></a>
-    <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg><span class="label">الأرشيف</span></a>
-    <a href="chat.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="label">المحادثة</span></a>
-    <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
-    <a href="teams.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">فرق العمل</span></a>
-</aside>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="logo"><span>📋 Nivora</span></div>
+        <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="label">لوحة القيادة</span></a>
+        <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg><span class="label">المهام</span></a>
+        <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">المشاريع</span></a>
+        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg><span class="label">Kanban</span></a>
+        <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">Gantt</span></a>
+        <a href="calendar.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
+        <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
+        <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg><span class="label">Workflows</span></a>
+        <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">القوالب</span></a>
+        <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg><span class="label">الأرشيف</span></a>
+        <a href="chat.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="label">المحادثة</span></a>
+        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
+        <a href="teams.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">فرق العمل</span></a>
+    </aside>
 
     <main class="main">
-        <div class="topbar"><div><h1>📅 التقويم</h1><p class="project-title" id="projectTitle"></p></div>
-            <div style="display:flex;gap:0.5rem;">
-                <!-- أيقونة المستخدم في الـ Topbar -->
-<div style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;" onclick="window.location.href='profile.html'">
-    <div id="topAvatar" style="width:32px;height:32px;border-radius:50%;background:#E2E8F0;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:#64748B;overflow:hidden;"></div>
-    <span id="topUsername" style="font-size:0.8rem;font-weight:600;"></span>
-</div>
-                <select id="projectFilter" onchange="loadCalendar()" style="height:36px;border-radius:8px;border:1px solid var(--border);padding:0 0.5rem;font-family:inherit;font-size:0.8rem;background:var(--card);color:var(--text);"><option value="">كل المشاريع</option></select>
-                <button class="btn btn-outline" onclick="toggleLang()" id="langBtn" style="height:36px;">🌐 EN</button>
-                <button class="btn btn-outline" onclick="toggleDark()" id="darkBtn" style="height:36px;">🌙</button>
-                <button class="btn btn-outline" onclick="logout()" style="height:36px;">خروج</button>
+        <div class="topbar">
+            <div><h1>التقويم</h1><p class="project-title" id="projectTitle"></p></div>
+            <div style="display:flex;gap:0.5rem;align-items:center;">
+                <div style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;" onclick="window.location.href='profile.html'">
+                    <div id="topAvatar" style="width:32px;height:32px;border-radius:50%;background:var(--secondary-light);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:var(--text-light);overflow:hidden;"></div>
+                    <span id="topUsername" style="font-size:0.8rem;font-weight:600;"></span>
+                </div>
+                <select id="projectFilter" onchange="loadCalendar()" style="height:36px;border-radius:var(--radius-sm);border:1px solid var(--border);padding:0 0.5rem;font-family:inherit;font-size:0.8rem;background:var(--bg);color:var(--text);"><option value="">كل المشاريع</option></select>
+                <button class="btn btn-ghost btn-icon" onclick="toggleDark()" id="darkBtn" style="width:36px;height:36px;">🌙</button>
+                <button class="btn btn-outline btn-sm" onclick="logout()">خروج</button>
             </div>
         </div>
+
         <div class="view-nav">
-            <a href="tasks.html">📋 قائمة</a><a href="kanban.html">📌 أعمدة</a><a href="tasks.html">📊 جدول</a><a href="gantt.html">📈 Gantt</a><a href="calendar.html" class="active">📅 تقويم</a><a href="reports.html">📉 إحصائيات</a><a href="chat.html">💬 محادثة</a>
+            <a href="tasks.html">📋 قائمة</a>
+            <a href="kanban.html">📌 أعمدة</a>
+            <a href="gantt.html">📈 Gantt</a>
+            <a href="calendar.html" class="active">📅 تقويم</a>
+            <a href="reports.html">📉 إحصائيات</a>
         </div>
+
         <div class="toolbar">
-            <input type="text" id="searchInput" placeholder="🔍 بحث..." oninput="filterCalendar()">
-            <select id="assigneeFilter" onchange="filterCalendar()"><option value="">👤 الكل</option></select>
+            <input type="text" id="searchInput" placeholder="🔍 بحث..." oninput="debouncedRender()">
+            <select id="assigneeFilter" onchange="renderCalendar()"><option value="">👤 الكل</option></select>
             <span class="spacer"></span>
             <button onclick="goToToday()">📅 اليوم</button>
         </div>
+
         <div class="cal-nav">
             <button onclick="prevMonth()">→ السابق</button>
             <h2 id="monthTitle"></h2>
             <button onclick="nextMonth()">التالي ←</button>
         </div>
-        <div class="cal-grid" id="calGrid"><div class="spinner"></div></div>
+
+        <div class="cal-grid" id="calGrid"><div class="cal-skeleton"></div></div>
     </main>
 
     <nav class="bottom-nav">
@@ -135,19 +128,30 @@
         <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>فريق</a>
         <a href="#" onclick="openSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>المزيد</a>
     </nav>
-    <script src="js/i18n.js"></script>
+
+    <script src="js/components.js"></script>
     <script>
         function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
         function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
         const API_BASE = 'https://nivora-t9ov.onrender.com/api';
         const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
         if (!token) window.location.href = 'login.html';
         function logout() { localStorage.clear(); window.location.href = 'login.html'; }
         function toggleDark() { document.body.classList.toggle('dark'); const d = document.body.classList.contains('dark'); localStorage.setItem('dark', d); document.getElementById('darkBtn').textContent = d ? '☀️' : '🌙'; }
         if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
-        function showToast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 3000); }
-
         let currentDate = new Date(), allTasks = [], filteredTasks = [], allProjects = [];
+        const debouncedRender = debounce(() => renderCalendar(), 200);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const avatar = document.getElementById('topAvatar');
+            const username = document.getElementById('topUsername');
+            if (username) username.textContent = user.fullName || user.username || 'مستخدم';
+            if (avatar) {
+                if (user.avatar) avatar.innerHTML = `<img src="${user.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                else avatar.textContent = getInitials(user.fullName || user.username);
+            }
+        });
 
         async function loadProjects() {
             const res = await fetch(`${API_BASE}/projects`, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -157,26 +161,21 @@
         }
 
         async function loadCalendar() {
-            document.getElementById('calGrid').innerHTML = '<div class="spinner"></div>';
-            const pid = document.getElementById('projectFilter').value;
-            let url = `${API_BASE}/tasks`; if (pid) url += `?projectId=${pid}`;
-            const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
-            allTasks = await res.json();
-            if (pid) document.getElementById('projectTitle').textContent = '📁 ' + (allProjects.find(p => p._id === pid)?.name || '');
-            else document.getElementById('projectTitle').textContent = '';
-            const assignees = [...new Set(allTasks.map(t => t.assignee).filter(Boolean))];
-            document.getElementById('assigneeFilter').innerHTML = '<option value="">👤 الكل</option>' + assignees.map(a => `<option value="${a}">${a}</option>`).join('');
-            filteredTasks = [...allTasks];
-            renderCalendar();
-        }
-
-        function filterCalendar() {
-            const q = document.getElementById('searchInput').value.toLowerCase();
-            const a = document.getElementById('assigneeFilter').value;
-            filteredTasks = allTasks;
-            if (q) filteredTasks = filteredTasks.filter(t => t.title.toLowerCase().includes(q));
-            if (a) filteredTasks = filteredTasks.filter(t => t.assignee === a);
-            renderCalendar();
+            document.getElementById('calGrid').innerHTML = '<div class="cal-skeleton"></div>';
+            try {
+                const pid = document.getElementById('projectFilter').value;
+                let url = `${API_BASE}/tasks`; if (pid) url += `?projectId=${pid}`;
+                const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+                allTasks = await res.json();
+                if (pid) document.getElementById('projectTitle').textContent = '📁 ' + (allProjects.find(p => p._id === pid)?.name || '');
+                else document.getElementById('projectTitle').textContent = '';
+                const assignees = [...new Set(allTasks.map(t => t.assignee).filter(Boolean))];
+                document.getElementById('assigneeFilter').innerHTML = '<option value="">👤 الكل</option>' + assignees.map(a => `<option value="${a}">${a}</option>`).join('');
+                filteredTasks = [...allTasks];
+                renderCalendar();
+            } catch (err) {
+                showError('calGrid', 'تعذر تحميل التقويم', loadCalendar);
+            }
         }
 
         function prevMonth() { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); }
@@ -184,6 +183,11 @@
         function goToToday() { currentDate = new Date(); renderCalendar(); }
 
         function renderCalendar() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const a = document.getElementById('assigneeFilter').value;
+            filteredTasks = allTasks;
+            if (q) filteredTasks = filteredTasks.filter(t => t.title.toLowerCase().includes(q));
+            if (a) filteredTasks = filteredTasks.filter(t => t.assignee === a);
             const y = currentDate.getFullYear(), m = currentDate.getMonth();
             document.getElementById('monthTitle').textContent = new Intl.DateTimeFormat('ar-SA', { month: 'long', year: 'numeric' }).format(currentDate);
             const firstDay = new Date(y, m, 1).getDay();
@@ -192,37 +196,26 @@
             const today = new Date(); today.setHours(0,0,0,0);
             const todayStr = today.toISOString().split('T')[0];
             const dayNames = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-
             let html = dayNames.map((d, i) => `<div class="cal-day-header ${i >= 5 ? 'weekend' : ''}">${d}</div>`).join('');
-
-            // أيام الشهر السابق
             for (let i = firstDay - 1; i >= 0; i--) {
                 const d = daysInPrevMonth - i;
                 const prevM = m === 0 ? 11 : m - 1;
                 const prevY = m === 0 ? y - 1 : y;
                 const ds = `${prevY}-${String(prevM + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                const tasks = getTasksForDate(ds);
-                html += `<div class="cal-day other-month"><div class="day-num">${d}</div>${renderTasks(tasks)}</div>`;
+                html += `<div class="cal-day other-month"><div class="day-num">${d}</div>${renderTasks(getTasksForDate(ds))}</div>`;
             }
-
-            // أيام الشهر الحالي
             for (let d = 1; d <= daysInMonth; d++) {
                 const ds = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
                 const isToday = ds === todayStr;
-                const tasks = getTasksForDate(ds);
-                html += `<div class="cal-day ${isToday ? 'today' : ''}"><div class="day-num">${d}</div>${renderTasks(tasks)}</div>`;
+                html += `<div class="cal-day ${isToday ? 'today' : ''}"><div class="day-num">${d}</div>${renderTasks(getTasksForDate(ds))}</div>`;
             }
-
-            // أيام الشهر التالي
             const remaining = 42 - (firstDay + daysInMonth);
             for (let d = 1; d <= remaining; d++) {
                 const nextM = m === 11 ? 0 : m + 1;
                 const nextY = m === 11 ? y + 1 : y;
                 const ds = `${nextY}-${String(nextM + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                const tasks = getTasksForDate(ds);
-                html += `<div class="cal-day other-month"><div class="day-num">${d}</div>${renderTasks(tasks)}</div>`;
+                html += `<div class="cal-day other-month"><div class="day-num">${d}</div>${renderTasks(getTasksForDate(ds))}</div>`;
             }
-
             document.getElementById('calGrid').innerHTML = html;
         }
 
@@ -243,34 +236,15 @@
             const visible = tasks.slice(0, maxShow);
             const hidden = tasks.length - maxShow;
             const today = new Date(); today.setHours(0,0,0,0);
-            
             let html = visible.map(t => {
                 const isOverdue = t.dueDate && new Date(t.dueDate) < today && t.status !== 'done';
                 return `<div class="cal-task priority-${t.priority || 'medium'} ${isOverdue ? 'overdue' : ''}" onclick="window.location.href='task.html?id=${t._id}'" title="${t.title}">${isOverdue ? '⏰ ' : ''}${t.title}</div>`;
             }).join('');
-            
             if (hidden > 0) html += `<div class="cal-more">+${hidden} أكثر</div>`;
             return html;
         }
-document.addEventListener('DOMContentLoaded', () => {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const avatar = document.getElementById('topAvatar');
-    const username = document.getElementById('topUsername');
-    
-    if (username) {
-        username.textContent = user.fullName || user.username || 'مستخدم';
-    }
-    
-    if (avatar) {
-        if (user.avatar) {
-            avatar.innerHTML = `<img src="${user.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-        } else {
-            avatar.textContent = (user.fullName || user.username || 'م')[0];
-        }
-    }
-});
+
         loadProjects().then(() => loadCalendar());
     </script>
 </body>
 </html>
-

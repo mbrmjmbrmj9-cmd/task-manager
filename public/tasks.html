@@ -9,130 +9,111 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
-        :root { --sidebar-w: 240px; --primary: #2563EB; --bg: #F8FAFC; --card: #FFFFFF; --text: #0F172A; --text-light: #64748B; --border: #E2E8F0; }
-        body.dark { --bg: #0F172A; --card: #1E293B; --text: #F8FAFC; --text-light: #94A3B8; --border: #334155; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-
+        :root { --sidebar-w: 240px; }
+        body { min-height: 100vh; }
         .sidebar { width: var(--sidebar-w); background: var(--card); border-left: 1px solid var(--border); padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 100; overflow-y: auto; display: flex; flex-direction: column; gap: 0.25rem; }
         .sidebar .logo { font-size: 1.3rem; font-weight: 800; padding: 0 0.75rem; margin-bottom: 1rem; color: var(--primary); }
         .sidebar a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 0.9rem; white-space: nowrap; }
-        .sidebar a:hover, .sidebar a.active { background: #EFF6FF; color: var(--primary); }
+        .sidebar a:hover, .sidebar a.active { background: var(--primary-light); color: var(--primary); }
         .sidebar a svg { width: 20px; height: 20px; flex-shrink: 0; }
         .sidebar .label { transition: opacity 0.2s; }
-
-        .main { margin-right: var(--sidebar-w); padding: 2rem; min-height: 100vh; }
-        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem; }
+        .main { margin-right: var(--sidebar-w); padding: 1.5rem; min-height: 100vh; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; flex-wrap: wrap; gap: 0.5rem; }
         .topbar h1 { font-size: 1.5rem; font-weight: 800; }
-
+        .view-nav { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 1rem; overflow-x: auto; }
+        .view-nav a { padding: 0.5rem 0.85rem; font-size: 0.8rem; font-weight: 600; color: var(--text-light); text-decoration: none; border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; }
+        .view-nav a:hover { color: var(--primary); }
+        .view-nav a.active { color: var(--primary); border-bottom-color: var(--primary); }
         .toolbar { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
-        .toolbar input, .toolbar select { height: 38px; border-radius: 8px; border: 1px solid var(--border); padding: 0 0.75rem; font-family: inherit; background: var(--card); color: var(--text); font-size: 0.85rem; }
-        .toolbar input { flex: 1; min-width: 180px; }
-        .toolbar select { width: auto; }
-
-        .task-table { width: 100%; border-collapse: collapse; }
-        .task-table th, .task-table td { padding: 0.75rem 0.5rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; text-align: right; }
-        .task-table th { color: var(--text-light); font-weight: 600; font-size: 0.8rem; background: #F8FAFC; }
-        .task-table tr:hover { background: #F1F5F9; }
-        body.dark .task-table th { background: #1E293B; }
-        body.dark .task-table tr:hover { background: #1E293B; }
-        .task-table a { color: var(--text); text-decoration: none; font-weight: 600; }
-        .task-table a:hover { color: var(--primary); }
-
-        .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
-        .badge-new { background: #EFF6FF; color: #2563EB; }
-        .badge-done { background: #DCFCE7; color: #16A34A; }
-        .badge-progress { background: #FFF7ED; color: #D97706; }
-        .badge-review { background: #F5F3FF; color: #7C3AED; }
-        .badge-blocked { background: #FEE2E2; color: #DC2626; }
-
-        /* Modal */
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; }
-        .modal-overlay.show { display: flex; }
-        .modal-content { background: var(--card); border-radius: 16px; width: 100%; max-width: 550px; box-shadow: 0 25px 50px rgba(0,0,0,0.15); animation: modalIn 0.2s ease; max-height: 90vh; overflow-y: auto; }
-        @keyframes modalIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); }
-        .modal-header h2 { font-size: 1.1rem; font-weight: 800; }
-        .modal-close { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--text-light); }
-        .modal-body { padding: 1.5rem; }
-        .modal-footer { display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1rem 1.5rem; border-top: 1px solid var(--border); }
-        .form-group { margin-bottom: 1rem; }
-        .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text-light); }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; height: 42px; border-radius: 10px; border: 1px solid var(--border); padding: 0 0.75rem; font-family: inherit; font-size: 0.9rem; background: var(--bg); color: var(--text); }
-        .form-group textarea { height: 80px; padding: 0.75rem; resize: vertical; }
-
+        .toolbar input, .toolbar select { height: 36px; border-radius: var(--radius-sm); border: 1px solid var(--border); padding: 0 0.5rem; font-family: inherit; font-size: 0.8rem; background: var(--bg); color: var(--text); }
+        .toolbar input { flex: 1; min-width: 150px; }
+        .table-container { border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
+        .table th { background: var(--secondary-light); color: var(--text-light); font-weight: 700; font-size: 0.78rem; padding: 0.85rem 0.75rem; border-bottom: 1px solid var(--border); text-align: right; white-space: nowrap; }
+        .table td { padding: 0.85rem 0.75rem; border-bottom: 1px solid var(--border-light); font-size: 0.85rem; text-align: right; }
+        .table tbody tr { transition: background var(--transition-fast); }
+        .table tbody tr:hover { background: var(--secondary-light); }
+        .table tbody tr:last-child td { border-bottom: none; }
+        .table a { color: var(--text); text-decoration: none; font-weight: 600; }
+        .table a:hover { color: var(--primary); }
+        .overdue-badge { display: inline-block; font-size: 0.65rem; font-weight: 600; color: var(--danger); background: var(--danger-light); padding: 0.15rem 0.5rem; border-radius: var(--radius-full); margin-right: 0.4rem; }
+        .btn-delete { background: none; border: 1px solid var(--border); border-radius: var(--radius-xs); padding: 0.3rem 0.5rem; cursor: pointer; font-size: 0.8rem; color: var(--danger); transition: all var(--transition-fast); }
+        .btn-delete:hover { background: var(--danger-light); border-color: var(--danger); }
         .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
         .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); padding: 0.5rem 1rem; z-index: 90; justify-content: space-around; }
         .bottom-nav a { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-light); text-decoration: none; font-size: 0.65rem; font-weight: 500; }
         .bottom-nav a.active { color: var(--primary); }
         .bottom-nav a svg { width: 22px; height: 22px; }
-
-        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #16A34A; color: white; padding: 0.75rem 1.5rem; border-radius: 12px; z-index: 9999; font-weight: 600; animation: toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards; }
-        @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(-20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-        @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateX(-50%) translateY(-20px); } }
-
         @media (max-width: 1024px) { :root { --sidebar-w: 72px; } .sidebar { padding: 1rem 0.5rem; } .sidebar .logo { font-size: 1rem; text-align: center; } .sidebar .label, .sidebar .logo span { display: none; } .sidebar a { justify-content: center; padding: 0.5rem; } }
-        @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 1rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } .task-table { font-size: 0.75rem; } .task-table th:nth-child(4), .task-table td:nth-child(4) { display: none; } }
+        @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 0.75rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } .toolbar { gap: 0.25rem; } .table th:nth-child(4), .table td:nth-child(4), .table th:nth-child(5), .table td:nth-child(5) { display: none; } }
     </style>
 </head>
 <body>
     <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
-<aside class="sidebar" id="sidebar">
-    <div class="logo"><span>📋 Nivora</span></div>
-    <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="label">لوحة القيادة</span></a>
-    <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg><span class="label">المهام</span></a>
-    <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">المشاريع</span></a>
-    <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg><span class="label">Kanban</span></a>
-    <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">Gantt</span></a>
-    <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
-    <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
-    <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg><span class="label">Workflows</span></a>
-    <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">القوالب</span></a>
-    <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg><span class="label">الأرشيف</span></a>
-    <a href="chat.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="label">المحادثة</span></a>
-    <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
-    <a href="teams.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">فرق العمل</span></a>
-</aside>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="logo"><span>📋 Nivora</span></div>
+        <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="label">لوحة القيادة</span></a>
+        <a href="tasks.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg><span class="label">المهام</span></a>
+        <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">المشاريع</span></a>
+        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg><span class="label">Kanban</span></a>
+        <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">Gantt</span></a>
+        <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
+        <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
+        <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg><span class="label">Workflows</span></a>
+        <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">القوالب</span></a>
+        <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg><span class="label">الأرشيف</span></a>
+        <a href="chat.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="label">المحادثة</span></a>
+        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
+        <a href="teams.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">فرق العمل</span></a>
+    </aside>
 
     <main class="main">
         <div class="topbar">
-            <h1>📋 المهام</h1>
-            <div style="display:flex;gap:0.5rem;">
-                <!-- أيقونة المستخدم في الـ Topbar -->
-<div style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;" onclick="window.location.href='profile.html'">
-    <div id="topAvatar" style="width:32px;height:32px;border-radius:50%;background:#E2E8F0;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:#64748B;overflow:hidden;"></div>
-    <span id="topUsername" style="font-size:0.8rem;font-weight:600;"></span>
-</div>
-                <button class="btn btn-primary" onclick="openCreateModal()">➕ مهمة جديدة</button>
-                <button class="btn btn-outline" onclick="toggleLang()" id="langBtn" style="height:36px;">🌐 EN</button>
-                <button class="btn btn-outline" onclick="toggleDark()" id="darkBtn" style="height:36px;">🌙</button>
-                <button class="btn btn-outline" onclick="logout()" style="height:36px;">خروج</button>
+            <div><h1>المهام</h1></div>
+            <div style="display:flex;gap:0.5rem;align-items:center;">
+                <div style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;" onclick="window.location.href='profile.html'">
+                    <div id="topAvatar" style="width:32px;height:32px;border-radius:50%;background:var(--secondary-light);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:var(--text-light);overflow:hidden;"></div>
+                    <span id="topUsername" style="font-size:0.8rem;font-weight:600;"></span>
+                </div>
+                <button class="btn btn-primary" onclick="openCreateModal()">+ مهمة جديدة</button>
+                <button class="btn btn-ghost btn-icon" onclick="toggleDark()" id="darkBtn" style="width:36px;height:36px;">🌙</button>
+                <button class="btn btn-outline btn-sm" onclick="logout()">خروج</button>
             </div>
         </div>
 
+        <div class="view-nav">
+            <a href="tasks.html" class="active">📋 قائمة</a>
+            <a href="kanban.html">📌 أعمدة</a>
+            <a href="gantt.html">📈 Gantt</a>
+            <a href="calendar.html">📅 تقويم</a>
+            <a href="reports.html">📉 إحصائيات</a>
+        </div>
+
         <div class="toolbar">
-            <input type="text" id="searchInput" placeholder="🔍 بحث عن مهمة..." oninput="renderTasks()">
+            <input type="text" id="searchInput" placeholder="🔍 بحث عن مهمة..." oninput="debouncedRender()">
             <select id="statusFilter" onchange="renderTasks()">
                 <option value="">كل الحالات</option>
-                <option value="new">📥 جديدة</option>
-                <option value="in-progress">🔄 قيد التنفيذ</option>
-                <option value="review">👁️ مراجعة</option>
-                <option value="done">✅ مكتملة</option>
-                <option value="blocked">🚫 متعثرة</option>
+                <option value="new">جديدة</option>
+                <option value="in-progress">قيد التنفيذ</option>
+                <option value="review">مراجعة</option>
+                <option value="done">مكتملة</option>
+                <option value="blocked">متعثرة</option>
             </select>
             <select id="priorityFilter" onchange="renderTasks()">
                 <option value="">كل الأولويات</option>
-                <option value="critical">🔴 حرجة</option>
-                <option value="high">🟠 عالية</option>
-                <option value="medium">🟡 متوسطة</option>
-                <option value="low">🟢 منخفضة</option>
+                <option value="critical">حرجة</option>
+                <option value="high">عالية</option>
+                <option value="medium">متوسطة</option>
+                <option value="low">منخفضة</option>
             </select>
         </div>
 
-        <table class="task-table">
-            <thead><tr><th>المهمة</th><th>الحالة</th><th>الأولوية</th><th>المشروع</th><th>المسؤول</th><th>التاريخ</th><th></th></tr></thead>
-            <tbody id="taskBody"><tr><td colspan="7"><div class="spinner"></div></td></tr></tbody>
-        </table>
+        <div class="table-container">
+            <table class="table">
+                <thead><tr><th>المهمة</th><th>الحالة</th><th>الأولوية</th><th>المشروع</th><th>المسؤول</th><th>التاريخ</th><th></th></tr></thead>
+                <tbody id="taskBody"></tbody>
+            </table>
+        </div>
     </main>
 
     <nav class="bottom-nav">
@@ -143,52 +124,63 @@
         <a href="#" onclick="openSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>المزيد</a>
     </nav>
 
-    <!-- Modal إنشاء مهمة -->
-    <div class="modal-overlay" id="createModal">
-        <div class="modal-content">
-            <div class="modal-header"><h2>➕ مهمة جديدة</h2><button class="modal-close" onclick="closeCreateModal()">✕</button></div>
+    <div class="modal-overlay" id="createModal" onclick="if(event.target===this)closeCreateModal()">
+        <div class="modal">
+            <div class="modal-header"><h3>+ مهمة جديدة</h3><button class="modal-close" onclick="closeCreateModal()">✕</button></div>
             <div class="modal-body">
-                <div class="form-group"><label>العنوان *</label><input type="text" id="taskTitle" placeholder="عنوان المهمة"></div>
-                <div class="form-group"><label>الوصف</label><textarea id="taskDesc" placeholder="وصف المهمة"></textarea></div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-                    <div class="form-group"><label>الأولوية</label><select id="taskPriority"><option value="medium">🟡 متوسطة</option><option value="high">🟠 عالية</option><option value="critical">🔴 حرجة</option><option value="low">🟢 منخفضة</option></select></div>
-                    <div class="form-group"><label>الحالة</label><select id="taskStatus"><option value="new">📥 جديدة</option><option value="in-progress">🔄 قيد التنفيذ</option></select></div>
+                <div class="form-group"><label>العنوان *</label><input type="text" class="input" id="taskTitle" placeholder="عنوان المهمة"></div>
+                <div class="form-group"><label>الوصف</label><textarea class="textarea" id="taskDesc" placeholder="وصف المهمة"></textarea></div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+                    <div class="form-group"><label>الأولوية</label><select class="select" id="taskPriority"><option value="medium">متوسطة</option><option value="high">عالية</option><option value="critical">حرجة</option><option value="low">منخفضة</option></select></div>
+                    <div class="form-group"><label>الحالة</label><select class="select" id="taskStatus"><option value="new">جديدة</option><option value="in-progress">قيد التنفيذ</option></select></div>
                 </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-                    <div class="form-group"><label>المسؤول</label><input type="text" id="taskAssignee" placeholder="اسم المسؤول"></div>
-                    <div class="form-group"><label>تاريخ الاستحقاق</label><input type="date" id="taskDueDate"></div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+                    <div class="form-group"><label>المسؤول</label><input type="text" class="input" id="taskAssignee" placeholder="اسم المسؤول"></div>
+                    <div class="form-group"><label>تاريخ الاستحقاق</label><input type="date" class="input" id="taskDueDate"></div>
                 </div>
-                <div class="form-group"><label>المشروع</label><select id="taskProject"><option value="">بدون مشروع</option></select></div>
+                <div class="form-group"><label>المشروع</label><select class="select" id="taskProject"><option value="">بدون مشروع</option></select></div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-outline" onclick="closeCreateModal()">إلغاء</button>
-                <button class="btn btn-primary" onclick="createTask()">✅ إنشاء</button>
+                <button class="btn btn-primary" id="createBtn" onclick="createTask()">إنشاء</button>
             </div>
         </div>
     </div>
-    <script src="js/i18n.js"></script>
+
+    <script src="js/components.js"></script>
     <script>
         function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
         function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
-
         const API_BASE = 'https://nivora-t9ov.onrender.com/api';
         const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
         if (!token) window.location.href = 'login.html';
         function logout() { localStorage.clear(); window.location.href = 'login.html'; }
         function toggleDark() { document.body.classList.toggle('dark'); const d = document.body.classList.contains('dark'); localStorage.setItem('dark', d); document.getElementById('darkBtn').textContent = d ? '☀️' : '🌙'; }
         if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
-        function showToast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 3000); }
 
         let allTasks = [];
+        const debouncedRender = debounce(() => renderTasks(), 200);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const avatar = document.getElementById('topAvatar');
+            const username = document.getElementById('topUsername');
+            if (username) username.textContent = user.fullName || user.username || 'مستخدم';
+            if (avatar) {
+                if (user.avatar) avatar.innerHTML = `<img src="${user.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                else avatar.textContent = getInitials(user.fullName || user.username);
+            }
+        });
 
         async function loadTasks() {
+            showSkeleton('taskBody', 'table', 6);
             try {
                 const res = await fetch(`${API_BASE}/tasks`, { headers: { 'Authorization': `Bearer ${token}` } });
                 allTasks = await res.json();
                 renderTasks();
                 loadProjectOptions();
             } catch (err) {
-                document.getElementById('taskBody').innerHTML = '<tr><td colspan="7" style="text-align:center;color:#DC2626;">خطأ في تحميل المهام</td></tr>';
+                showError('taskBody', 'تعذر تحميل المهام', loadTasks);
             }
         }
 
@@ -196,32 +188,25 @@
             const search = document.getElementById('searchInput').value.toLowerCase();
             const status = document.getElementById('statusFilter').value;
             const priority = document.getElementById('priorityFilter').value;
-            
             let tasks = allTasks.filter(t => t.status !== 'archived');
             if (search) tasks = tasks.filter(t => t.title.toLowerCase().includes(search));
             if (status) tasks = tasks.filter(t => t.status === status);
             if (priority) tasks = tasks.filter(t => t.priority === priority);
-            
             const tbody = document.getElementById('taskBody');
             if (tasks.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:3rem;">لا توجد مهام</td></tr>';
+                tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">📋</div><h4>لا توجد مهام</h4><p>أنشئ مهمتك الأولى وابدأ بتنظيم أعمالك</p><button class="btn btn-primary" onclick="openCreateModal()">+ إنشاء مهمة</button></div></td></tr>`;
                 return;
             }
-            
             tbody.innerHTML = tasks.map(t => {
-                const statusBadge = t.status === 'done' ? 'badge-done' : t.status === 'in-progress' ? 'badge-progress' : t.status === 'review' ? 'badge-review' : t.status === 'blocked' ? 'badge-blocked' : 'badge-new';
-                const statusText = t.status === 'done' ? '✅ مكتملة' : t.status === 'in-progress' ? '🔄 قيد التنفيذ' : t.status === 'review' ? '👁️ مراجعة' : t.status === 'blocked' ? '🚫 متعثرة' : '📥 جديدة';
-                const priorityIcon = t.priority === 'critical' ? '🔴' : t.priority === 'high' ? '🟠' : t.priority === 'medium' ? '🟡' : '🟢';
                 const isOverdue = t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'done';
-                
-                return `<tr style="${isOverdue ? 'background:#FFF5F5;' : ''}">
-                    <td><a href="task.html?id=${t._id}">${t.title}</a>${isOverdue ? ' <span style="color:#DC2626;font-size:0.7rem;">⏰ متأخرة</span>' : ''}</td>
-                    <td><span class="badge ${statusBadge}">${statusText}</span></td>
-                    <td>${priorityIcon}</td>
+                return `<tr>
+                    <td><a href="task.html?id=${t._id}">${t.title}</a>${isOverdue ? '<span class="overdue-badge">متأخرة</span>' : ''}</td>
+                    <td>${statusBadge(t.status)}</td>
+                    <td>${priorityBadge(t.priority)}</td>
                     <td>${t.project || '-'}</td>
                     <td>${t.assignee || '-'}</td>
-                    <td>${t.dueDate ? new Date(t.dueDate).toLocaleDateString('ar-SA') : '-'}</td>
-                    <td><button class="btn btn-outline" style="height:28px;font-size:0.7rem;" onclick="deleteTask('${t._id}')">🗑️</button></td>
+                    <td>${t.dueDate ? formatDate(t.dueDate) : '-'}</td>
+                    <td><button class="btn-delete" onclick="deleteTask('${t._id}')">🗑️</button></td>
                 </tr>`;
             }).join('');
         }
@@ -236,66 +221,26 @@
 
         async function createTask() {
             const title = document.getElementById('taskTitle').value.trim();
-            if (!title) return alert('العنوان مطلوب');
-            
-            const body = {
-                title,
-                description: document.getElementById('taskDesc').value.trim(),
-                priority: document.getElementById('taskPriority').value,
-                status: document.getElementById('taskStatus').value,
-                assignee: document.getElementById('taskAssignee').value.trim(),
-                dueDate: document.getElementById('taskDueDate').value || null,
-                projectId: document.getElementById('taskProject').value || null,
-                project: document.getElementById('taskProject').options[document.getElementById('taskProject').selectedIndex]?.text || ''
-            };
-            
+            if (!title) { showToast('العنوان مطلوب', 'warning'); return; }
+            const btn = document.getElementById('createBtn');
+            setButtonLoading(btn, true, 'جاري الإنشاء...');
+            const body = { title, description: document.getElementById('taskDesc').value.trim(), priority: document.getElementById('taskPriority').value, status: document.getElementById('taskStatus').value, assignee: document.getElementById('taskAssignee').value.trim(), dueDate: document.getElementById('taskDueDate').value || null, projectId: document.getElementById('taskProject').value || null, project: document.getElementById('taskProject').options[document.getElementById('taskProject').selectedIndex]?.text || '' };
             try {
-                const res = await fetch(`${API_BASE}/tasks`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify(body)
-                });
-                if (res.ok) {
-                    closeCreateModal();
-                    showToast('✅ تم إنشاء المهمة');
-                    loadTasks();
-                } else {
-                    const data = await res.json();
-                    alert(data.error);
-                }
-            } catch (err) {
-                alert('خطأ في الاتصال');
-            }
+                const res = await fetch(`${API_BASE}/tasks`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(body) });
+                if (res.ok) { closeCreateModal(); showToast('تم إنشاء المهمة بنجاح', 'success'); loadTasks(); }
+                else { const d = await res.json(); showToast(d.error || 'خطأ', 'error'); }
+            } catch (err) { showToast('خطأ في الاتصال', 'error'); }
+            setButtonLoading(btn, false);
         }
 
-        async function deleteTask(id) {
-            if (!confirm('حذف المهمة؟')) return;
-            await fetch(`${API_BASE}/tasks/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-            loadTasks();
+        function deleteTask(id) {
+            confirmDialog({ title: 'حذف المهمة', message: 'هل أنت متأكد من حذف هذه المهمة؟', confirmText: 'حذف', danger: true, onConfirm: async () => { await fetch(`${API_BASE}/tasks/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); showToast('تم حذف المهمة', 'success'); loadTasks(); } });
         }
 
         function openCreateModal() { document.getElementById('createModal').classList.add('show'); document.getElementById('taskTitle').focus(); }
         function closeCreateModal() { document.getElementById('createModal').classList.remove('show'); document.getElementById('taskTitle').value = ''; document.getElementById('taskDesc').value = ''; }
-        document.getElementById('createModal').addEventListener('click', function(e) { if (e.target === this) closeCreateModal(); });
-document.addEventListener('DOMContentLoaded', () => {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const avatar = document.getElementById('topAvatar');
-    const username = document.getElementById('topUsername');
-    
-    if (username) {
-        username.textContent = user.fullName || user.username || 'مستخدم';
-    }
-    
-    if (avatar) {
-        if (user.avatar) {
-            avatar.innerHTML = `<img src="${user.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-        } else {
-            avatar.textContent = (user.fullName || user.username || 'م')[0];
-        }
-    }
-});
+
         loadTasks();
     </script>
 </body>
 </html>
-

@@ -7,27 +7,18 @@
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#2563EB">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
     <style>
-        :root { --primary: #2563EB; --bg: #F8FAFC; --card: #FFFFFF; --text: #1E293B; --text-light: #64748B; --border: #E2E8F0; }
-        body.dark { --bg: #0F172A; --card: #1E293B; --text: #F8FAFC; --text-light: #94A3B8; --border: #334155; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; transition: background 0.3s; }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
         .container { width: 100%; max-width: 440px; }
-        .back { display: inline-flex; align-items: center; gap: 0.35rem; background: var(--card); padding: 0.5rem 1rem; border-radius: 20px; color: var(--text-light); text-decoration: none; font-size: 0.85rem; margin-bottom: 1.5rem; border: 1px solid var(--border); }
-        .card { background: var(--card); border-radius: 24px; padding: 2.5rem 2rem; box-shadow: 0 20px 50px rgba(0,0,0,0.06); border: 1px solid var(--border); }
-        .card h1 { font-size: 1.3rem; font-weight: 800; text-align: center; margin-bottom: 0.3rem; }
+        .back { display: inline-flex; align-items: center; gap: 0.35rem; background: var(--card); padding: 0.5rem 1rem; border-radius: var(--radius-full); color: var(--text-light); text-decoration: none; font-size: 0.85rem; margin-bottom: 1.5rem; border: 1px solid var(--border); }
+        .card { background: var(--card); border-radius: var(--radius-xl); padding: 2.5rem 2rem; box-shadow: var(--shadow-lg); border: 1px solid var(--border); }
+        .card h1 { text-align: center; font-size: 1.3rem; margin-bottom: 0.3rem; }
         .card .sub { text-align: center; color: var(--text-light); font-size: 0.85rem; margin-bottom: 1.5rem; }
-        .google-btn { width: 100%; height: 46px; border-radius: 12px; border: 2px solid var(--border); background: var(--card); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-family: inherit; font-weight: 600; font-size: 0.9rem; color: var(--text); margin-bottom: 1rem; }
-        .google-btn:hover { background: var(--bg); }
-        .divider { display: flex; align-items: center; gap: 1rem; margin: 1.25rem 0; color: #94A3B8; font-size: 0.8rem; }
+        .google-btn { width: 100%; height: 46px; border-radius: var(--radius-sm); border: 2px solid var(--border); background: var(--card); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-family: inherit; font-weight: 600; color: var(--text); margin-bottom: 1rem; }
+        .divider { display: flex; align-items: center; gap: 1rem; margin: 1.25rem 0; color: var(--text-muted); font-size: 0.8rem; }
         .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-        .input-group { position: relative; margin-bottom: 1rem; }
-        .input-group input { width: 100%; height: 46px; padding: 0 1rem; border-radius: 12px; border: 1px solid var(--border); font-family: inherit; font-size: 0.9rem; background: var(--bg); color: var(--text); }
-        .input-group input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
-        .btn-full { width: 100%; height: 48px; border-radius: 12px; border: none; cursor: pointer; font-family: inherit; font-weight: 700; font-size: 1rem; transition: all 0.2s; }
-        .btn-primary { background: var(--primary); color: #fff; }
-        .btn-primary:hover { background: #1D4ED8; }
-        .dark-toggle { position: fixed; top: 1rem; left: 1rem; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 0.7rem; cursor: pointer; font-size: 1.1rem; }
+        .dark-toggle { position: fixed; top: 1rem; left: 1rem; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.5rem 0.7rem; cursor: pointer; font-size: 1.1rem; }
     </style>
 </head>
 <body>
@@ -36,16 +27,17 @@
         <a href="workspace.html" class="back">← رجوع</a>
         <div class="card">
             <h1>إنشاء حساب</h1>
-            <p class="sub">أنشئ حسابك للبدء في استخدام Nivora</p>
-            <button class="google-btn" onclick="location.href='https://nivora-t9ov.onrender.com/api/auth/google'"><span style="font-size:1.2rem;font-weight:700;color:#4285F4;">G</span> المتابعة باستخدام Google</button>
-            <div class="divider">أو التسجيل يدوياً</div>
-            <div class="input-group"><input type="text" id="fullName" placeholder="الاسم الكامل"></div>
-            <div class="input-group"><input type="email" id="email" placeholder="البريد الإلكتروني"></div>
-            <div class="input-group"><input type="password" id="pass" placeholder="كلمة المرور"></div>
-            <div class="input-group"><input type="password" id="passConfirm" placeholder="تأكيد كلمة المرور"></div>
-            <button class="btn-full btn-primary" onclick="nextStep()">التالي ←</button>
+            <p class="sub">أنشئ حسابك للبدء</p>
+            <button class="google-btn" onclick="location.href='https://nivora-t9ov.onrender.com/api/auth/google'"><span style="font-weight:700;color:#4285F4;">G</span> المتابعة بـ Google</button>
+            <div class="divider">أو</div>
+            <div class="form-group"><input type="text" class="input" id="fullName" placeholder="الاسم الكامل"></div>
+            <div class="form-group"><input type="email" class="input" id="email" placeholder="البريد الإلكتروني"></div>
+            <div class="form-group"><input type="password" class="input" id="pass" placeholder="كلمة المرور"></div>
+            <div class="form-group"><input type="password" class="input" id="passConfirm" placeholder="تأكيد كلمة المرور"></div>
+            <button class="btn btn-primary btn-block" id="nextBtn" onclick="nextStep()">التالي</button>
         </div>
     </div>
+    <script src="js/components.js"></script>
     <script>
         function toggleDark() { document.body.classList.toggle('dark'); const d = document.body.classList.contains('dark'); localStorage.setItem('dark', d); document.getElementById('darkBtn').textContent = d ? '☀️' : '🌙'; }
         if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
@@ -54,20 +46,20 @@
             const email = document.getElementById('email').value.trim();
             const pass = document.getElementById('pass').value;
             const confirm = document.getElementById('passConfirm').value;
-            if (!fullName || !email || !pass) return alert('جميع الحقول مطلوبة');
-            if (pass !== confirm) return alert('كلمتا المرور غير متطابقتين');
-            if (pass.length < 8) return alert('كلمة المرور 8 أحرف على الأقل');
+            if (!fullName || !email || !pass) { showToast('جميع الحقول مطلوبة', 'warning'); return; }
+            if (pass !== confirm) { showToast('غير متطابقتين', 'warning'); return; }
+            if (pass.length < 8) { showToast('8 أحرف على الأقل', 'warning'); return; }
+            const btn = document.getElementById('nextBtn'); setButtonLoading(btn, true, 'جاري...');
             try {
                 const res = await fetch('https://nivora-t9ov.onrender.com/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: email, password: pass, fullName }) });
-                const data = await res.json();
                 if (res.ok) {
                     const loginRes = await fetch('https://nivora-t9ov.onrender.com/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: email, password: pass }) });
                     const loginData = await loginRes.json();
                     if (loginRes.ok) { localStorage.setItem('token', loginData.token); localStorage.setItem('user', JSON.stringify(loginData.user)); window.location.href = 'setup-team.html'; }
-                } else { alert(data.error); }
-            } catch (err) { alert('خطأ في الاتصال'); }
+                } else { const d = await res.json(); showToast(d.error, 'error'); }
+            } catch (err) { showToast('خطأ', 'error'); }
+            setButtonLoading(btn, false);
         }
     </script>
 </body>
 </html>
-

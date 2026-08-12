@@ -10,167 +10,159 @@
     <link rel="stylesheet" href="css/style.css">
     <style>
         :root { --sidebar-w: 240px; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+        body { min-height: 100vh; }
         .sidebar { width: var(--sidebar-w); background: var(--card); border-left: 1px solid var(--border); padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 100; overflow-y: auto; display: flex; flex-direction: column; gap: 0.25rem; }
         .sidebar .logo { font-size: 1.3rem; font-weight: 800; padding: 0 0.75rem; margin-bottom: 1rem; color: var(--primary); }
         .sidebar a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 0.9rem; white-space: nowrap; }
-        .sidebar a:hover, .sidebar a.active { background: #EFF6FF; color: var(--primary); }
+        .sidebar a:hover, .sidebar a.active { background: var(--primary-light); color: var(--primary); }
         .sidebar a svg { width: 20px; height: 20px; flex-shrink: 0; }
         .sidebar .label { transition: opacity 0.2s; }
         .main { margin-right: var(--sidebar-w); padding: 1.5rem; min-height: 100vh; display: flex; flex-direction: column; }
         .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; flex-wrap: wrap; gap: 0.5rem; }
         .topbar h1 { font-size: 1.5rem; font-weight: 800; }
         .project-title { font-size: 0.85rem; color: var(--text-light); }
-        .view-nav { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 0.75rem; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        .view-nav a { padding: 0.5rem 0.85rem; font-size: 0.8rem; font-weight: 600; color: var(--text-light); text-decoration: none; border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; transition: all 0.15s; }
+        .view-nav { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 0.75rem; overflow-x: auto; }
+        .view-nav a { padding: 0.5rem 0.85rem; font-size: 0.8rem; font-weight: 600; color: var(--text-light); text-decoration: none; border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; }
         .view-nav a:hover { color: var(--primary); }
         .view-nav a.active { color: var(--primary); border-bottom-color: var(--primary); }
         .toolbar { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
-        .toolbar input, .toolbar select { height: 36px; border-radius: 8px; border: 1px solid var(--border); padding: 0 0.5rem; font-family: inherit; font-size: 0.8rem; background: var(--card); color: var(--text); }
+        .toolbar input, .toolbar select { height: 36px; border-radius: var(--radius-sm); border: 1px solid var(--border); padding: 0 0.5rem; font-family: inherit; font-size: 0.8rem; background: var(--bg); color: var(--text); }
         .toolbar input { flex: 1; min-width: 150px; }
-
-        /* Kanban Board */
         .kanban { display: flex; gap: 1rem; flex: 1; overflow-x: auto; padding-bottom: 1rem; min-height: 300px; }
-        .column { flex: 1; min-width: 290px; background: #F1F5F9; border-radius: 14px; padding: 1rem; display: flex; flex-direction: column; max-height: calc(100vh - 310px); }
-        body.dark .column { background: #1E293B; }
+        .column { flex: 1; min-width: 290px; background: var(--surface); border-radius: var(--radius); padding: 1rem; display: flex; flex-direction: column; max-height: calc(100vh - 310px); }
         .column-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; padding: 0 0.25rem; }
         .column-header h3 { font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
-        .col-count { background: var(--card); padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 700; }
+        .col-count { background: var(--card); padding: 0.2rem 0.6rem; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 700; }
         .task-list { flex: 1; overflow-y: auto; padding: 0 0.25rem; min-height: 60px; }
         .task-list::-webkit-scrollbar { width: 4px; }
-        .task-list::-webkit-scrollbar-thumb { background: #CBD5E0; border-radius: 4px; }
-        .empty-column { text-align: center; padding: 2rem 1rem; color: #94A3B8; font-size: 0.8rem; }
-        .drop-zone { text-align: center; padding: 1rem; margin: 0.5rem 0.25rem; border: 2px dashed #CBD5E0; border-radius: 10px; color: #94A3B8; font-size: 0.8rem; display: none; }
+        .task-list::-webkit-scrollbar-thumb { background: var(--disabled); border-radius: 4px; }
+        .empty-column { text-align: center; padding: 2rem 1rem; color: var(--text-muted); font-size: 0.8rem; }
+        .drop-zone { text-align: center; padding: 1rem; margin: 0.5rem 0.25rem; border: 2px dashed var(--disabled); border-radius: var(--radius-sm); color: var(--text-muted); font-size: 0.8rem; display: none; }
         .column.drag-over .drop-zone { display: block; }
-        .column.drag-over { background: #DBEAFE; }
-        body.dark .column.drag-over { background: #1E3A5F; }
-
-        /* Task Card */
-        .task-card { background: #FFFFFF; border-radius: 10px; padding: 0.7rem 0.75rem; margin-bottom: 0.5rem; border: 1px solid #E2E8F0; cursor: pointer; position: relative; transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.03); user-select: none; }
-        body.dark .task-card { background: #1E293B; border-color: #334155; }
-        .task-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
-        .task-card.dragging { opacity: 0.5; transform: rotate(1.5deg); box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+        .column.drag-over { background: var(--primary-light); }
+        .task-card { background: var(--card); border-radius: var(--radius-sm); padding: 0.7rem 0.75rem; margin-bottom: 0.5rem; border: 1px solid var(--border); cursor: pointer; position: relative; transition: all var(--transition); box-shadow: var(--shadow-xs); user-select: none; }
+        .task-card:hover { box-shadow: var(--shadow-md); }
+        .task-card.dragging { opacity: 0.5; transform: rotate(1.5deg); box-shadow: var(--shadow-lg); }
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; }
-        .card-header-left { display: flex; align-items: center; gap: 0.35rem; }
-        .card-header-right { display: flex; align-items: center; gap: 0.35rem; }
-        .icon-btn { background: none; border: none; cursor: pointer; color: #94A3B8; font-size: 0.9rem; padding: 0.15rem; border-radius: 4px; line-height: 1; transition: all 0.15s; display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; }
-        .icon-btn:hover { background: #F1F5F9; color: #64748B; }
-        body.dark .icon-btn:hover { background: #334155; color: #CBD5E0; }
+        .card-header-left { display: flex; align-items: center; gap: 0.3rem; }
+        .card-header-right { display: flex; align-items: center; gap: 0.3rem; }
+        .icon-btn { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 0.9rem; padding: 0.15rem; border-radius: var(--radius-xs); line-height: 1; transition: all var(--transition-fast); display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; }
+        .icon-btn:hover { background: var(--secondary-light); color: var(--text); }
         .status-label { font-size: 0.68rem; font-weight: 600; display: flex; align-items: center; gap: 0.2rem; white-space: nowrap; }
         .status-dot-sm { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-        .status-new .status-dot-sm { background: #3B82F6; }
-        .status-progress .status-dot-sm { background: #D97706; }
+        .status-new .status-dot-sm { background: var(--primary); }
+        .status-progress .status-dot-sm { background: var(--warning); }
         .status-review .status-dot-sm { background: #8B5CF6; }
-        .status-done .status-dot-sm { background: #22C55E; }
-        .status-blocked .status-dot-sm { background: #EF4444; }
-        .card-title { font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem; line-height: 1.45; color: #1E293B; }
-        body.dark .card-title { color: #F1F5F9; }
-        .date-badge { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.68rem; padding: 0.2rem 0.5rem; border-radius: 6px; border: 1px solid #E2E8F0; color: #64748B; margin-bottom: 0.45rem; background: #F8FAFC; }
-        body.dark .date-badge { border-color: #334155; color: #94A3B8; background: #0F172A; }
-        .date-badge.overdue { border-color: #FECACA; color: #DC2626; background: #FFF5F5; }
+        .status-done .status-dot-sm { background: var(--success); }
+        .status-blocked .status-dot-sm { background: var(--danger); }
+        .card-title { font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem; line-height: 1.45; }
+        .date-badge { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.68rem; padding: 0.2rem 0.5rem; border-radius: var(--radius-xs); border: 1px solid var(--border); color: var(--text-light); margin-bottom: 0.45rem; background: var(--secondary-light); }
+        .date-badge.overdue { border-color: var(--danger); color: var(--danger); background: var(--danger-light); }
         .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 0.3rem; }
         .card-footer-left { display: flex; align-items: center; gap: 0.25rem; }
-        .card-footer-right { display: flex; align-items: center; gap: 0.4rem; }
-        .avatar-sm { width: 24px; height: 24px; border-radius: 50%; background: #E2E8F0; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 700; color: #64748B; flex-shrink: 0; }
+        .card-footer-right { display: flex; align-items: center; gap: 0.35rem; }
+        .avatar-sm { width: 24px; height: 24px; border-radius: 50%; background: var(--secondary-light); display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 700; color: var(--text-light); flex-shrink: 0; overflow: hidden; }
         .drag-handle { display: grid; grid-template-columns: repeat(3, 4px); grid-template-rows: repeat(3, 4px); gap: 2.5px; cursor: grab; padding: 2px; flex-shrink: 0; }
         .drag-handle:active { cursor: grabbing; }
-        .drag-handle span { width: 4px; height: 4px; border-radius: 50%; background: #94A3B8; display: block; }
-        .indicators { display: flex; align-items: center; gap: 0.25rem; }
-        .ind-btn { display: flex; align-items: center; gap: 0.12rem; font-size: 0.65rem; color: #94A3B8; background: none; border: none; cursor: pointer; padding: 0.15rem 0.3rem; border-radius: 4px; font-family: inherit; transition: all 0.15s; white-space: nowrap; }
-        .ind-btn:hover { background: #F1F5F9; color: #64748B; }
-        body.dark .ind-btn:hover { background: #334155; color: #CBD5E0; }
-        .pri-btn { font-size: 0.8rem; background: none; border: none; cursor: pointer; padding: 0.1rem 0.25rem; border-radius: 4px; transition: all 0.15s; }
-        .pri-btn:hover { background: #F1F5F9; }
-        .pri-critical { color: #EF4444; } .pri-high { color: #F97316; } .pri-medium { color: #EAB308; } .pri-low { color: #22C55E; }
-        .stat-btn { background: none; border: none; cursor: pointer; padding: 0.1rem; border-radius: 50%; transition: all 0.15s; display: flex; }
-        .stat-btn:hover { background: #F1F5F9; }
-        .add-task-btn { margin-top: auto; padding: 0.5rem; text-align: center; border: 2px dashed #E2E8F0; border-radius: 10px; cursor: pointer; font-size: 0.8rem; color: #94A3B8; font-weight: 500; transition: all 0.2s; }
-        .add-task-btn:hover { border-color: #2563EB; color: #2563EB; background: #EFF6FF; }
-
-        /* Details Modal */
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(2px); }
+        .drag-handle span { width: 4px; height: 4px; border-radius: 50%; background: var(--text-muted); display: block; }
+        .indicators { display: flex; align-items: center; gap: 0.2rem; }
+        .ind-btn { display: flex; align-items: center; gap: 0.1rem; font-size: 0.65rem; color: var(--text-muted); background: none; border: none; cursor: pointer; padding: 0.15rem 0.3rem; border-radius: var(--radius-xs); font-family: inherit; transition: all var(--transition-fast); white-space: nowrap; }
+        .ind-btn:hover { background: var(--secondary-light); color: var(--text); }
+        .pri-btn { font-size: 0.8rem; background: none; border: none; cursor: pointer; padding: 0.1rem 0.25rem; border-radius: var(--radius-xs); transition: all var(--transition-fast); }
+        .pri-btn:hover { background: var(--secondary-light); }
+        .pri-critical { color: var(--danger); } .pri-high { color: var(--warning); } .pri-medium { color: #EAB308; } .pri-low { color: var(--success); }
+        .stat-btn { background: none; border: none; cursor: pointer; padding: 0.1rem; border-radius: 50%; transition: all var(--transition-fast); display: flex; }
+        .stat-btn:hover { background: var(--secondary-light); }
+        .add-task-btn { margin-top: auto; padding: 0.5rem; text-align: center; border: 2px dashed var(--border); border-radius: var(--radius-sm); cursor: pointer; font-size: 0.8rem; color: var(--text-muted); font-weight: 500; transition: all var(--transition); }
+        .add-task-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: var(--overlay); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(2px); }
         .modal-overlay.show { display: flex; }
-        .modal-content { background: var(--card); border-radius: 20px; width: 100%; max-width: 650px; max-height: 90vh; overflow-y: auto; box-shadow: 0 30px 60px rgba(0,0,0,0.2); animation: modalIn 0.2s ease; }
-        @keyframes modalIn { from { opacity: 0; transform: translateY(30px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .modal { background: var(--card); border-radius: var(--radius-lg); width: 100%; max-width: 650px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-xl); animation: modalIn 0.2s ease; }
         .modal-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 1.5rem 1.5rem 0.75rem; }
-        .modal-header h2 { font-size: 1.15rem; font-weight: 800; flex: 1; line-height: 1.5; }
-        .modal-close { background: #F1F5F9; border: none; font-size: 1rem; cursor: pointer; color: #64748B; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .modal-close:hover { background: #E2E8F0; }
+        .modal-header h3 { font-size: 1.1rem; font-weight: 800; flex: 1; line-height: 1.5; }
+        .modal-close { background: var(--secondary-light); border: none; font-size: 1rem; cursor: pointer; color: var(--text-light); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .modal-close:hover { background: var(--danger-light); color: var(--danger); }
         .modal-body { padding: 0.75rem 1.5rem 1.5rem; }
         .detail-section { margin-bottom: 1.25rem; }
-        .detail-section label { display: block; font-size: 0.75rem; font-weight: 700; color: #64748B; margin-bottom: 0.4rem; }
-        .detail-section input, .detail-section textarea { width: 100%; border-radius: 8px; border: 1px solid var(--border); padding: 0.6rem 0.75rem; font-family: inherit; font-size: 0.88rem; background: var(--bg); color: var(--text); }
+        .detail-section label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-light); margin-bottom: 0.4rem; }
+        .detail-section input, .detail-section textarea { width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border); padding: 0.6rem 0.75rem; font-family: inherit; font-size: 0.88rem; background: var(--bg); color: var(--text); }
         .detail-section textarea { resize: vertical; min-height: 70px; }
         .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-        .detail-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
         .opt-group { display: flex; gap: 0.4rem; flex-wrap: wrap; }
-        .opt-btn { padding: 0.45rem 0.75rem; border-radius: 8px; border: 2px solid var(--border); cursor: pointer; font-size: 0.82rem; background: none; font-family: inherit; transition: all 0.15s; }
+        .opt-btn { padding: 0.45rem 0.75rem; border-radius: var(--radius-sm); border: 2px solid var(--border); cursor: pointer; font-size: 0.82rem; background: none; font-family: inherit; transition: all var(--transition-fast); }
         .opt-btn:hover { border-color: var(--primary); }
-        .opt-btn.sel { border-color: var(--primary); background: #EFF6FF; }
+        .opt-btn.sel { border-color: var(--primary); background: var(--primary-light); }
         .toggle-row { display: flex; align-items: center; justify-content: space-between; }
-        .toggle-sw { width: 46px; height: 26px; background: #CBD5E0; border-radius: 13px; cursor: pointer; position: relative; transition: background 0.3s; }
-        .toggle-sw.on { background: #2563EB; }
-        .toggle-sw::after { content: ''; position: absolute; top: 3px; right: 3px; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: right 0.3s; }
+        .toggle-sw { width: 46px; height: 26px; background: var(--disabled); border-radius: 13px; cursor: pointer; position: relative; transition: background var(--transition); }
+        .toggle-sw.on { background: var(--primary); }
+        .toggle-sw::after { content: ''; position: absolute; top: 3px; right: 3px; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: right var(--transition); }
         .toggle-sw.on::after { right: 23px; }
-
-        .comment-item { background: #F8FAFC; padding: 0.75rem; border-radius: 10px; margin-bottom: 0.5rem; }
-        body.dark .comment-item { background: #0F172A; }
+        .comment-item { background: var(--secondary-light); padding: 0.75rem; border-radius: var(--radius-sm); margin-bottom: 0.5rem; }
         .comment-item .cu { font-weight: 700; font-size: 0.8rem; }
         .comment-item .ct { font-size: 0.85rem; margin-top: 0.25rem; }
-        .comment-item .ctm { font-size: 0.65rem; color: #94A3B8; margin-top: 0.25rem; }
+        .comment-item .ctm { font-size: 0.65rem; color: var(--text-muted); margin-top: 0.25rem; }
         .comment-row { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
-        .comment-row input { flex: 1; height: 40px; border-radius: 8px; border: 1px solid var(--border); padding: 0 0.75rem; font-family: inherit; font-size: 0.85rem; background: var(--bg); color: var(--text); }
-        .file-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
-        .drop-area { border: 2px dashed #CBD5E0; border-radius: 12px; padding: 2rem; text-align: center; color: #94A3B8; font-size: 0.85rem; margin-top: 0.75rem; transition: all 0.2s; }
-        .drop-area:hover { border-color: #2563EB; color: #2563EB; }
-
-        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #16A34A; color: #fff; padding: 0.75rem 1.5rem; border-radius: 12px; z-index: 9999; font-weight: 600; font-size: 0.9rem; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards; }
-        @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(-20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-        @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateX(-50%) translateY(-20px); } }
+        .comment-row input { flex: 1; height: 40px; border-radius: var(--radius-sm); border: 1px solid var(--border); padding: 0 0.75rem; font-family: inherit; font-size: 0.85rem; background: var(--bg); color: var(--text); }
+        .file-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border-light); font-size: 0.85rem; }
+        .drop-area { border: 2px dashed var(--border); border-radius: var(--radius); padding: 2rem; text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-top: 0.75rem; transition: all var(--transition); }
+        .drop-area:hover { border-color: var(--primary); color: var(--primary); }
         .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
         .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); padding: 0.5rem 1rem; z-index: 90; justify-content: space-around; }
         .bottom-nav a { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-light); text-decoration: none; font-size: 0.65rem; font-weight: 500; }
         .bottom-nav a.active { color: var(--primary); }
         .bottom-nav a svg { width: 22px; height: 22px; }
-
         @media (max-width: 1024px) { :root { --sidebar-w: 72px; } .sidebar { padding: 1rem 0.5rem; } .sidebar .logo { font-size: 1rem; text-align: center; } .sidebar .label, .sidebar .logo span { display: none; } .sidebar a { justify-content: center; padding: 0.5rem; } }
-        @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 1rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } .kanban { flex-direction: column; } .column { min-width: auto; max-height: none; } .detail-grid, .detail-grid-3 { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 0.75rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } .kanban { flex-direction: column; } .column { min-width: auto; max-height: none; } .detail-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
     <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
-<aside class="sidebar" id="sidebar">
-    <div class="logo"><span>📋 Nivora</span></div>
-    <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="label">لوحة القيادة</span></a>
-    <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg><span class="label">المهام</span></a>
-    <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">المشاريع</span></a>
-    <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg><span class="label">Kanban</span></a>
-    <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">Gantt</span></a>
-    <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
-    <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
-    <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg><span class="label">Workflows</span></a>
-    <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">القوالب</span></a>
-    <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg><span class="label">الأرشيف</span></a>
-    <a href="chat.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="label">المحادثة</span></a>
-    <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
-    <a href="teams.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">فرق العمل</span></a>
-</aside>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="logo"><span>📋 Nivora</span></div>
+        <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="label">لوحة القيادة</span></a>
+        <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg><span class="label">المهام</span></a>
+        <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">المشاريع</span></a>
+        <a href="kanban.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg><span class="label">Kanban</span></a>
+        <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">Gantt</span></a>
+        <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
+        <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
+        <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg><span class="label">Workflows</span></a>
+        <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">القوالب</span></a>
+        <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg><span class="label">الأرشيف</span></a>
+        <a href="chat.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="label">المحادثة</span></a>
+        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
+        <a href="teams.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">فرق العمل</span></a>
+    </aside>
 
     <main class="main">
-        <div class="topbar"><div><h1>📌 Kanban</h1><p class="project-title" id="projectTitle"></p></div>
-            <div style="display:flex;gap:0.5rem;">
-                <!-- أيقونة المستخدم في الـ Topbar -->
-<div style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;" onclick="window.location.href='profile.html'">
-    <div id="topAvatar" style="width:32px;height:32px;border-radius:50%;background:#E2E8F0;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:#64748B;overflow:hidden;"></div>
-    <span id="topUsername" style="font-size:0.8rem;font-weight:600;"></span>
-</div>
-                <select id="projectFilter" onchange="loadKanban()" style="height:36px;border-radius:8px;border:1px solid var(--border);padding:0 0.5rem;font-family:inherit;font-size:0.8rem;background:var(--card);color:var(--text);"><option value="">كل المشاريع</option></select>
-                <button class="btn btn-outline" onclick="toggleLang()" id="langBtn" style="height:36px;">🌐 EN</button>
-                <button class="btn btn-outline" onclick="toggleDark()" id="darkBtn" style="height:36px;">🌙</button><button class="btn btn-outline" onclick="logout()" style="height:36px;">خروج</button></div>
+        <div class="topbar">
+            <div><h1>Kanban</h1><p class="project-title" id="projectTitle"></p></div>
+            <div style="display:flex;gap:0.5rem;align-items:center;">
+                <div style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;" onclick="window.location.href='profile.html'">
+                    <div id="topAvatar" style="width:32px;height:32px;border-radius:50%;background:var(--secondary-light);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:var(--text-light);overflow:hidden;"></div>
+                    <span id="topUsername" style="font-size:0.8rem;font-weight:600;"></span>
+                </div>
+                <select id="projectFilter" onchange="loadKanban()" style="height:36px;border-radius:var(--radius-sm);border:1px solid var(--border);padding:0 0.5rem;font-family:inherit;font-size:0.8rem;background:var(--bg);color:var(--text);"><option value="">كل المشاريع</option></select>
+                <button class="btn btn-ghost btn-icon" onclick="toggleDark()" id="darkBtn" style="width:36px;height:36px;">🌙</button>
+                <button class="btn btn-outline btn-sm" onclick="logout()">خروج</button>
+            </div>
         </div>
-        <div class="view-nav"><a href="tasks.html">📋 قائمة</a><a href="kanban.html" class="active">📌 أعمدة</a><a href="tasks.html">📊 جدول</a><a href="gantt.html">📈 Gantt</a><a href="calendar.html">📅 تقويم</a><a href="reports.html">📉 إحصائيات</a><a href="chat.html">💬 محادثة</a></div>
-        <div class="toolbar"><input type="text" id="searchInput" placeholder="🔍 بحث..." oninput="filterCards()"><select id="assigneeFilter" onchange="filterCards()"><option value="">👤 الكل</option></select><button class="btn btn-outline" onclick="loadKanban()" style="height:36px;">🔄 تحديث</button></div>
+
+        <div class="view-nav">
+            <a href="tasks.html">📋 قائمة</a>
+            <a href="kanban.html" class="active">📌 أعمدة</a>
+            <a href="gantt.html">📈 Gantt</a>
+            <a href="calendar.html">📅 تقويم</a>
+            <a href="reports.html">📉 إحصائيات</a>
+        </div>
+
+        <div class="toolbar">
+            <input type="text" id="searchInput" placeholder="🔍 بحث..." oninput="debouncedRender()">
+            <select id="assigneeFilter" onchange="renderBoard(allTasks)"><option value="">👤 الكل</option></select>
+            <button class="btn btn-outline btn-sm" onclick="loadKanban()">🔄 تحديث</button>
+        </div>
+
         <div class="kanban" id="kanbanBoard"></div>
     </main>
 
@@ -182,141 +174,198 @@
         <a href="#" onclick="openSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>المزيد</a>
     </nav>
 
-    <div class="modal-overlay" id="detailsModal" onclick="if(event.target===this)closeM('detailsModal')"><div class="modal-content"><div class="modal-header"><h2 id="detailsTitle"></h2><button class="modal-close" onclick="closeM('detailsModal')">✕</button></div><div class="modal-body" id="detailsBody"></div></div></div>
-    <script src="js/i18n.js"></script>
+    <div class="modal-overlay" id="detailsModal" onclick="if(event.target===this)closeM('detailsModal')">
+        <div class="modal">
+            <div class="modal-header"><h3 id="detailsTitle"></h3><button class="modal-close" onclick="closeM('detailsModal')">✕</button></div>
+            <div class="modal-body" id="detailsBody"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="quickAddModal" onclick="if(event.target===this)closeQuickAdd()">
+        <div class="modal" style="max-width:400px;">
+            <div class="modal-header"><h3>+ مهمة جديدة</h3><button class="modal-close" onclick="closeQuickAdd()">✕</button></div>
+            <div class="modal-body">
+                <div class="form-group"><label>عنوان المهمة</label><input type="text" class="input" id="quickAddTitle" placeholder="أدخل العنوان"></div>
+            </div>
+            <div class="modal-footer" style="padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:0.5rem;">
+                <button class="btn btn-outline" onclick="closeQuickAdd()">إلغاء</button>
+                <button class="btn btn-primary" id="quickAddBtn" onclick="submitQuickAdd()">إنشاء</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/components.js"></script>
     <script>
         function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
         function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
         const API_BASE = 'https://nivora-t9ov.onrender.com/api';
         const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
         if (!token) window.location.href = 'login.html';
         function logout() { localStorage.clear(); window.location.href = 'login.html'; }
         function toggleDark() { document.body.classList.toggle('dark'); const d = document.body.classList.contains('dark'); localStorage.setItem('dark', d); document.getElementById('darkBtn').textContent = d ? '☀️' : '🌙'; }
         if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
-        function showToast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 3000); }
         function closeM(id) { document.getElementById(id).classList.remove('show'); }
+        function closeQuickAdd() { document.getElementById('quickAddModal').classList.remove('show'); document.getElementById('quickAddTitle').value = ''; }
 
         const statuses = ['new', 'in-progress', 'review', 'done', 'blocked'];
         const labels = { 'new': 'متاحة', 'in-progress': 'قيد التنفيذ', 'review': 'مراجعة', 'done': 'مكتملة', 'blocked': 'متعثرة' };
         const icons = { 'new': '📥', 'in-progress': '⚙️', 'review': '👁️', 'done': '✅', 'blocked': '🚫' };
         const sCls = { 'new': 'status-new', 'in-progress': 'status-progress', 'review': 'status-review', 'done': 'status-done', 'blocked': 'status-blocked' };
         const priorities = ['critical', 'high', 'medium', 'low'];
-        const pLabels = { critical: '🔴 حرجة', high: '🟠 عالية', medium: '🟡 متوسطة', low: '🟢 منخفضة' };
+        const pLabels = { critical: 'حرجة', high: 'عالية', medium: 'متوسطة', low: 'منخفضة' };
         const pCls = { critical: 'pri-critical', high: 'pri-high', medium: 'pri-medium', low: 'pri-low' };
-        let allTasks = [], allProjects = [], currentTaskId = null;
+        let allTasks = [], allProjects = [], currentTaskId = null, quickAddStatus = 'new';
+        const debouncedRender = debounce(() => renderBoard(allTasks), 200);
 
-        async function loadProjects() { const res = await fetch(`${API_BASE}/projects`, { headers: { 'Authorization': `Bearer ${token}` } }); allProjects = await res.json(); const sel = document.getElementById('projectFilter'); sel.innerHTML = '<option value="">كل المشاريع</option>' + allProjects.map(p => `<option value="${p._id}">${p.name}</option>`).join(''); const params = new URLSearchParams(window.location.search); const pid = params.get('projectId'); if (pid) { sel.value = pid; document.getElementById('projectTitle').textContent = '📁 ' + (allProjects.find(p => p._id === pid)?.name || ''); } }
-        async function loadKanban() { const pid = document.getElementById('projectFilter').value; let url = `${API_BASE}/tasks`; if (pid) url += `?projectId=${pid}`; const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } }); allTasks = await res.json(); if (pid) document.getElementById('projectTitle').textContent = '📁 ' + (allProjects.find(p => p._id === pid)?.name || ''); else document.getElementById('projectTitle').textContent = ''; const assignees = [...new Set(allTasks.map(t => t.assignee).filter(Boolean))]; document.getElementById('assigneeFilter').innerHTML = '<option value="">👤 الكل</option>' + assignees.map(a => `<option value="${a}">${a}</option>`).join(''); renderBoard(allTasks); }
+        document.addEventListener('DOMContentLoaded', () => {
+            const avatar = document.getElementById('topAvatar');
+            const username = document.getElementById('topUsername');
+            if (username) username.textContent = user.fullName || user.username || 'مستخدم';
+            if (avatar) {
+                if (user.avatar) avatar.innerHTML = `<img src="${user.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                else avatar.textContent = getInitials(user.fullName || user.username);
+            }
+        });
 
-        function renderBoard(tasks) { document.getElementById('kanbanBoard').innerHTML = statuses.map(s => { const filtered = tasks.filter(t => t.status === s); return `<div class="column" data-status="${s}" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="dropTask(event,'${s}')"><div class="column-header"><h3>${icons[s]} ${labels[s]} <span class="col-count">${filtered.length}</span></h3></div><div class="task-list">${filtered.length === 0 ? '<div class="empty-column">لا توجد مهام</div>' : ''}${filtered.map(t => renderCard(t)).join('')}<div class="drop-zone">📥 أسقط المهمة هنا</div></div><div class="add-task-btn" onclick="quickAdd('${s}')">+ إضافة مهمة</div></div>`; }).join(''); }
+        async function loadProjects() {
+            const res = await fetch(`${API_BASE}/projects`, { headers: { 'Authorization': `Bearer ${token}` } });
+            allProjects = await res.json();
+            const sel = document.getElementById('projectFilter');
+            sel.innerHTML = '<option value="">كل المشاريع</option>' + allProjects.map(p => `<option value="${p._id}">${p.name}</option>`).join('');
+            const params = new URLSearchParams(window.location.search);
+            const pid = params.get('projectId');
+            if (pid) { sel.value = pid; document.getElementById('projectTitle').textContent = '📁 ' + (allProjects.find(p => p._id === pid)?.name || ''); }
+        }
 
-        function renderCard(t) { const cls = sCls[t.status] || 'status-new'; const isOverdue = t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'done'; const cCount = t.comments?.length || 0; const aCount = t.attachments?.length || 0; const initial = (t.assignee || '?')[0]; const pc = pCls[t.priority] || 'pri-medium'; return `<div class="task-card ${cls}" draggable="true" data-id="${t._id}" ondragstart="dragTask(event,'${t._id}')" ondragend="this.classList.remove('dragging')" onclick="openDetails('${t._id}')"><div class="card-header"><div class="card-header-left"><button class="icon-btn" onclick="event.stopPropagation();openDetails('${t._id}')" title="تعديل">✎</button><button class="icon-btn" onclick="event.stopPropagation();openDetails('${t._id}')" title="تفاصيل">☷</button></div><div class="card-header-right"><span class="status-label">${labels[t.status]} <span class="status-dot-sm"></span></span></div></div><div class="card-title">${t.title}</div>${t.dueDate ? `<div class="date-badge ${isOverdue ? 'overdue' : ''}">📅 ${new Date(t.dueDate).toLocaleDateString('ar-SA')}</div>` : ''}<div class="card-footer"><div class="card-footer-left"><div class="avatar-sm">${initial}</div><div class="drag-handle" title="اسحب لنقل المهمة"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div><div class="card-footer-right"><div class="indicators"><button class="ind-btn" onclick="event.stopPropagation();openDetails('${t._id}','comments')">${cCount} 💬</button><button class="ind-btn" onclick="event.stopPropagation();openDetails('${t._id}','files')">${aCount} 📄</button></div><button class="pri-btn ${pc}" onclick="event.stopPropagation();openDetails('${t._id}','priority')">🚩</button><button class="stat-btn" onclick="event.stopPropagation();openDetails('${t._id}','status')"><span class="status-dot-sm"></span></button></div></div></div>`; }
+        async function loadKanban() {
+            showSkeleton('kanbanBoard', 'card', 5);
+            try {
+                const pid = document.getElementById('projectFilter').value;
+                let url = `${API_BASE}/tasks`; if (pid) url += `?projectId=${pid}`;
+                const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+                allTasks = await res.json();
+                if (pid) document.getElementById('projectTitle').textContent = '📁 ' + (allProjects.find(p => p._id === pid)?.name || '');
+                else document.getElementById('projectTitle').textContent = '';
+                const assignees = [...new Set(allTasks.map(t => t.assignee).filter(Boolean))];
+                document.getElementById('assigneeFilter').innerHTML = '<option value="">👤 الكل</option>' + assignees.map(a => `<option value="${a}">${a}</option>`).join('');
+                renderBoard(allTasks);
+            } catch (err) { showError('kanbanBoard', 'تعذر تحميل المهام', loadKanban); }
+        }
+
+        function renderBoard(tasks) {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const a = document.getElementById('assigneeFilter').value;
+            let filtered = tasks;
+            if (q) filtered = filtered.filter(t => t.title.toLowerCase().includes(q));
+            if (a) filtered = filtered.filter(t => t.assignee === a);
+            document.getElementById('kanbanBoard').innerHTML = statuses.map(s => {
+                const colTasks = filtered.filter(t => t.status === s);
+                return `<div class="column" data-status="${s}" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="dropTask(event,'${s}')">
+                    <div class="column-header"><h3>${icons[s]} ${labels[s]} <span class="col-count">${colTasks.length}</span></h3></div>
+                    <div class="task-list">${colTasks.length === 0 ? '<div class="empty-column">لا توجد مهام</div>' : ''}${colTasks.map(t => renderCard(t)).join('')}<div class="drop-zone">📥 أسقط المهمة هنا</div></div>
+                    <div class="add-task-btn" onclick="openQuickAdd('${s}')">+ إضافة مهمة</div>
+                </div>`;
+            }).join('');
+        }
+
+        function renderCard(t) {
+            const cls = sCls[t.status] || 'status-new';
+            const isOverdue = t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'done';
+            const cCount = t.comments?.length || 0;
+            const aCount = t.attachments?.length || 0;
+            const initial = (t.assignee || '?')[0];
+            const pc = pCls[t.priority] || 'pri-medium';
+            return `<div class="task-card ${cls}" draggable="true" data-id="${t._id}" ondragstart="dragTask(event,'${t._id}')" ondragend="this.classList.remove('dragging')" onclick="openDetails('${t._id}')">
+                <div class="card-header">
+                    <div class="card-header-left"><button class="icon-btn" onclick="event.stopPropagation();openDetails('${t._id}')">✎</button></div>
+                    <div class="card-header-right"><span class="status-label">${labels[t.status]} <span class="status-dot-sm"></span></span></div>
+                </div>
+                <div class="card-title">${t.title}</div>
+                ${t.dueDate ? `<div class="date-badge ${isOverdue ? 'overdue' : ''}">📅 ${formatDate(t.dueDate)}</div>` : ''}
+                <div class="card-footer">
+                    <div class="card-footer-left"><div class="avatar-sm">${initial}</div><div class="drag-handle" title="اسحب للنقل"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div>
+                    <div class="card-footer-right">
+                        <div class="indicators">
+                            <button class="ind-btn" onclick="event.stopPropagation();openDetails('${t._id}','comments')">${cCount} 💬</button>
+                            <button class="ind-btn" onclick="event.stopPropagation();openDetails('${t._id}','files')">${aCount} 📄</button>
+                        </div>
+                        <button class="pri-btn ${pc}" onclick="event.stopPropagation();openDetails('${t._id}','priority')">🚩</button>
+                        <button class="stat-btn" onclick="event.stopPropagation();openDetails('${t._id}','status')"><span class="status-dot-sm"></span></button>
+                    </div>
+                </div>
+            </div>`;
+        }
 
         function dragTask(e, id) { e.dataTransfer.setData('text/plain', id); e.target.classList.add('dragging'); }
-        async function dropTask(e, s) { e.preventDefault(); e.currentTarget.classList.remove('drag-over'); const id = e.dataTransfer.getData('text/plain'); if (!id) return; await fetch(`${API_BASE}/tasks/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ status: s }) }); showToast('✅ تم'); loadKanban(); }
-        async function quickAdd(s) { const title = prompt('عنوان المهمة:'); if (!title) return; const pid = document.getElementById('projectFilter').value; await fetch(`${API_BASE}/tasks`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ title, status: s, projectId: pid || null }) }); showToast('✅ تم'); loadKanban(); }
-        function filterCards() { const q = document.getElementById('searchInput').value.toLowerCase(); const a = document.getElementById('assigneeFilter').value; let f = allTasks; if (q) f = f.filter(t => t.title.toLowerCase().includes(q)); if (a) f = f.filter(t => t.assignee === a); renderBoard(f); }
+        async function dropTask(e, s) { e.preventDefault(); e.currentTarget.classList.remove('drag-over'); const id = e.dataTransfer.getData('text/plain'); if (!id) return; await fetch(`${API_BASE}/tasks/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ status: s }) }); showToast('تم تحديث الحالة', 'success'); loadKanban(); }
+
+        function openQuickAdd(status) { quickAddStatus = status; document.getElementById('quickAddModal').classList.add('show'); document.getElementById('quickAddTitle').focus(); }
+        async function submitQuickAdd() {
+            const title = document.getElementById('quickAddTitle').value.trim();
+            if (!title) { showToast('العنوان مطلوب', 'warning'); return; }
+            const btn = document.getElementById('quickAddBtn');
+            setButtonLoading(btn, true, 'جاري...');
+            const pid = document.getElementById('projectFilter').value;
+            await fetch(`${API_BASE}/tasks`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ title, status: quickAddStatus, projectId: pid || null }) });
+            setButtonLoading(btn, false);
+            closeQuickAdd();
+            showToast('تمت الإضافة', 'success');
+            loadKanban();
+        }
 
         async function refreshTask() { const r = await fetch(`${API_BASE}/tasks/${currentTaskId}`, { headers: { 'Authorization': `Bearer ${token}` } }); const u = await r.json(); const i = allTasks.findIndex(t => t._id === currentTaskId); if (i >= 0) allTasks[i] = u; return u; }
 
         function openDetails(id, tab) {
             currentTaskId = id;
             const t = allTasks.find(t => t._id === id); if (!t) return;
-            const isOverdue = t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'done';
             const cCount = t.comments?.length || 0;
             const aCount = t.attachments?.length || 0;
             const comments = t.comments || [];
             const attachments = t.attachments || [];
-            const pc = pCls[t.priority] || 'pri-medium';
-
             document.getElementById('detailsTitle').textContent = '📋 ' + t.title;
-
             let html = `
-                <div class="detail-section">
-                    <label>✎ العنوان</label>
-                    <input type="text" id="detTitle" value="${t.title}" onchange="saveField('title',this.value)">
-                </div>
-                <div class="detail-section">
-                    <label>📝 الوصف</label>
-                    <textarea id="detDesc" onchange="saveField('description',this.value)">${t.description || ''}</textarea>
-                </div>
+                <div class="detail-section"><label>✎ العنوان</label><input type="text" id="detTitle" value="${t.title}" onchange="saveField('title',this.value)"></div>
+                <div class="detail-section"><label>📝 الوصف</label><textarea id="detDesc" onchange="saveField('description',this.value)">${t.description || ''}</textarea></div>
                 <div class="detail-grid">
                     <div class="detail-section"><label>👤 المسؤول</label><input type="text" id="detAssignee" value="${t.assignee || ''}" onchange="saveField('assignee',this.value)"></div>
                     <div class="detail-section"><label>📅 تاريخ الاستحقاق</label><input type="date" id="detDueDate" value="${t.dueDate ? new Date(t.dueDate).toISOString().split('T')[0] : ''}" onchange="saveField('dueDate',this.value)"></div>
-                </div>
-                <div class="detail-grid">
                     <div class="detail-section"><label>📅 تاريخ البداية</label><input type="date" id="detStartDate" value="${t.startDate ? new Date(t.startDate).toISOString().split('T')[0] : ''}" onchange="saveField('startDate',this.value)"></div>
-                    <div class="detail-section"><label>📅 تاريخ النهاية</label><input type="date" id="detEndDate" value="${t.dueDate ? new Date(t.dueDate).toISOString().split('T')[0] : ''}" onchange="saveField('dueDate',this.value)"></div>
                 </div>
-                <div class="detail-section">
-                    <label>🚩 الأولوية</label>
-                    <div class="opt-group">${priorities.map(p => `<button class="opt-btn ${t.priority === p ? 'sel' : ''}" onclick="chPri('${p}')">${pLabels[p]}</button>`).join('')}</div>
-                </div>
-                <div class="detail-section">
-                    <label>● الحالة</label>
-                    <div class="opt-group">${statuses.map(s => `<button class="opt-btn ${t.status === s ? 'sel' : ''}" onclick="chStat('${s}')">${icons[s]} ${labels[s]}</button>`).join('')}</div>
-                </div>
+                <div class="detail-section"><label>🚩 الأولوية</label><div class="opt-group">${priorities.map(p => `<button class="opt-btn ${t.priority === p ? 'sel' : ''}" onclick="chPri('${p}')">${pLabels[p]}</button>`).join('')}</div></div>
+                <div class="detail-section"><label>● الحالة</label><div class="opt-group">${statuses.map(s => `<button class="opt-btn ${t.status === s ? 'sel' : ''}" onclick="chStat('${s}')">${icons[s]} ${labels[s]}</button>`).join('')}</div></div>
                 <div class="detail-section">
                     <label>📎 الملفات (${aCount})</label>
-                    ${attachments.length === 0 ? '<p style="color:#94A3B8;font-size:0.85rem;">لا توجد مرفقات</p>' : ''}
-                    ${attachments.map(a => `<div class="file-item"><span>📎</span><a href="${a.url}" target="_blank" style="color:var(--primary);text-decoration:none;flex:1;">${a.name}</a><button class="btn btn-outline" style="height:28px;font-size:0.7rem;" onclick="delAtt('${a._id}')">🗑️</button></div>`).join('')}
-                    <div style="margin-top:0.75rem;display:flex;gap:0.5rem;"><input type="file" id="fileUpload" style="display:none;" onchange="upFileDet()"><button class="btn btn-primary" onclick="document.getElementById('fileUpload').click()">📁 رفع ملف</button></div>
-                    <div class="drop-area" ondragover="event.preventDefault()" ondrop="dropFile(event)">📥 أفلت الملفات هنا للتحميل</div>
-                    <a href="task.html?id=${id}&tab=attachments" class="btn btn-outline" style="width:100%;text-align:center;text-decoration:none;margin-top:0.5rem;display:block;">📋 فتح الملفات كاملة</a>
+                    ${attachments.length === 0 ? '<p style="color:var(--text-muted);font-size:0.85rem;">لا توجد مرفقات</p>' : ''}
+                    ${attachments.map(a => `<div class="file-item"><span>📎</span><a href="${a.url}" target="_blank" style="color:var(--primary);text-decoration:none;flex:1;">${a.name}</a><button class="btn-delete-sm" onclick="delAtt('${a._id}')">🗑️</button></div>`).join('')}
+                    <div style="margin-top:0.75rem;display:flex;gap:0.5rem;"><input type="file" id="fileUpload" style="display:none;" onchange="upFileDet()"><button class="btn btn-primary btn-sm" onclick="document.getElementById('fileUpload').click()">📁 رفع ملف</button></div>
+                    <div class="drop-area" ondragover="event.preventDefault()" ondrop="dropFile(event)">📥 أفلت الملفات هنا</div>
+                    <a href="task.html?id=${id}&tab=attachments" class="btn btn-outline btn-sm" style="width:100%;text-align:center;text-decoration:none;margin-top:0.5rem;display:block;">📋 فتح الملفات كاملة</a>
                 </div>
-                <div class="detail-section">
-                    <div class="toggle-row"><label>🔄 التكرار</label><div class="toggle-sw ${t.isRecurring ? 'on' : ''}" id="recurToggle" onclick="toggleRecur()"></div></div>
-                </div>
+                <div class="detail-section"><div class="toggle-row"><label>🔄 التكرار</label><div class="toggle-sw ${t.isRecurring ? 'on' : ''}" id="recurToggle" onclick="toggleRecur()"></div></div></div>
                 <div class="detail-section">
                     <label>💬 التعليقات (${cCount})</label>
-                    ${comments.length === 0 ? '<p style="color:#94A3B8;font-size:0.85rem;">لا توجد تعليقات</p>' : ''}
-                    ${comments.map(c => `<div class="comment-item"><div class="cu">${c.username || 'مستخدم'}</div><div class="ct">${c.text}</div><div class="ctm">${new Date(c.createdAt).toLocaleString('ar-SA')}</div></div>`).join('')}
-                    <div class="comment-row"><input type="text" id="commentInput" placeholder="اكتب تعليقاً... استخدم @ للإشارة"><button class="btn btn-primary" onclick="addCommentDet()" style="height:40px;">إرسال</button></div>
-                    <a href="task.html?id=${id}&tab=comments" class="btn btn-outline" style="width:100%;text-align:center;text-decoration:none;margin-top:0.5rem;display:block;">📋 فتح التعليقات كاملة</a>
+                    ${comments.length === 0 ? '<p style="color:var(--text-muted);font-size:0.85rem;">لا توجد تعليقات</p>' : ''}
+                    ${comments.map(c => `<div class="comment-item"><div class="cu">${c.username || 'مستخدم'}</div><div class="ct">${c.text}</div><div class="ctm">${formatDateTime(c.createdAt)}</div></div>`).join('')}
+                    <div class="comment-row"><input type="text" id="commentInput" placeholder="اكتب تعليقاً... @ للإشارة"><button class="btn btn-primary btn-sm" onclick="addCommentDet()">إرسال</button></div>
+                    <a href="task.html?id=${id}&tab=comments" class="btn btn-outline btn-sm" style="width:100%;text-align:center;text-decoration:none;margin-top:0.5rem;display:block;">📋 فتح التعليقات كاملة</a>
                 </div>`;
-
             document.getElementById('detailsBody').innerHTML = html;
             document.getElementById('detailsModal').classList.add('show');
-
             if (tab === 'comments') setTimeout(() => document.getElementById('commentInput')?.scrollIntoView({ behavior: 'smooth' }), 300);
             if (tab === 'files') setTimeout(() => document.querySelector('.drop-area')?.scrollIntoView({ behavior: 'smooth' }), 300);
         }
 
-        async function saveField(field, value) { if (!currentTaskId) return; await fetch(`${API_BASE}/tasks/${currentTaskId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ [field]: value }) }); await refreshTask(); renderBoard(allTasks); }
+        async function saveField(field, value) { if (!currentTaskId) return; await fetch(`${API_BASE}/tasks/${currentTaskId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ [field]: value }) }); await refreshTask(); renderBoard(allTasks); showToast('تم الحفظ', 'success'); }
         async function chPri(p) { await saveField('priority', p); openDetails(currentTaskId); }
         async function chStat(s) { await saveField('status', s); openDetails(currentTaskId); }
-        async function toggleRecur() { const t = allTasks.find(t => t._id === currentTaskId); if (!t) return; const v = !t.isRecurring; await saveField('isRecurring', v); document.getElementById('recurToggle').classList.toggle('on', v); await refreshTask(); renderBoard(allTasks); }
-        async function addCommentDet() { const inp = document.getElementById('commentInput'); const txt = inp.value.trim(); if (!txt || !currentTaskId) return; await fetch(`${API_BASE}/tasks/${currentTaskId}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ text: txt }) }); await refreshTask(); renderBoard(allTasks); openDetails(currentTaskId, 'comments'); }
-        async function upFileDet() { const file = document.getElementById('fileUpload').files[0]; if (!file || !currentTaskId) return; const fd = new FormData(); fd.append('file', file); const ur = await fetch(`${API_BASE}/upload`, {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${token}` },
-    body: fd
-}); const ud = await ur.json(); if (ur.ok) { await fetch(`${API_BASE}/tasks/${currentTaskId}/attachments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(ud) }); await refreshTask(); renderBoard(allTasks); openDetails(currentTaskId, 'files'); } }
-        async function dropFile(e) { e.preventDefault(); const file = e.dataTransfer.files[0]; if (!file || !currentTaskId) return; const fd = new FormData(); fd.append('file', file); const ur = await fetch(`${API_BASE}/upload`, {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${token}` },
-    body: fd
-}); const ud = await ur.json(); if (ur.ok) { await fetch(`${API_BASE}/tasks/${currentTaskId}/attachments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(ud) }); await refreshTask(); renderBoard(allTasks); openDetails(currentTaskId, 'files'); } }
-        async function delAtt(aid) { if (!currentTaskId) return; await fetch(`${API_BASE}/tasks/${currentTaskId}/attachments/${aid}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); await refreshTask(); renderBoard(allTasks); openDetails(currentTaskId, 'files'); }
-document.addEventListener('DOMContentLoaded', () => {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const avatar = document.getElementById('topAvatar');
-    const username = document.getElementById('topUsername');
-    
-    if (username) {
-        username.textContent = user.fullName || user.username || 'مستخدم';
-    }
-    
-    if (avatar) {
-        if (user.avatar) {
-            avatar.innerHTML = `<img src="${user.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-        } else {
-            avatar.textContent = (user.fullName || user.username || 'م')[0];
-        }
-    }
-});
+        async function toggleRecur() { const t = allTasks.find(t => t._id === currentTaskId); if (!t) return; await saveField('isRecurring', !t.isRecurring); document.getElementById('recurToggle')?.classList.toggle('on'); }
+        async function addCommentDet() { const inp = document.getElementById('commentInput'); const txt = inp.value.trim(); if (!txt || !currentTaskId) return; await fetch(`${API_BASE}/tasks/${currentTaskId}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ text: txt }) }); await refreshTask(); renderBoard(allTasks); showToast('تمت الإضافة', 'success'); openDetails(currentTaskId, 'comments'); }
+        async function upFileDet() { const file = document.getElementById('fileUpload').files[0]; if (!file || !currentTaskId) return; const fd = new FormData(); fd.append('file', file); const ur = await fetch(`${API_BASE}/upload`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: fd }); const ud = await ur.json(); if (ur.ok) { await fetch(`${API_BASE}/tasks/${currentTaskId}/attachments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(ud) }); await refreshTask(); renderBoard(allTasks); showToast('تم رفع الملف', 'success'); openDetails(currentTaskId, 'files'); } }
+        async function dropFile(e) { e.preventDefault(); const file = e.dataTransfer.files[0]; if (!file || !currentTaskId) return; const fd = new FormData(); fd.append('file', file); const ur = await fetch(`${API_BASE}/upload`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: fd }); const ud = await ur.json(); if (ur.ok) { await fetch(`${API_BASE}/tasks/${currentTaskId}/attachments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(ud) }); await refreshTask(); renderBoard(allTasks); showToast('تم رفع الملف', 'success'); openDetails(currentTaskId, 'files'); } }
+        function delAtt(aid) { confirmDialog({ title: 'حذف المرفق', message: 'حذف هذا المرفق؟', confirmText: 'حذف', danger: true, onConfirm: async () => { await fetch(`${API_BASE}/tasks/${currentTaskId}/attachments/${aid}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); await refreshTask(); renderBoard(allTasks); openDetails(currentTaskId, 'files'); } }); }
+
         loadProjects().then(() => loadKanban());
     </script>
 </body>
 </html>
-

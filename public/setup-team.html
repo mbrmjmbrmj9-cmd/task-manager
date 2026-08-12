@@ -7,23 +7,15 @@
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#2563EB">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
     <style>
-        :root { --primary: #2563EB; --bg: #F8FAFC; --card: #FFFFFF; --text: #1E293B; --text-light: #64748B; --border: #E2E8F0; }
-        body.dark { --bg: #0F172A; --card: #1E293B; --text: #F8FAFC; --text-light: #94A3B8; --border: #334155; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; transition: background 0.3s; }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
         .container { width: 100%; max-width: 440px; }
-        .back { display: inline-flex; align-items: center; gap: 0.35rem; background: var(--card); padding: 0.5rem 1rem; border-radius: 20px; color: var(--text-light); text-decoration: none; font-size: 0.85rem; margin-bottom: 1.5rem; border: 1px solid var(--border); }
-        .card { background: var(--card); border-radius: 24px; padding: 2.5rem 2rem; box-shadow: 0 20px 50px rgba(0,0,0,0.06); border: 1px solid var(--border); }
-        .card h1 { font-size: 1.3rem; font-weight: 800; text-align: center; margin-bottom: 0.3rem; }
+        .back { display: inline-flex; align-items: center; gap: 0.35rem; background: var(--card); padding: 0.5rem 1rem; border-radius: var(--radius-full); color: var(--text-light); text-decoration: none; font-size: 0.85rem; margin-bottom: 1.5rem; border: 1px solid var(--border); }
+        .card { background: var(--card); border-radius: var(--radius-xl); padding: 2.5rem 2rem; box-shadow: var(--shadow-lg); border: 1px solid var(--border); }
+        .card h1 { text-align: center; font-size: 1.3rem; margin-bottom: 0.3rem; }
         .card .sub { text-align: center; color: var(--text-light); font-size: 0.85rem; margin-bottom: 1.5rem; }
-        .input-group { margin-bottom: 1rem; }
-        .input-group input { width: 100%; height: 46px; padding: 0 1rem; border-radius: 12px; border: 1px solid var(--border); font-family: inherit; font-size: 0.9rem; background: var(--bg); color: var(--text); }
-        .input-group input:focus { outline: none; border-color: var(--primary); }
-        .btn-full { width: 100%; height: 48px; border-radius: 12px; border: none; cursor: pointer; font-family: inherit; font-weight: 700; font-size: 1rem; transition: all 0.2s; }
-        .btn-primary { background: var(--primary); color: #fff; }
-        .btn-primary:hover { background: #1D4ED8; }
-        .dark-toggle { position: fixed; top: 1rem; left: 1rem; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 0.7rem; cursor: pointer; font-size: 1.1rem; }
+        .dark-toggle { position: fixed; top: 1rem; left: 1rem; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.5rem 0.7rem; cursor: pointer; font-size: 1.1rem; }
     </style>
 </head>
 <body>
@@ -32,12 +24,13 @@
         <a href="setup-account.html" class="back">← رجوع</a>
         <div class="card">
             <h1>إنشاء فريق</h1>
-            <p class="sub">أدخل بيانات الفريق الأساسية</p>
-            <div class="input-group"><input type="text" id="teamName" placeholder="اسم الفريق أو الشركة"></div>
-            <div class="input-group"><input type="text" id="managerName" placeholder="اسم مدير الفريق"></div>
-            <button class="btn-full btn-primary" onclick="createTeam()">إنشاء الفريق ←</button>
+            <p class="sub">بيانات الفريق</p>
+            <div class="form-group"><input type="text" class="input" id="teamName" placeholder="اسم الفريق"></div>
+            <div class="form-group"><input type="text" class="input" id="managerName" placeholder="اسم المدير"></div>
+            <button class="btn btn-primary btn-block" id="createBtn" onclick="createTeam()">إنشاء</button>
         </div>
     </div>
+    <script src="js/components.js"></script>
     <script>
         function toggleDark() { document.body.classList.toggle('dark'); const d = document.body.classList.contains('dark'); localStorage.setItem('dark', d); document.getElementById('darkBtn').textContent = d ? '☀️' : '🌙'; }
         if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
@@ -45,16 +38,16 @@
         if (!token) window.location.href = 'login.html';
         async function createTeam() {
             const team = document.getElementById('teamName').value.trim();
-            const manager = document.getElementById('managerName').value.trim();
-            if (!team) return alert('اسم الفريق مطلوب');
+            if (!team) { showToast('اسم الفريق مطلوب', 'warning'); return; }
+            const btn = document.getElementById('createBtn'); setButtonLoading(btn, true, 'جاري...');
             try {
                 const res = await fetch('https://nivora-t9ov.onrender.com/api/workspaces', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ name: team }) });
                 const ws = await res.json();
                 if (res.ok) { localStorage.setItem('workspaceId', ws._id); localStorage.setItem('inviteCode', ws.inviteCode); window.location.href = 'setup-members.html'; }
-                else { alert(ws.error); }
-            } catch (err) { alert('خطأ في الاتصال'); }
+                else { showToast(ws.error, 'error'); }
+            } catch (err) { showToast('خطأ', 'error'); }
+            setButtonLoading(btn, false);
         }
     </script>
 </body>
 </html>
-

@@ -10,12 +10,11 @@
     <link rel="stylesheet" href="css/style.css">
     <style>
         :root { --sidebar-w: 240px; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+        body { min-height: 100vh; }
         .sidebar { width: var(--sidebar-w); background: var(--card); border-left: 1px solid var(--border); padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 100; overflow-y: auto; display: flex; flex-direction: column; gap: 0.25rem; }
         .sidebar .logo { font-size: 1.3rem; font-weight: 800; padding: 0 0.75rem; margin-bottom: 1rem; color: var(--primary); }
         .sidebar a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 0.9rem; white-space: nowrap; }
-        .sidebar a:hover, .sidebar a.active { background: #EFF6FF; color: var(--primary); }
+        .sidebar a:hover, .sidebar a.active { background: var(--primary-light); color: var(--primary); }
         .sidebar a svg { width: 20px; height: 20px; flex-shrink: 0; }
         .sidebar .label { transition: opacity 0.2s; }
         .main { margin-right: var(--sidebar-w); padding: 1.5rem; min-height: 100vh; }
@@ -26,76 +25,57 @@
         .view-nav a { padding: 0.5rem 0.85rem; font-size: 0.8rem; font-weight: 600; color: var(--text-light); text-decoration: none; border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; }
         .view-nav a:hover { color: var(--primary); }
         .view-nav a.active { color: var(--primary); border-bottom-color: var(--primary); }
-
         .toolbar { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
-        .toolbar input, .toolbar select { height: 34px; border-radius: 8px; border: 1px solid var(--border); padding: 0 0.5rem; font-family: inherit; font-size: 0.8rem; background: var(--card); color: var(--text); }
+        .toolbar input, .toolbar select { height: 34px; border-radius: var(--radius-sm); border: 1px solid var(--border); padding: 0 0.5rem; font-family: inherit; font-size: 0.8rem; background: var(--bg); color: var(--text); }
         .toolbar input { flex: 1; min-width: 150px; }
         .spacer { flex: 1; }
-
         .category-tabs { display: flex; gap: 0.35rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
-        .category-tab { padding: 0.4rem 0.85rem; border-radius: 20px; border: 1px solid var(--border); cursor: pointer; font-size: 0.8rem; font-weight: 500; background: var(--card); color: var(--text-light); font-family: inherit; transition: all 0.15s; white-space: nowrap; }
+        .category-tab { padding: 0.4rem 0.85rem; border-radius: var(--radius-full); border: 1px solid var(--border); cursor: pointer; font-size: 0.8rem; font-weight: 500; background: var(--card); color: var(--text-light); font-family: inherit; transition: all var(--transition-fast); white-space: nowrap; }
         .category-tab:hover { border-color: var(--primary); color: var(--primary); }
         .category-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-
         .tpl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
-        .tpl-card { padding: 1.5rem; cursor: pointer; transition: all 0.2s; border-right: 4px solid #2563EB; position: relative; }
-        .tpl-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
+        .tpl-card { padding: 1.5rem; cursor: pointer; transition: all var(--transition); border-right: 4px solid var(--primary); position: relative; }
+        .tpl-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
         .tpl-card-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
-        .tpl-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+        .tpl-icon { width: 44px; height: 44px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
         .tpl-info { flex: 1; min-width: 0; }
         .tpl-name { font-weight: 700; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .tpl-category { font-size: 0.7rem; color: var(--text-light); }
+        .tpl-category { font-size: 0.7rem; color: var(--text-muted); }
         .tpl-desc { font-size: 0.8rem; color: var(--text-light); margin-bottom: 0.75rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .tpl-stats { display: flex; gap: 1rem; font-size: 0.75rem; color: var(--text-light); margin-bottom: 0.75rem; flex-wrap: wrap; }
-        .tpl-stats span { display: flex; align-items: center; gap: 0.25rem; }
+        .tpl-stats { display: flex; gap: 1rem; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem; flex-wrap: wrap; }
         .tpl-footer { display: flex; gap: 0.5rem; }
-        .tpl-footer button { flex: 1; height: 34px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; font-family: inherit; font-size: 0.78rem; font-weight: 600; transition: all 0.15s; }
-        .btn-apply { background: var(--primary); color: #fff; border-color: var(--primary) !important; }
-        .btn-apply:hover { background: #1D4ED8; }
+        .tpl-footer button { flex: 1; height: 34px; border-radius: var(--radius-sm); border: 1px solid var(--border); cursor: pointer; font-family: inherit; font-size: 0.78rem; font-weight: 600; transition: all var(--transition-fast); }
+        .btn-apply { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .btn-apply:hover { background: var(--primary-hover); }
         .btn-preview { background: var(--card); color: var(--text); }
-        .btn-preview:hover { background: #F1F5F9; }
-        .tpl-actions { position: absolute; top: 10px; left: 10px; display: flex; gap: 0.15rem; opacity: 0; transition: opacity 0.2s; }
+        .btn-preview:hover { background: var(--secondary-light); }
+        .tpl-actions { position: absolute; top: 10px; left: 10px; display: flex; gap: 0.15rem; opacity: 0; transition: opacity var(--transition); }
         .tpl-card:hover .tpl-actions { opacity: 1; }
-        .tpl-actions button { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 0.25rem 0.45rem; cursor: pointer; font-size: 0.75rem; color: var(--text-light); }
-        .tpl-actions button:hover { background: #F1F5F9; }
-        .tpl-actions button.danger:hover { background: #FEE2E2; color: #DC2626; }
-
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(2px); }
+        .tpl-actions button { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-xs); padding: 0.25rem 0.45rem; cursor: pointer; font-size: 0.75rem; color: var(--text-light); transition: all var(--transition-fast); }
+        .tpl-actions button:hover { background: var(--secondary-light); }
+        .tpl-actions button.danger:hover { background: var(--danger-light); color: var(--danger); }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: var(--overlay); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(2px); }
         .modal-overlay.show { display: flex; }
-        .modal-content { background: var(--card); border-radius: 20px; width: 100%; max-width: 600px; max-height: 85vh; overflow-y: auto; box-shadow: 0 30px 60px rgba(0,0,0,0.2); animation: modalIn 0.2s ease; }
-        @keyframes modalIn { from { opacity: 0; transform: translateY(30px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .modal { background: var(--card); border-radius: var(--radius-lg); width: 100%; max-width: 600px; max-height: 85vh; overflow-y: auto; box-shadow: var(--shadow-xl); animation: modalIn 0.2s ease; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); }
-        .modal-header h2 { font-size: 1.1rem; font-weight: 800; }
-        .modal-close { background: #F1F5F9; border: none; font-size: 1rem; cursor: pointer; color: #64748B; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-        .modal-close:hover { background: #E2E8F0; }
+        .modal-header h3 { font-size: 1.1rem; font-weight: 800; }
+        .modal-close { background: var(--secondary-light); border: none; font-size: 1rem; cursor: pointer; color: var(--text-light); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .modal-close:hover { background: var(--danger-light); color: var(--danger); }
         .modal-body { padding: 1.25rem 1.5rem; }
         .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 0.5rem; }
-        .form-group { margin-bottom: 1rem; }
-        .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-light); margin-bottom: 0.35rem; }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; border-radius: 8px; border: 1px solid var(--border); padding: 0.6rem 0.75rem; font-family: inherit; font-size: 0.88rem; background: var(--bg); color: var(--text); }
-        .form-group textarea { resize: vertical; min-height: 70px; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
         .color-palette { display: flex; gap: 0.4rem; flex-wrap: wrap; }
-        .color-swatch { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.15s; }
+        .color-swatch { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all var(--transition-fast); }
         .color-swatch:hover { transform: scale(1.15); }
         .color-swatch.sel { border-color: var(--text); transform: scale(1.15); }
         .icon-palette { display: flex; gap: 0.35rem; flex-wrap: wrap; margin-top: 0.5rem; }
-        .icon-opt { width: 36px; height: 36px; border-radius: 8px; border: 2px solid var(--border); cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; background: var(--bg); transition: all 0.15s; }
+        .icon-opt { width: 36px; height: 36px; border-radius: var(--radius-sm); border: 2px solid var(--border); cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; background: var(--bg); transition: all var(--transition-fast); }
         .icon-opt:hover { border-color: var(--primary); }
-        .icon-opt.sel { border-color: var(--primary); background: #EFF6FF; }
-        .preview-task { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0; font-size: 0.82rem; border-bottom: 1px solid #F1F5F9; }
+        .icon-opt.sel { border-color: var(--primary); background: var(--primary-light); }
+        .preview-task { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0; font-size: 0.82rem; border-bottom: 1px solid var(--border-light); }
         .preview-task .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
         .checkbox-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0; font-size: 0.82rem; }
         .checkbox-item input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary); }
-
-        .skeleton { background: linear-gradient(90deg, #E2E8F0 25%, #F1F5F9 50%, #E2E8F0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
-        body.dark .skeleton { background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%); background-size: 200% 100%; }
-        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-        .empty-state { text-align: center; padding: 3rem; grid-column: 1 / -1; }
-        .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
-        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #16A34A; color: #fff; padding: 0.75rem 1.5rem; border-radius: 12px; z-index: 9999; font-weight: 600; font-size: 0.9rem; animation: toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards; }
-        @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(-20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-        @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateX(-50%) translateY(-20px); } }
         .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
         .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); padding: 0.5rem 1rem; z-index: 90; justify-content: space-around; }
         .bottom-nav a { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-light); text-decoration: none; font-size: 0.65rem; font-weight: 500; }
@@ -107,48 +87,52 @@
 </head>
 <body>
     <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
-<aside class="sidebar" id="sidebar">
-    <div class="logo"><span>📋 Nivora</span></div>
-    <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="label">لوحة القيادة</span></a>
-    <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg><span class="label">المهام</span></a>
-    <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">المشاريع</span></a>
-    <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg><span class="label">Kanban</span></a>
-    <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">Gantt</span></a>
-    <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
-    <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
-    <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg><span class="label">Workflows</span></a>
-    <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">القوالب</span></a>
-    <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg><span class="label">الأرشيف</span></a>
-    <a href="chat.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="label">المحادثة</span></a>
-    <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
-    <a href="teams.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">فرق العمل</span></a>
-</aside>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="logo"><span>📋 Nivora</span></div>
+        <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="label">لوحة القيادة</span></a>
+        <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg><span class="label">المهام</span></a>
+        <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">المشاريع</span></a>
+        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg><span class="label">Kanban</span></a>
+        <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">Gantt</span></a>
+        <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
+        <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
+        <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg><span class="label">Workflows</span></a>
+        <a href="templates.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">القوالب</span></a>
+        <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg><span class="label">الأرشيف</span></a>
+        <a href="chat.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="label">المحادثة</span></a>
+        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
+        <a href="teams.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">فرق العمل</span></a>
+    </aside>
 
     <main class="main">
-        <div class="topbar"><div><h1>📄 القوالب</h1><p class="page-desc">قوالب جاهزة لإنشاء المشاريع والمهام بسرعة</p></div>
-            <div style="display:flex;gap:0.5rem;">
-                <!-- أيقونة المستخدم في الـ Topbar -->
-<div style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;" onclick="window.location.href='profile.html'">
-    <div id="topAvatar" style="width:32px;height:32px;border-radius:50%;background:#E2E8F0;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:#64748B;overflow:hidden;"></div>
-    <span id="topUsername" style="font-size:0.8rem;font-weight:600;"></span>
-</div>
-                <button class="btn btn-primary" onclick="openCreateModal()">➕ قالب جديد</button>
-                <button class="btn btn-outline" onclick="saveProjectAsTemplate()">💾 حفظ المشروع كقالب</button>
-                <button class="btn btn-outline" onclick="toggleLang()" id="langBtn" style="height:36px;">🌐 EN</button>
-                <button class="btn btn-outline" onclick="toggleDark()" id="darkBtn" style="height:36px;">🌙</button>
-                <button class="btn btn-outline" onclick="logout()" style="height:36px;">خروج</button>
+        <div class="topbar">
+            <div><h1>القوالب</h1><p class="page-desc">قوالب جاهزة لإنشاء المشاريع والمهام بسرعة</p></div>
+            <div style="display:flex;gap:0.5rem;align-items:center;">
+                <div style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;" onclick="window.location.href='profile.html'">
+                    <div id="topAvatar" style="width:32px;height:32px;border-radius:50%;background:var(--secondary-light);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:var(--text-light);overflow:hidden;"></div>
+                    <span id="topUsername" style="font-size:0.8rem;font-weight:600;"></span>
+                </div>
+                <button class="btn btn-primary" onclick="openCreateModal()">+ قالب جديد</button>
+                <button class="btn btn-ghost btn-icon" onclick="toggleDark()" id="darkBtn" style="width:36px;height:36px;">🌙</button>
+                <button class="btn btn-outline btn-sm" onclick="logout()">خروج</button>
             </div>
         </div>
+
         <div class="view-nav">
-            <a href="tasks.html">📋 قائمة</a><a href="kanban.html">📌 أعمدة</a><a href="tasks.html">📊 جدول</a><a href="gantt.html">📈 Gantt</a><a href="calendar.html">📅 تقويم</a><a href="reports.html">📉 إحصائيات</a><a href="chat.html">💬 محادثة</a>
+            <a href="tasks.html">📋 قائمة</a>
+            <a href="kanban.html">📌 أعمدة</a>
+            <a href="gantt.html">📈 Gantt</a>
+            <a href="calendar.html">📅 تقويم</a>
+            <a href="reports.html">📉 إحصائيات</a>
         </div>
+
         <div class="toolbar">
-            <input type="text" id="searchInput" placeholder="🔍 بحث عن قالب..." oninput="filterTemplates()">
+            <input type="text" id="searchInput" placeholder="🔍 بحث عن قالب..." oninput="debouncedRender()">
             <span class="spacer"></span>
         </div>
-        <div class="category-tabs" id="categoryTabs">
-            <button class="category-tab active" onclick="filterByCategory('all')">الكل</button>
-        </div>
+
+        <div class="category-tabs" id="categoryTabs"><button class="category-tab active" onclick="filterByCategory('all')">الكل</button></div>
         <div class="tpl-grid" id="tplGrid"></div>
     </main>
 
@@ -160,31 +144,41 @@
         <a href="#" onclick="openSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>المزيد</a>
     </nav>
 
-    <!-- Modal إنشاء/تعديل -->
     <div class="modal-overlay" id="tplModal" onclick="if(event.target===this)closeModal()">
-        <div class="modal-content"><div class="modal-header"><h2 id="modalTitle">➕ قالب جديد</h2><button class="modal-close" onclick="closeModal()">✕</button></div><div class="modal-body" id="modalBody"></div><div class="modal-footer"><button class="btn btn-outline" onclick="closeModal()">إلغاء</button><button class="btn btn-primary" id="modalSaveBtn" onclick="saveTemplate()">💾 حفظ</button></div></div>
+        <div class="modal">
+            <div class="modal-header"><h3 id="modalTitle">+ قالب جديد</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal()">إلغاء</button><button class="btn btn-primary" id="modalSaveBtn" onclick="saveTemplate()">حفظ</button></div>
+        </div>
     </div>
 
-    <!-- Modal معاينة -->
     <div class="modal-overlay" id="previewModal" onclick="if(event.target===this)closePreview()">
-        <div class="modal-content"><div class="modal-header"><h2 id="previewTitle">📋 معاينة القالب</h2><button class="modal-close" onclick="closePreview()">✕</button></div><div class="modal-body" id="previewBody"></div><div class="modal-footer"><button class="btn btn-outline" onclick="closePreview()">إغلاق</button><button class="btn btn-primary" id="previewApplyBtn" onclick="applyFromPreview()">✅ تطبيق القالب</button></div></div>
+        <div class="modal">
+            <div class="modal-header"><h3 id="previewTitle">معاينة القالب</h3><button class="modal-close" onclick="closePreview()">✕</button></div>
+            <div class="modal-body" id="previewBody"></div>
+            <div class="modal-footer"><button class="btn btn-outline" onclick="closePreview()">إغلاق</button><button class="btn btn-primary" onclick="applyFromPreview()">تطبيق</button></div>
+        </div>
     </div>
 
-    <!-- Modal تطبيق -->
     <div class="modal-overlay" id="applyModal" onclick="if(event.target===this)closeApply()">
-        <div class="modal-content"><div class="modal-header"><h2>✅ تطبيق القالب</h2><button class="modal-close" onclick="closeApply()">✕</button></div><div class="modal-body" id="applyBody"></div><div class="modal-footer"><button class="btn btn-outline" onclick="closeApply()">إلغاء</button><button class="btn btn-primary" onclick="applyTemplate()">🚀 إنشاء المشروع</button></div></div>
+        <div class="modal">
+            <div class="modal-header"><h3>تطبيق القالب</h3><button class="modal-close" onclick="closeApply()">✕</button></div>
+            <div class="modal-body" id="applyBody"></div>
+            <div class="modal-footer"><button class="btn btn-outline" onclick="closeApply()">إلغاء</button><button class="btn btn-primary" onclick="applyTemplate()">إنشاء المشروع</button></div>
+        </div>
     </div>
-    <script src="js/i18n.js"></script>
+
+    <script src="js/components.js"></script>
     <script>
         function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
         function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
         const API_BASE = 'https://nivora-t9ov.onrender.com/api';
         const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
         if (!token) window.location.href = 'login.html';
         function logout() { localStorage.clear(); window.location.href = 'login.html'; }
         function toggleDark() { document.body.classList.toggle('dark'); const d = document.body.classList.contains('dark'); localStorage.setItem('dark', d); document.getElementById('darkBtn').textContent = d ? '☀️' : '🌙'; }
         if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
-        function showToast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 3000); }
         function closeModal() { document.getElementById('tplModal').classList.remove('show'); }
         function closePreview() { document.getElementById('previewModal').classList.remove('show'); }
         function closeApply() { document.getElementById('applyModal').classList.remove('show'); }
@@ -193,17 +187,26 @@
         const colors = ['#2563EB','#16A34A','#D97706','#7C3AED','#DC2626','#EC4899','#14B8A6','#F97316','#8B5CF6','#0891B2'];
         const categories = ['all', 'تطوير', 'تسويق', 'تصميم', 'إدارة', 'أخرى'];
         let allTemplates = [], currentCategory = 'all', editingId = null, previewId = null, applyId = null;
+        const debouncedRender = debounce(() => filterTemplates(), 200);
 
-        function showSkeleton() { document.getElementById('tplGrid').innerHTML = Array(4).fill('<div class="card tpl-card"><div class="skeleton" style="height:20px;width:60%;margin-bottom:0.75rem;"></div><div class="skeleton" style="height:12px;width:100%;margin-bottom:0.5rem;"></div><div class="skeleton" style="height:12px;width:70%;margin-bottom:1rem;"></div><div class="skeleton" style="height:34px;width:100%;"></div></div>').join(''); }
+        document.addEventListener('DOMContentLoaded', () => {
+            const avatar = document.getElementById('topAvatar');
+            const username = document.getElementById('topUsername');
+            if (username) username.textContent = user.fullName || user.username || 'مستخدم';
+            if (avatar) {
+                if (user.avatar) avatar.innerHTML = `<img src="${user.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                else avatar.textContent = getInitials(user.fullName || user.username);
+            }
+        });
 
         async function loadTemplates() {
-            showSkeleton();
+            showSkeleton('tplGrid', 'card', 4);
             try {
                 const res = await fetch(`${API_BASE}/templates`, { headers: { 'Authorization': `Bearer ${token}` } });
                 allTemplates = await res.json();
                 updateCategoryTabs();
                 filterTemplates();
-            } catch (err) { document.getElementById('tplGrid').innerHTML = '<div class="empty-state"><div class="icon">❌</div><p>تعذر تحميل القوالب</p></div>'; }
+            } catch (err) { showError('tplGrid', 'تعذر تحميل القوالب', loadTemplates); }
         }
 
         function updateCategoryTabs() {
@@ -221,56 +224,36 @@
         }
 
         function renderTemplates(templates) {
-            if (templates.length === 0) { document.getElementById('tplGrid').innerHTML = '<div class="empty-state"><div class="icon">📄</div><h3>لا توجد قوالب</h3><p style="color:var(--text-light);">أنشئ قالبك الأول لبدء العمل بسرعة</p></div>'; return; }
+            if (templates.length === 0) {
+                document.getElementById('tplGrid').innerHTML = '<div class="card" style="grid-column:1/-1;"><div class="empty-state"><div class="empty-icon">📄</div><h4>لا توجد قوالب</h4><p>أنشئ قالبك الأول لبدء العمل بسرعة</p><button class="btn btn-primary" onclick="openCreateModal()">+ إنشاء قالب</button></div></div>';
+                return;
+            }
             document.getElementById('tplGrid').innerHTML = templates.map(t => {
                 const taskCount = t.tasks?.length || 0;
-                return `<div class="card tpl-card" style="border-right-color:${t.color || '#2563EB'};">
+                return `<div class="card tpl-card" style="border-right-color:${t.color || 'var(--primary)'};">
                     <div class="tpl-actions">
-                        <button onclick="event.stopPropagation();openEditModal('${t._id}')" title="تعديل">✏️</button>
-                        <button onclick="event.stopPropagation();duplicateTemplate('${t._id}')" title="نسخ">📋</button>
-                        <button class="danger" onclick="event.stopPropagation();deleteTemplate('${t._id}')" title="حذف">🗑️</button>
+                        <button onclick="event.stopPropagation();openEditModal('${t._id}')">✏️</button>
+                        <button onclick="event.stopPropagation();duplicateTemplate('${t._id}')">📋</button>
+                        <button class="danger" onclick="event.stopPropagation();deleteTemplate('${t._id}')">🗑️</button>
                     </div>
-                    <div class="tpl-card-header">
-                        <div class="tpl-icon" style="background:${t.color || '#2563EB'}20;color:${t.color || '#2563EB'};">${t.icon || '📋'}</div>
-                        <div class="tpl-info"><div class="tpl-name">${t.name}</div><div class="tpl-category">${t.category || 'أخرى'}</div></div>
-                    </div>
+                    <div class="tpl-card-header"><div class="tpl-icon" style="background:${t.color || '#2563EB'}20;color:${t.color || '#2563EB'};">${t.icon || '📋'}</div><div class="tpl-info"><div class="tpl-name">${t.name}</div><div class="tpl-category">${t.category || 'أخرى'}</div></div></div>
                     <div class="tpl-desc">${t.description || 'بدون وصف'}</div>
-                    <div class="tpl-stats">
-                        <span>📋 ${taskCount} مهام</span>
-                        ${t.usageCount ? `<span>👥 ${t.usageCount} استخدام</span>` : ''}
-                    </div>
-                    <div class="tpl-footer">
-                        <button class="btn-apply" onclick="openApplyModal('${t._id}')">🚀 تطبيق</button>
-                        <button class="btn-preview" onclick="openPreview('${t._id}')">👁️ معاينة</button>
-                    </div>
+                    <div class="tpl-stats"><span>📋 ${taskCount} مهام</span>${t.usageCount ? `<span>👥 ${t.usageCount}</span>` : ''}</div>
+                    <div class="tpl-footer"><button class="btn-apply" onclick="openApplyModal('${t._id}')">🚀 تطبيق</button><button class="btn-preview" onclick="openPreview('${t._id}')">👁️ معاينة</button></div>
                 </div>`;
             }).join('');
         }
 
-        function openCreateModal() {
-            editingId = null;
-            document.getElementById('modalTitle').textContent = '➕ قالب جديد';
-            document.getElementById('modalSaveBtn').textContent = '💾 إنشاء';
-            document.getElementById('modalBody').innerHTML = getFormHTML();
-            document.getElementById('tplModal').classList.add('show');
-        }
-
-        function openEditModal(id) {
-            const t = allTemplates.find(t => t._id === id); if (!t) return;
-            editingId = id;
-            document.getElementById('modalTitle').textContent = '✏️ تعديل القالب';
-            document.getElementById('modalSaveBtn').textContent = '💾 حفظ التعديلات';
-            document.getElementById('modalBody').innerHTML = getFormHTML(t);
-            document.getElementById('tplModal').classList.add('show');
-        }
+        function openCreateModal() { editingId = null; document.getElementById('modalTitle').textContent = '+ قالب جديد'; document.getElementById('modalSaveBtn').textContent = 'إنشاء'; document.getElementById('modalBody').innerHTML = getFormHTML(); document.getElementById('tplModal').classList.add('show'); }
+        function openEditModal(id) { const t = allTemplates.find(t => t._id === id); if (!t) return; editingId = id; document.getElementById('modalTitle').textContent = 'تعديل القالب'; document.getElementById('modalSaveBtn').textContent = 'حفظ التعديلات'; document.getElementById('modalBody').innerHTML = getFormHTML(t); document.getElementById('tplModal').classList.add('show'); }
 
         function getFormHTML(t = {}) {
             return `
                 <div class="form-row">
-                    <div class="form-group"><label>اسم القالب</label><input type="text" id="tplName" value="${t.name || ''}" placeholder="أدخل اسم القالب"></div>
-                    <div class="form-group"><label>التصنيف</label><select id="tplCategory">${categories.filter(c => c !== 'all').map(c => `<option value="${c}" ${(t.category || 'أخرى') === c ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
+                    <div class="form-group"><label>اسم القالب</label><input type="text" class="input" id="tplName" value="${t.name || ''}" placeholder="أدخل اسم القالب"></div>
+                    <div class="form-group"><label>التصنيف</label><select class="select" id="tplCategory">${categories.filter(c => c !== 'all').map(c => `<option value="${c}" ${(t.category || 'أخرى') === c ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
                 </div>
-                <div class="form-group"><label>الوصف</label><textarea id="tplDesc" placeholder="وصف مختصر للقالب">${t.description || ''}</textarea></div>
+                <div class="form-group"><label>الوصف</label><textarea class="textarea" id="tplDesc" placeholder="وصف مختصر">${t.description || ''}</textarea></div>
                 <div class="form-row">
                     <div class="form-group"><label>الأيقونة</label><div id="selectedIcon" style="font-size:2rem;margin-bottom:0.5rem;">${t.icon || '📋'}</div><div class="icon-palette">${iconOptions.map(ic => `<span class="icon-opt ${(t.icon || '📋') === ic ? 'sel' : ''}" onclick="selectIcon('${ic}')">${ic}</span>`).join('')}</div></div>
                     <div class="form-group"><label>اللون</label><div class="color-palette">${colors.map(c => `<span class="color-swatch ${(t.color || '#2563EB') === c ? 'sel' : ''}" style="background:${c};" onclick="selectColor('${c}')"></span>`).join('')}</div></div>
@@ -282,27 +265,28 @@
         function selectColor(c) { document.getElementById('tplColor').value = c; document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('sel')); event.target.classList.add('sel'); }
 
         async function saveTemplate() {
-            const name = document.getElementById('tplName').value.trim(); if (!name) return alert('الاسم مطلوب');
+            const name = document.getElementById('tplName').value.trim();
+            if (!name) { showToast('الاسم مطلوب', 'warning'); return; }
+            const btn = document.getElementById('modalSaveBtn');
+            setButtonLoading(btn, true, 'جاري...');
             const body = { name, description: document.getElementById('tplDesc').value.trim(), category: document.getElementById('tplCategory').value, icon: document.getElementById('tplIcon').value, color: document.getElementById('tplColor').value };
             if (!editingId) { const res = await fetch(`${API_BASE}/tasks`, { headers: { 'Authorization': `Bearer ${token}` } }); const tasks = await res.json(); body.tasks = tasks; }
             const url = editingId ? `${API_BASE}/templates/${editingId}` : `${API_BASE}/templates`;
             const method = editingId ? 'PATCH' : 'POST';
             const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(body) });
-            if (res.ok) { closeModal(); showToast(editingId ? '✅ تم تحديث القالب' : '✅ تم إنشاء القالب'); loadTemplates(); }
+            setButtonLoading(btn, false);
+            if (res.ok) { closeModal(); showToast(editingId ? 'تم تحديث القالب' : 'تم إنشاء القالب', 'success'); loadTemplates(); }
         }
 
         function openPreview(id) {
             previewId = id; const t = allTemplates.find(t => t._id === id); if (!t) return;
-            document.getElementById('previewTitle').textContent = '📋 ' + t.name;
+            document.getElementById('previewTitle').textContent = t.name;
             document.getElementById('previewBody').innerHTML = `
                 <p style="color:var(--text-light);margin-bottom:1rem;">${t.description || 'بدون وصف'}</p>
-                <div style="display:flex;gap:0.75rem;margin-bottom:1rem;font-size:0.85rem;color:var(--text-light);flex-wrap:wrap;">
-                    <span>📁 التصنيف: ${t.category || 'أخرى'}</span><span>📋 ${(t.tasks || []).length} مهام</span>
-                </div>
-                <h4 style="margin-bottom:0.5rem;font-size:0.9rem;">المهام:</h4>
-                ${(t.tasks || []).map((task, i) => `<div class="preview-task"><span class="dot" style="background:${colors[i % colors.length]};"></span><span>${task.title || task}</span><span style="font-size:0.7rem;color:var(--text-light);margin-right:auto;">${task.priority === 'critical' ? '🔴' : task.priority === 'high' ? '🟠' : task.priority === 'medium' ? '🟡' : '🟢'}</span></div>`).join('') || '<p style="color:var(--text-light);">لا توجد مهام</p>'}
+                <div style="display:flex;gap:0.75rem;margin-bottom:1rem;font-size:0.85rem;color:var(--text-light);flex-wrap:wrap;"><span>📁 ${t.category || 'أخرى'}</span><span>📋 ${(t.tasks || []).length} مهام</span></div>
+                <h4 style="margin-bottom:0.5rem;">المهام:</h4>
+                ${(t.tasks || []).map((task, i) => `<div class="preview-task"><span class="dot" style="background:${colors[i % colors.length]};"></span><span>${task.title || task}</span></div>`).join('') || '<p style="color:var(--text-muted);">لا توجد مهام</p>'}
             `;
-            document.getElementById('previewApplyBtn').onclick = () => { closePreview(); openApplyModal(id); };
             document.getElementById('previewModal').classList.add('show');
         }
 
@@ -310,57 +294,27 @@
             applyId = id; const t = allTemplates.find(t => t._id === id); if (!t) return;
             const tasks = t.tasks || [];
             document.getElementById('applyBody').innerHTML = `
-                <div class="form-group"><label>اسم المشروع</label><input type="text" id="applyProjectName" placeholder="أدخل اسم المشروع الجديد"></div>
-                <div class="form-group"><label>تاريخ البداية</label><input type="date" id="applyStartDate"></div>
-                <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.5rem;">اختر المهام المراد إنشاؤها (${tasks.length} مهام):</p>
+                <div class="form-group"><label>اسم المشروع</label><input type="text" class="input" id="applyProjectName" placeholder="اسم المشروع الجديد"></div>
+                <div class="form-group"><label>تاريخ البداية</label><input type="date" class="input" id="applyStartDate"></div>
+                <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:0.5rem;">اختر المهام (${tasks.length}):</p>
                 ${tasks.map((task, i) => `<div class="checkbox-item"><input type="checkbox" id="task_${i}" checked><label for="task_${i}">${task.title || task}</label></div>`).join('')}
             `;
             document.getElementById('applyModal').classList.add('show');
         }
 
         async function applyTemplate() {
-            const name = document.getElementById('applyProjectName').value.trim(); if (!name) return alert('اسم المشروع مطلوب');
+            const name = document.getElementById('applyProjectName').value.trim();
+            if (!name) { showToast('اسم المشروع مطلوب', 'warning'); return; }
             const startDate = document.getElementById('applyStartDate').value;
             const res = await fetch(`${API_BASE}/templates/${applyId}/apply`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ name, startDate }) });
-            if (res.ok) { closeApply(); showToast('✅ تم تطبيق القالب بنجاح'); loadTemplates(); } else { alert('خطأ في تطبيق القالب'); }
+            if (res.ok) { closeApply(); showToast('تم تطبيق القالب', 'success'); loadTemplates(); } else { showToast('خطأ', 'error'); }
         }
-
         function applyFromPreview() { closePreview(); openApplyModal(previewId); }
 
-        async function saveProjectAsTemplate() {
-            const name = prompt('اسم القالب:'); if (!name) return;
-            const res = await fetch(`${API_BASE}/tasks`, { headers: { 'Authorization': `Bearer ${token}` } }); const tasks = await res.json();
-            if (tasks.length === 0) return alert('لا توجد مهام');
-            await fetch(`${API_BASE}/templates`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ name, tasks, category: 'أخرى', icon: '📋', color: '#2563EB' }) });
-            showToast('✅ تم حفظ المشروع كقالب'); loadTemplates();
-        }
+        function deleteTemplate(id) { confirmDialog({ title: 'حذف القالب', message: 'حذف هذا القالب؟', confirmText: 'حذف', danger: true, onConfirm: async () => { await fetch(`${API_BASE}/templates/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); showToast('تم الحذف', 'success'); loadTemplates(); } }); }
+        async function duplicateTemplate(id) { const t = allTemplates.find(t => t._id === id); if (!t) return; await fetch(`${API_BASE}/templates`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ ...t, name: (t.name || '') + ' (نسخة)', _id: undefined }) }); showToast('تم النسخ', 'success'); loadTemplates(); }
 
-        async function duplicateTemplate(id) {
-            const t = allTemplates.find(t => t._id === id); if (!t) return;
-            await fetch(`${API_BASE}/templates`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ ...t, name: (t.name || '') + ' (نسخة)', _id: undefined }) });
-            showToast('✅ تم نسخ القالب'); loadTemplates();
-        }
-
-        async function deleteTemplate(id) { if (!confirm('حذف القالب؟')) return; await fetch(`${API_BASE}/templates/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); loadTemplates(); }
-document.addEventListener('DOMContentLoaded', () => {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const avatar = document.getElementById('topAvatar');
-    const username = document.getElementById('topUsername');
-    
-    if (username) {
-        username.textContent = user.fullName || user.username || 'مستخدم';
-    }
-    
-    if (avatar) {
-        if (user.avatar) {
-            avatar.innerHTML = `<img src="${user.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-        } else {
-            avatar.textContent = (user.fullName || user.username || 'م')[0];
-        }
-    }
-});
         loadTemplates();
     </script>
 </body>
 </html>
-

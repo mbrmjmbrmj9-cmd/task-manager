@@ -10,16 +10,13 @@
     <link rel="stylesheet" href="css/style.css">
     <style>
         :root { --sidebar-w: 240px; --gantt-header-h: 48px; --row-h: 40px; --left-w: 320px; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-
+        body { min-height: 100vh; }
         .sidebar { width: var(--sidebar-w); background: var(--card); border-left: 1px solid var(--border); padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 100; overflow-y: auto; display: flex; flex-direction: column; gap: 0.25rem; }
         .sidebar .logo { font-size: 1.3rem; font-weight: 800; padding: 0 0.75rem; margin-bottom: 1rem; color: var(--primary); }
         .sidebar a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 0.9rem; white-space: nowrap; }
-        .sidebar a:hover, .sidebar a.active { background: #EFF6FF; color: var(--primary); }
+        .sidebar a:hover, .sidebar a.active { background: var(--primary-light); color: var(--primary); }
         .sidebar a svg { width: 20px; height: 20px; flex-shrink: 0; }
         .sidebar .label { transition: opacity 0.2s; }
-
         .main { margin-right: var(--sidebar-w); padding: 1.5rem; min-height: 100vh; display: flex; flex-direction: column; }
         .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; flex-wrap: wrap; gap: 0.5rem; }
         .topbar h1 { font-size: 1.5rem; font-weight: 800; }
@@ -28,120 +25,101 @@
         .view-nav a { padding: 0.5rem 0.85rem; font-size: 0.8rem; font-weight: 600; color: var(--text-light); text-decoration: none; border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; }
         .view-nav a:hover { color: var(--primary); }
         .view-nav a.active { color: var(--primary); border-bottom-color: var(--primary); }
-
         .toolbar { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap; align-items: center; }
-        .toolbar input, .toolbar select, .toolbar button { height: 34px; border-radius: 8px; border: 1px solid var(--border); padding: 0 0.5rem; font-family: inherit; font-size: 0.8rem; background: var(--card); color: var(--text); }
+        .toolbar input, .toolbar select, .toolbar button { height: 34px; border-radius: var(--radius-sm); border: 1px solid var(--border); padding: 0 0.5rem; font-family: inherit; font-size: 0.8rem; background: var(--bg); color: var(--text); }
         .toolbar input { flex: 1; min-width: 140px; }
         .toolbar button { cursor: pointer; display: flex; align-items: center; gap: 0.25rem; font-weight: 600; }
-        .toolbar button:hover { background: #F1F5F9; }
-        .toolbar button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .toolbar button:hover { background: var(--secondary-light); }
         .spacer { flex: 1; }
-
-        /* Gantt Container */
-        .gantt-container { display: flex; flex: 1; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--card); position: relative; }
+        .gantt-container { display: flex; flex: 1; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--card); position: relative; }
         .gantt-left { width: var(--left-w); flex-shrink: 0; border-left: 1px solid var(--border); overflow-y: hidden; z-index: 2; background: var(--card); }
-        .gantt-left-header { height: var(--gantt-header-h); display: flex; align-items: center; padding: 0 1rem; border-bottom: 1px solid var(--border); font-weight: 700; font-size: 0.8rem; color: var(--text-light); background: #F8FAFC; position: sticky; top: 0; }
-        body.dark .gantt-left-header { background: #0F172A; }
+        .gantt-left-header { height: var(--gantt-header-h); display: flex; align-items: center; padding: 0 1rem; border-bottom: 1px solid var(--border); font-weight: 700; font-size: 0.8rem; color: var(--text-light); background: var(--secondary-light); }
         .gantt-left-body { overflow-y: auto; height: calc(100% - var(--gantt-header-h)); }
         .gantt-left-body::-webkit-scrollbar { width: 4px; }
-        .gantt-left-body::-webkit-scrollbar-thumb { background: #CBD5E0; border-radius: 4px; }
-        .gantt-left-row { height: var(--row-h); display: flex; align-items: center; padding: 0 1rem; border-bottom: 1px solid #F1F5F9; font-size: 0.82rem; font-weight: 500; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; gap: 0.5rem; transition: background 0.1s; }
-        .gantt-left-row:hover { background: #F8FAFC; }
-        body.dark .gantt-left-row { border-color: #1E293B; }
-        body.dark .gantt-left-row:hover { background: #1E293B; }
-        .gantt-left-row .assignee-dot { width: 20px; height: 20px; border-radius: 50%; background: #E2E8F0; display: flex; align-items: center; justify-content: center; font-size: 0.55rem; font-weight: 700; color: #64748B; flex-shrink: 0; }
+        .gantt-left-body::-webkit-scrollbar-thumb { background: var(--disabled); border-radius: 4px; }
+        .gantt-left-row { height: var(--row-h); display: flex; align-items: center; padding: 0 1rem; border-bottom: 1px solid var(--border-light); font-size: 0.82rem; font-weight: 500; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; gap: 0.5rem; transition: background var(--transition-fast); }
+        .gantt-left-row:hover { background: var(--secondary-light); }
+        .gantt-left-row .assignee-dot { width: 20px; height: 20px; border-radius: 50%; background: var(--secondary-light); display: flex; align-items: center; justify-content: center; font-size: 0.55rem; font-weight: 700; color: var(--text-light); flex-shrink: 0; overflow: hidden; }
         .gantt-left-row .task-name { flex: 1; overflow: hidden; text-overflow: ellipsis; }
         .gantt-left-row .task-name a { color: var(--text); text-decoration: none; }
         .gantt-left-row .task-name a:hover { color: var(--primary); }
-        .gantt-left-row .progress-text { font-size: 0.7rem; color: var(--text-light); flex-shrink: 0; }
-
+        .gantt-left-row .progress-text { font-size: 0.7rem; color: var(--text-muted); flex-shrink: 0; }
         .gantt-right { flex: 1; overflow: auto; position: relative; }
         .gantt-right::-webkit-scrollbar { height: 6px; width: 6px; }
-        .gantt-right::-webkit-scrollbar-thumb { background: #CBD5E0; border-radius: 4px; }
-
-        .gantt-header { display: flex; height: var(--gantt-header-h); position: sticky; top: 0; z-index: 3; background: #F8FAFC; border-bottom: 1px solid var(--border); }
-        body.dark .gantt-header { background: #0F172A; }
-        .gantt-header-cell { flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.68rem; font-weight: 600; color: var(--text-light); border-left: 1px solid #F1F5F9; }
-        body.dark .gantt-header-cell { border-color: #1E293B; }
-        .gantt-header-cell.weekend { color: #EF4444; }
-        .gantt-header-cell.today { background: #EFF6FF; color: var(--primary); font-weight: 800; }
-
+        .gantt-right::-webkit-scrollbar-thumb { background: var(--disabled); border-radius: 4px; }
+        .gantt-header { display: flex; height: var(--gantt-header-h); position: sticky; top: 0; z-index: 3; background: var(--secondary-light); border-bottom: 1px solid var(--border); }
+        .gantt-header-cell { flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.68rem; font-weight: 600; color: var(--text-light); border-left: 1px solid var(--border-light); }
+        .gantt-header-cell.weekend { color: var(--danger); }
+        .gantt-header-cell.today { background: var(--primary-light); color: var(--primary); font-weight: 800; }
         .gantt-body { position: relative; }
-        .gantt-row { height: var(--row-h); position: relative; border-bottom: 1px solid #F1F5F9; }
-        body.dark .gantt-row { border-color: #1E293B; }
-        .gantt-row:hover { background: #F8FAFC; }
-        body.dark .gantt-row:hover { background: #1A2332; }
-        .grid-line { position: absolute; top: 0; bottom: 0; width: 1px; background: #F1F5F9; }
-        body.dark .grid-line { background: #1E293B; }
-
-        .task-bar { position: absolute; top: 8px; height: 24px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; padding: 0 6px; font-size: 0.65rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: filter 0.15s, box-shadow 0.15s; z-index: 1; min-width: 4px; }
-        .task-bar:hover { filter: brightness(0.9); box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 5; }
+        .gantt-row { height: var(--row-h); position: relative; border-bottom: 1px solid var(--border-light); }
+        .gantt-row:hover { background: var(--secondary-light); }
+        .grid-line { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--border-light); }
+        .task-bar { position: absolute; top: 8px; height: 24px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; padding: 0 6px; font-size: 0.65rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: filter var(--transition-fast), box-shadow var(--transition-fast); z-index: 1; min-width: 4px; }
+        .task-bar:hover { filter: brightness(0.9); box-shadow: var(--shadow-md); z-index: 5; }
         .task-bar .bar-progress { position: absolute; top: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.25); border-radius: 0 5px 5px 0; }
-        .task-bar.status-done { background: #22C55E; }
-        .task-bar.status-progress { background: #2563EB; }
+        .task-bar.status-done { background: var(--success); }
+        .task-bar.status-progress { background: var(--primary); }
         .task-bar.status-review { background: #8B5CF6; }
-        .task-bar.status-new { background: #94A3B8; }
-        .task-bar.status-blocked { background: #EF4444; }
-        .task-bar.overdue { border: 2px solid #EF4444; }
-
-        .dep-line { position: absolute; pointer-events: none; z-index: 0; }
-        .dep-line svg { overflow: visible; }
-
-        .today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: #EF4444; z-index: 4; opacity: 0.7; }
-        .today-label { position: absolute; top: -18px; right: -15px; background: #EF4444; color: #fff; font-size: 0.6rem; padding: 0.1rem 0.35rem; border-radius: 4px; font-weight: 600; white-space: nowrap; }
-
+        .task-bar.status-new { background: var(--text-muted); }
+        .task-bar.status-blocked { background: var(--danger); }
+        .task-bar.overdue { border: 2px solid var(--danger); }
+        .today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--danger); z-index: 4; opacity: 0.7; }
+        .today-label { position: absolute; top: -18px; right: -15px; background: var(--danger); color: #fff; font-size: 0.6rem; padding: 0.1rem 0.35rem; border-radius: var(--radius-xs); font-weight: 600; white-space: nowrap; }
         .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
         .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); padding: 0.5rem 1rem; z-index: 90; justify-content: space-around; }
         .bottom-nav a { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-light); text-decoration: none; font-size: 0.65rem; font-weight: 500; }
         .bottom-nav a.active { color: var(--primary); }
         .bottom-nav a svg { width: 22px; height: 22px; }
-        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #16A34A; color: #fff; padding: 0.75rem 1.5rem; border-radius: 12px; z-index: 9999; font-weight: 600; font-size: 0.9rem; animation: toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards; }
-        @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(-20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-        @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateX(-50%) translateY(-20px); } }
-
         @media (max-width: 1024px) { :root { --sidebar-w: 72px; --left-w: 200px; } .sidebar { padding: 1rem 0.5rem; } .sidebar .logo { font-size: 1rem; text-align: center; } .sidebar .label, .sidebar .logo span { display: none; } .sidebar a { justify-content: center; padding: 0.5rem; } }
         @media (max-width: 768px) { :root { --sidebar-w: 0; --left-w: 140px; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 0.75rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } .gantt-left-row { font-size: 0.7rem; padding: 0 0.5rem; } .gantt-left-row .progress-text { display: none; } .toolbar { gap: 0.25rem; } .toolbar button { font-size: 0.7rem; padding: 0 0.4rem; } }
     </style>
 </head>
 <body>
     <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
-<aside class="sidebar" id="sidebar">
-    <div class="logo"><span>📋 Nivora</span></div>
-    <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="label">لوحة القيادة</span></a>
-    <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg><span class="label">المهام</span></a>
-    <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">المشاريع</span></a>
-    <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg><span class="label">Kanban</span></a>
-    <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">Gantt</span></a>
-    <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
-    <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
-    <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg><span class="label">Workflows</span></a>
-    <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">القوالب</span></a>
-    <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg><span class="label">الأرشيف</span></a>
-    <a href="chat.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="label">المحادثة</span></a>
-    <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
-    <a href="teams.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">فرق العمل</span></a>
-</aside>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="logo"><span>📋 Nivora</span></div>
+        <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="label">لوحة القيادة</span></a>
+        <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg><span class="label">المهام</span></a>
+        <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">المشاريع</span></a>
+        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg><span class="label">Kanban</span></a>
+        <a href="gantt.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">Gantt</span></a>
+        <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
+        <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
+        <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg><span class="label">Workflows</span></a>
+        <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">القوالب</span></a>
+        <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg><span class="label">الأرشيف</span></a>
+        <a href="chat.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="label">المحادثة</span></a>
+        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
+        <a href="teams.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">فرق العمل</span></a>
+    </aside>
 
     <main class="main">
-        <div class="topbar"><div><h1>📈 Gantt Chart</h1><p class="project-title" id="projectTitle"></p></div>
-            <div style="display:flex;gap:0.5rem;">
-                <!-- أيقونة المستخدم في الـ Topbar -->
-<div style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;" onclick="window.location.href='profile.html'">
-    <div id="topAvatar" style="width:32px;height:32px;border-radius:50%;background:#E2E8F0;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:#64748B;overflow:hidden;"></div>
-    <span id="topUsername" style="font-size:0.8rem;font-weight:600;"></span>
-</div>
-                <select id="projectFilter" onchange="loadGantt()" style="height:36px;border-radius:8px;border:1px solid var(--border);padding:0 0.5rem;font-family:inherit;font-size:0.8rem;background:var(--card);color:var(--text);"><option value="">كل المشاريع</option></select>
-                <button class="btn btn-outline" onclick="toggleLang()" id="langBtn" style="height:36px;">🌐 EN</button>
-                <button class="btn btn-outline" onclick="toggleDark()" id="darkBtn" style="height:36px;">🌙</button>
-                <button class="btn btn-outline" onclick="logout()" style="height:36px;">خروج</button>
+        <div class="topbar">
+            <div><h1>Gantt Chart</h1><p class="project-title" id="projectTitle"></p></div>
+            <div style="display:flex;gap:0.5rem;align-items:center;">
+                <div style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;" onclick="window.location.href='profile.html'">
+                    <div id="topAvatar" style="width:32px;height:32px;border-radius:50%;background:var(--secondary-light);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:var(--text-light);overflow:hidden;"></div>
+                    <span id="topUsername" style="font-size:0.8rem;font-weight:600;"></span>
+                </div>
+                <select id="projectFilter" onchange="loadGantt()" style="height:36px;border-radius:var(--radius-sm);border:1px solid var(--border);padding:0 0.5rem;font-family:inherit;font-size:0.8rem;background:var(--bg);color:var(--text);"><option value="">كل المشاريع</option></select>
+                <button class="btn btn-ghost btn-icon" onclick="toggleDark()" id="darkBtn" style="width:36px;height:36px;">🌙</button>
+                <button class="btn btn-outline btn-sm" onclick="logout()">خروج</button>
             </div>
         </div>
+
         <div class="view-nav">
-            <a href="tasks.html">📋 قائمة</a><a href="kanban.html">📌 أعمدة</a><a href="tasks.html">📊 جدول</a><a href="gantt.html" class="active">📈 Gantt</a><a href="calendar.html">📅 تقويم</a><a href="reports.html">📉 إحصائيات</a><a href="chat.html">💬 محادثة</a>
+            <a href="tasks.html">📋 قائمة</a>
+            <a href="kanban.html">📌 أعمدة</a>
+            <a href="gantt.html" class="active">📈 Gantt</a>
+            <a href="calendar.html">📅 تقويم</a>
+            <a href="reports.html">📉 إحصائيات</a>
         </div>
+
         <div class="toolbar">
-            <input type="text" id="searchInput" placeholder="🔍 بحث..." oninput="filterTasks()">
-            <select id="assigneeFilter" onchange="filterTasks()"><option value="">👤 الكل</option></select>
+            <input type="text" id="searchInput" placeholder="🔍 بحث..." oninput="debouncedRender()">
+            <select id="assigneeFilter" onchange="renderGantt()"><option value="">👤 الكل</option></select>
             <button onclick="zoomIn()">🔍+</button>
             <button onclick="zoomOut()">🔍-</button>
             <button onclick="scrollToToday()">📅 اليوم</button>
@@ -168,19 +146,30 @@
         <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>فريق</a>
         <a href="#" onclick="openSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>المزيد</a>
     </nav>
-    <script src="js/i18n.js"></script>
+
+    <script src="js/components.js"></script>
     <script>
         function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
         function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
         const API_BASE = 'https://nivora-t9ov.onrender.com/api';
         const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
         if (!token) window.location.href = 'login.html';
         function logout() { localStorage.clear(); window.location.href = 'login.html'; }
         function toggleDark() { document.body.classList.toggle('dark'); const d = document.body.classList.contains('dark'); localStorage.setItem('dark', d); document.getElementById('darkBtn').textContent = d ? '☀️' : '🌙'; }
         if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
-        function showToast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 3000); }
-
         let allTasks = [], allProjects = [], dayWidth = 32, filteredTasks = [];
+        const debouncedRender = debounce(() => renderGantt(), 200);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const avatar = document.getElementById('topAvatar');
+            const username = document.getElementById('topUsername');
+            if (username) username.textContent = user.fullName || user.username || 'مستخدم';
+            if (avatar) {
+                if (user.avatar) avatar.innerHTML = `<img src="${user.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                else avatar.textContent = getInitials(user.fullName || user.username);
+            }
+        });
 
         async function loadProjects() {
             const res = await fetch(`${API_BASE}/projects`, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -193,44 +182,44 @@
         }
 
         async function loadGantt() {
-            const pid = document.getElementById('projectFilter').value;
-            let url = `${API_BASE}/tasks`; if (pid) url += `?projectId=${pid}`;
-            const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
-            allTasks = await res.json();
-            if (pid) document.getElementById('projectTitle').textContent = '📁 ' + (allProjects.find(p => p._id === pid)?.name || '');
-            else document.getElementById('projectTitle').textContent = '';
-            const assignees = [...new Set(allTasks.map(t => t.assignee).filter(Boolean))];
-            document.getElementById('assigneeFilter').innerHTML = '<option value="">👤 الكل</option>' + assignees.map(a => `<option value="${a}">${a}</option>`).join('');
-            filteredTasks = [...allTasks];
-            renderGantt();
+            document.getElementById('ganttLeftBody').innerHTML = '<div class="skeleton" style="height:100%;"></div>';
+            document.getElementById('ganttHeader').innerHTML = '';
+            document.getElementById('ganttBody').innerHTML = '';
+            try {
+                const pid = document.getElementById('projectFilter').value;
+                let url = `${API_BASE}/tasks`; if (pid) url += `?projectId=${pid}`;
+                const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+                allTasks = await res.json();
+                if (pid) document.getElementById('projectTitle').textContent = '📁 ' + (allProjects.find(p => p._id === pid)?.name || '');
+                else document.getElementById('projectTitle').textContent = '';
+                const assignees = [...new Set(allTasks.map(t => t.assignee).filter(Boolean))];
+                document.getElementById('assigneeFilter').innerHTML = '<option value="">👤 الكل</option>' + assignees.map(a => `<option value="${a}">${a}</option>`).join('');
+                filteredTasks = [...allTasks];
+                renderGantt();
+            } catch (err) {
+                showError('ganttLeftBody', 'تعذر تحميل المهام', loadGantt);
+            }
         }
 
-        function filterTasks() {
+        function renderGantt() {
             const q = document.getElementById('searchInput').value.toLowerCase();
             const a = document.getElementById('assigneeFilter').value;
             filteredTasks = allTasks;
             if (q) filteredTasks = filteredTasks.filter(t => t.title.toLowerCase().includes(q));
             if (a) filteredTasks = filteredTasks.filter(t => t.assignee === a);
-            renderGantt();
-        }
-
-        function renderGantt() {
             const tasks = filteredTasks.filter(t => t.startDate || t.dueDate);
             if (tasks.length === 0) {
-                document.getElementById('ganttLeftBody').innerHTML = '<div style="padding:2rem;text-align:center;color:var(--text-light);">لا توجد مهام بمواعيد</div>';
+                document.getElementById('ganttLeftBody').innerHTML = '<div class="empty-state"><div class="empty-icon">📈</div><h4>لا توجد مهام بمواعيد</h4><p>أضف تواريخ للمهام لتظهر هنا</p></div>';
                 document.getElementById('ganttHeader').innerHTML = '';
                 document.getElementById('ganttBody').innerHTML = '';
                 return;
             }
-
             const dates = [];
             tasks.forEach(t => { if (t.startDate) dates.push(new Date(t.startDate)); if (t.dueDate) dates.push(new Date(t.dueDate)); });
             const minDate = new Date(Math.min(...dates)); minDate.setDate(minDate.getDate() - 2);
             const maxDate = new Date(Math.max(...dates)); maxDate.setDate(maxDate.getDate() + 2);
             const totalDays = Math.ceil((maxDate - minDate) / 86400000) + 1;
             const today = new Date(); today.setHours(0,0,0,0);
-
-            // Header
             let headerHTML = '';
             for (let i = 0; i < totalDays; i++) {
                 const d = new Date(minDate); d.setDate(d.getDate() + i);
@@ -239,8 +228,6 @@
                 headerHTML += `<div class="gantt-header-cell ${isWeekend ? 'weekend' : ''} ${isToday ? 'today' : ''}" style="width:${dayWidth}px;">${d.getDate()}/${d.getMonth()+1}</div>`;
             }
             document.getElementById('ganttHeader').innerHTML = headerHTML;
-
-            // Left panel
             document.getElementById('ganttLeftBody').innerHTML = tasks.map(t => {
                 const initial = (t.assignee || '?')[0];
                 const progress = t.progress || 0;
@@ -250,10 +237,8 @@
                     <span class="progress-text">${progress}%</span>
                 </div>`;
             }).join('');
-
-            // Body + Bars
             let bodyHTML = '';
-            tasks.forEach((t, idx) => {
+            tasks.forEach(t => {
                 const start = t.startDate ? new Date(t.startDate) : new Date(t.createdAt);
                 const end = new Date(t.dueDate || start);
                 if (end < start) end.setDate(start.getDate() + 1);
@@ -263,26 +248,13 @@
                 const progressWidth = Math.round((progress / 100) * width);
                 const isOverdue = new Date(t.dueDate) < today && t.status !== 'done';
                 const statusClass = `status-${t.status === 'done' ? 'done' : t.status === 'in-progress' ? 'progress' : t.status === 'review' ? 'review' : t.status === 'blocked' ? 'blocked' : 'new'}`;
-
                 bodyHTML += `<div class="gantt-row">`;
-                for (let i = 0; i < totalDays; i++) {
-                    bodyHTML += `<div class="grid-line" style="left:${i * dayWidth}px;"></div>`;
-                }
-                bodyHTML += `<div class="task-bar ${statusClass} ${isOverdue ? 'overdue' : ''}" style="left:${left}px;width:${width}px;" onclick="window.location.href='task.html?id=${t._id}'" title="${t.title} (${progress}%)">
-                    <div class="bar-progress" style="width:${width - progressWidth}px;"></div>
-                    ${width > 60 ? t.title : ''}
-                </div></div>`;
+                for (let i = 0; i < totalDays; i++) bodyHTML += `<div class="grid-line" style="left:${i * dayWidth}px;"></div>`;
+                bodyHTML += `<div class="task-bar ${statusClass} ${isOverdue ? 'overdue' : ''}" style="left:${left}px;width:${width}px;" onclick="window.location.href='task.html?id=${t._id}'" title="${t.title} (${progress}%)"><div class="bar-progress" style="width:${width - progressWidth}px;"></div>${width > 60 ? t.title : ''}</div></div>`;
             });
-
-            // Today line
             const todayLeft = Math.floor((today - minDate) / 86400000) * dayWidth;
-            if (todayLeft >= 0 && todayLeft < totalDays * dayWidth) {
-                bodyHTML += `<div class="today-line" style="left:${todayLeft}px;"><div class="today-label">اليوم</div></div>`;
-            }
-
+            if (todayLeft >= 0 && todayLeft < totalDays * dayWidth) bodyHTML += `<div class="today-line" style="left:${todayLeft}px;"><div class="today-label">اليوم</div></div>`;
             document.getElementById('ganttBody').innerHTML = bodyHTML;
-
-            // مزامنة التمرير العمودي
             const leftBody = document.getElementById('ganttLeftBody');
             const rightPanel = document.getElementById('ganttRight');
             leftBody.addEventListener('scroll', () => { rightPanel.scrollTop = leftBody.scrollTop; });
@@ -291,30 +263,10 @@
 
         function zoomIn() { dayWidth = Math.min(dayWidth + 8, 80); renderGantt(); }
         function zoomOut() { dayWidth = Math.max(dayWidth - 8, 16); renderGantt(); }
-        function scrollToToday() {
-            const todayLine = document.querySelector('.today-line');
-            if (todayLine) todayLine.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-        }
+        function scrollToToday() { const tl = document.querySelector('.today-line'); if (tl) tl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); }
         function exportPDF() { window.print(); }
-document.addEventListener('DOMContentLoaded', () => {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const avatar = document.getElementById('topAvatar');
-    const username = document.getElementById('topUsername');
-    
-    if (username) {
-        username.textContent = user.fullName || user.username || 'مستخدم';
-    }
-    
-    if (avatar) {
-        if (user.avatar) {
-            avatar.innerHTML = `<img src="${user.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-        } else {
-            avatar.textContent = (user.fullName || user.username || 'م')[0];
-        }
-    }
-});
+
         loadProjects().then(() => loadGantt());
     </script>
 </body>
 </html>
-

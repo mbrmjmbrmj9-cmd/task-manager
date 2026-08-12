@@ -9,117 +9,100 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
-        :root { --sidebar-w: 240px; --primary: #2563EB; --bg: #F8FAFC; --card: #FFFFFF; --text: #0F172A; --text-light: #64748B; --border: #E2E8F0; }
-        body.dark { --bg: #0F172A; --card: #1E293B; --text: #F8FAFC; --text-light: #94A3B8; --border: #334155; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-
+        :root { --sidebar-w: 240px; }
+        body { min-height: 100vh; }
         .sidebar { width: var(--sidebar-w); background: var(--card); border-left: 1px solid var(--border); padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 100; overflow-y: auto; display: flex; flex-direction: column; gap: 0.25rem; }
         .sidebar .logo { font-size: 1.3rem; font-weight: 800; padding: 0 0.75rem; margin-bottom: 1rem; color: var(--primary); }
         .sidebar a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 0.9rem; white-space: nowrap; }
-        .sidebar a:hover, .sidebar a.active { background: #EFF6FF; color: var(--primary); }
+        .sidebar a:hover, .sidebar a.active { background: var(--primary-light); color: var(--primary); }
         .sidebar a svg { width: 20px; height: 20px; flex-shrink: 0; }
         .sidebar .label { transition: opacity 0.2s; }
-
-        .main { margin-right: var(--sidebar-w); padding: 2rem; min-height: 100vh; }
-        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem; }
+        .main { margin-right: var(--sidebar-w); padding: 1.5rem; min-height: 100vh; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; flex-wrap: wrap; gap: 0.5rem; }
         .topbar h1 { font-size: 1.5rem; font-weight: 800; }
-
-        .toolbar { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center; }
-        .toolbar input, .toolbar select { height: 38px; border-radius: 8px; border: 1px solid var(--border); padding: 0 0.75rem; font-family: inherit; background: var(--card); color: var(--text); font-size: 0.85rem; }
-        .toolbar input { flex: 1; min-width: 200px; }
-        .toolbar select { width: auto; }
-        .spacer { flex: 1; }
-
-        .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
-        .project-card { padding: 1.5rem; border-right: 4px solid #2563EB; cursor: pointer; transition: all 0.2s; position: relative; }
-        .project-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
-        .project-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
-        .project-card .desc { font-size: 0.85rem; color: var(--text-light); margin-bottom: 1rem; }
-        .project-card .progress { height: 8px; background: var(--border); border-radius: 4px; margin-bottom: 0.75rem; overflow: hidden; }
-        .project-card .progress-bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
-        .project-card .stats { display: flex; gap: 1rem; font-size: 0.8rem; color: var(--text-light); flex-wrap: wrap; }
-        .project-card .actions { display: flex; gap: 0.25rem; position: absolute; top: 10px; left: 10px; opacity: 0; transition: opacity 0.2s; }
+        .view-nav { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 1rem; overflow-x: auto; }
+        .view-nav a { padding: 0.5rem 0.85rem; font-size: 0.8rem; font-weight: 600; color: var(--text-light); text-decoration: none; border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; }
+        .view-nav a:hover { color: var(--primary); }
+        .view-nav a.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .toolbar { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
+        .toolbar input, .toolbar select { height: 36px; border-radius: var(--radius-sm); border: 1px solid var(--border); padding: 0 0.5rem; font-family: inherit; font-size: 0.8rem; background: var(--bg); color: var(--text); }
+        .toolbar input { flex: 1; min-width: 150px; }
+        .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+        .project-card { padding: 1.5rem; border-right: 4px solid var(--primary); cursor: pointer; transition: all var(--transition); position: relative; }
+        .project-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .project-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .project-card .desc { font-size: 0.85rem; color: var(--text-light); margin-bottom: 1rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .project-card .progress { height: 8px; background: var(--border); border-radius: var(--radius-full); margin-bottom: 0.75rem; overflow: hidden; }
+        .project-card .progress-bar { height: 100%; border-radius: var(--radius-full); transition: width 0.5s ease; }
+        .project-card .stats { display: flex; gap: 0.75rem; font-size: 0.78rem; color: var(--text-light); flex-wrap: wrap; }
+        .project-card .actions { display: flex; gap: 0.25rem; position: absolute; top: 10px; left: 10px; opacity: 0; transition: opacity var(--transition); }
         .project-card:hover .actions { opacity: 1; }
-        .project-card .actions button { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 0.25rem 0.5rem; cursor: pointer; font-size: 0.8rem; }
-
-        /* Modal */
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; }
-        .modal-overlay.show { display: flex; }
-        .modal-content { background: var(--card); border-radius: 16px; width: 100%; max-width: 500px; box-shadow: 0 25px 50px rgba(0,0,0,0.15); animation: modalIn 0.2s ease; }
-        @keyframes modalIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); }
-        .modal-header h2 { font-size: 1.1rem; font-weight: 800; }
-        .modal-close { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--text-light); }
-        .modal-body { padding: 1.5rem; }
-        .modal-footer { display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1rem 1.5rem; border-top: 1px solid var(--border); }
-        .form-group { margin-bottom: 1rem; }
-        .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text-light); }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; height: 42px; border-radius: 10px; border: 1px solid var(--border); padding: 0 0.75rem; font-family: inherit; font-size: 0.9rem; background: var(--bg); color: var(--text); }
-        .form-group textarea { height: 80px; padding: 0.75rem; resize: vertical; }
-
+        .btn-icon-sm { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-xs); padding: 0.3rem 0.5rem; cursor: pointer; font-size: 0.8rem; transition: all var(--transition-fast); }
+        .btn-icon-sm:hover { background: var(--secondary-light); }
+        .btn-icon-sm.danger:hover { background: var(--danger-light); color: var(--danger); }
+        .badge-overdue { color: var(--danger); font-weight: 600; }
         .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
         .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); padding: 0.5rem 1rem; z-index: 90; justify-content: space-around; }
         .bottom-nav a { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-light); text-decoration: none; font-size: 0.65rem; font-weight: 500; }
         .bottom-nav a.active { color: var(--primary); }
         .bottom-nav a svg { width: 22px; height: 22px; }
-
-        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #16A34A; color: white; padding: 0.75rem 1.5rem; border-radius: 12px; z-index: 9999; font-weight: 600; animation: toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards; }
-        @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(-20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-        @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateX(-50%) translateY(-20px); } }
-
         @media (max-width: 1024px) { :root { --sidebar-w: 72px; } .sidebar { padding: 1rem 0.5rem; } .sidebar .logo { font-size: 1rem; text-align: center; } .sidebar .label, .sidebar .logo span { display: none; } .sidebar a { justify-content: center; padding: 0.5rem; } }
-        @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 1rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } .project-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 0.75rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } .project-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
     <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
-<aside class="sidebar" id="sidebar">
-    <div class="logo"><span>📋 Nivora</span></div>
-    <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="label">لوحة القيادة</span></a>
-    <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg><span class="label">المهام</span></a>
-    <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">المشاريع</span></a>
-    <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg><span class="label">Kanban</span></a>
-    <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">Gantt</span></a>
-    <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
-    <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
-    <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg><span class="label">Workflows</span></a>
-    <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">القوالب</span></a>
-    <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg><span class="label">الأرشيف</span></a>
-    <a href="chat.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="label">المحادثة</span></a>
-    <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
-    <a href="teams.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">فرق العمل</span></a>
-</aside>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="logo"><span>📋 Nivora</span></div>
+        <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="label">لوحة القيادة</span></a>
+        <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg><span class="label">المهام</span></a>
+        <a href="projects.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">المشاريع</span></a>
+        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg><span class="label">Kanban</span></a>
+        <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">Gantt</span></a>
+        <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
+        <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
+        <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg><span class="label">Workflows</span></a>
+        <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">القوالب</span></a>
+        <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg><span class="label">الأرشيف</span></a>
+        <a href="chat.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="label">المحادثة</span></a>
+        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
+        <a href="teams.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">فرق العمل</span></a>
+    </aside>
 
     <main class="main">
         <div class="topbar">
-            <h1>📁 المشاريع</h1>
-            <div style="display:flex;gap:0.5rem;">
-                <!-- أيقونة المستخدم في الـ Topbar -->
-<div style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;" onclick="window.location.href='profile.html'">
-    <div id="topAvatar" style="width:32px;height:32px;border-radius:50%;background:#E2E8F0;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:#64748B;overflow:hidden;"></div>
-    <span id="topUsername" style="font-size:0.8rem;font-weight:600;"></span>
-</div>
-                <button class="btn btn-primary" onclick="openCreateModal()">➕ مشروع جديد</button>
-                <button class="btn btn-outline" onclick="toggleLang()" id="langBtn" style="height:36px;">🌐 EN</button>
-                <button class="btn btn-outline" onclick="toggleDark()" id="darkBtn" style="height:36px;">🌙</button>
-                <button class="btn btn-outline" onclick="logout()" style="height:36px;">خروج</button>
+            <div><h1>المشاريع</h1></div>
+            <div style="display:flex;gap:0.5rem;align-items:center;">
+                <div style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;" onclick="window.location.href='profile.html'">
+                    <div id="topAvatar" style="width:32px;height:32px;border-radius:50%;background:var(--secondary-light);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:var(--text-light);overflow:hidden;"></div>
+                    <span id="topUsername" style="font-size:0.8rem;font-weight:600;"></span>
+                </div>
+                <button class="btn btn-primary" onclick="openCreateModal()">+ مشروع جديد</button>
+                <button class="btn btn-ghost btn-icon" onclick="toggleDark()" id="darkBtn" style="width:36px;height:36px;">🌙</button>
+                <button class="btn btn-outline btn-sm" onclick="logout()">خروج</button>
             </div>
         </div>
 
+        <div class="view-nav">
+            <a href="tasks.html">📋 قائمة</a>
+            <a href="kanban.html">📌 أعمدة</a>
+            <a href="gantt.html">📈 Gantt</a>
+            <a href="calendar.html">📅 تقويم</a>
+            <a href="reports.html">📉 إحصائيات</a>
+        </div>
+
         <div class="toolbar">
-            <input type="text" id="searchInput" placeholder="🔍 بحث عن مشروع..." oninput="filterProjects()">
-            <select id="statusFilter" onchange="filterProjects()">
+            <input type="text" id="searchInput" placeholder="🔍 بحث عن مشروع..." oninput="debouncedRender()">
+            <select id="statusFilter" onchange="renderProjects()">
                 <option value="">الكل</option>
-                <option value="active">🟢 نشط</option>
-                <option value="completed">✅ مكتمل</option>
-                <option value="archived">📦 مؤرشف</option>
+                <option value="active">نشط</option>
+                <option value="completed">مكتمل</option>
+                <option value="archived">مؤرشف</option>
             </select>
         </div>
 
-        <div class="project-grid" id="projectGrid">
-            <div class="spinner"></div>
-        </div>
+        <div class="project-grid" id="projectGrid"></div>
     </main>
 
     <nav class="bottom-nav">
@@ -130,177 +113,118 @@
         <a href="#" onclick="openSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>المزيد</a>
     </nav>
 
-    <!-- Modal إنشاء مشروع -->
-    <div class="modal-overlay" id="createModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>➕ مشروع جديد</h2>
-                <button class="modal-close" onclick="closeCreateModal()">✕</button>
-            </div>
+    <div class="modal-overlay" id="createModal" onclick="if(event.target===this)closeCreateModal()">
+        <div class="modal">
+            <div class="modal-header"><h3>+ مشروع جديد</h3><button class="modal-close" onclick="closeCreateModal()">✕</button></div>
             <div class="modal-body">
-                <div class="form-group">
-                    <label>اسم المشروع *</label>
-                    <input type="text" id="projectName" placeholder="أدخل اسم المشروع">
-                </div>
-                <div class="form-group">
-                    <label>الوصف</label>
-                    <textarea id="projectDesc" placeholder="وصف مختصر للمشروع"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>اللون</label>
-                    <select id="projectColor">
-                        <option value="#2563EB">🔵 أزرق</option>
-                        <option value="#16A34A">🟢 أخضر</option>
-                        <option value="#DC2626">🔴 أحمر</option>
-                        <option value="#D97706">🟠 برتقالي</option>
-                        <option value="#7C3AED">🟣 بنفسجي</option>
-                    </select>
-                </div>
+                <div class="form-group"><label>اسم المشروع *</label><input type="text" class="input" id="projectName" placeholder="أدخل اسم المشروع"></div>
+                <div class="form-group"><label>الوصف</label><textarea class="textarea" id="projectDesc" placeholder="وصف مختصر للمشروع"></textarea></div>
+                <div class="form-group"><label>اللون</label><select class="select" id="projectColor">
+                    <option value="#2563EB">أزرق</option>
+                    <option value="#16A34A">أخضر</option>
+                    <option value="#DC2626">أحمر</option>
+                    <option value="#D97706">برتقالي</option>
+                    <option value="#7C3AED">بنفسجي</option>
+                </select></div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-outline" onclick="closeCreateModal()">إلغاء</button>
-                <button class="btn btn-primary" onclick="createProject()">✅ إنشاء</button>
+                <button class="btn btn-primary" id="createBtn" onclick="createProject()">إنشاء</button>
             </div>
         </div>
     </div>
-    <script src="js/i18n.js"></script>
+
+    <script src="js/components.js"></script>
     <script>
         function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
         function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
-
         const API_BASE = 'https://nivora-t9ov.onrender.com/api';
         const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
         if (!token) window.location.href = 'login.html';
-
         function logout() { localStorage.clear(); window.location.href = 'login.html'; }
-        function toggleDark() { document.body.classList.toggle('dark'); const isDark = document.body.classList.contains('dark'); localStorage.setItem('dark', isDark); document.getElementById('darkBtn').textContent = isDark ? '☀️' : '🌙'; }
+        function toggleDark() { document.body.classList.toggle('dark'); const d = document.body.classList.contains('dark'); localStorage.setItem('dark', d); document.getElementById('darkBtn').textContent = d ? '☀️' : '🌙'; }
         if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
-
-        function showToast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 3000); }
-
         let allProjects = [];
+        const debouncedRender = debounce(() => renderProjects(), 200);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const avatar = document.getElementById('topAvatar');
+            const username = document.getElementById('topUsername');
+            if (username) username.textContent = user.fullName || user.username || 'مستخدم';
+            if (avatar) {
+                if (user.avatar) avatar.innerHTML = `<img src="${user.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                else avatar.textContent = getInitials(user.fullName || user.username);
+            }
+        });
 
         async function loadProjects() {
+            showSkeleton('projectGrid', 'card', 4);
             try {
                 const res = await fetch(`${API_BASE}/projects`, { headers: { 'Authorization': `Bearer ${token}` } });
                 allProjects = await res.json();
-                renderProjects(allProjects);
+                renderProjects();
             } catch (err) {
-                document.getElementById('projectGrid').innerHTML = '<p style="text-align:center;color:#DC2626;">خطأ في تحميل المشاريع</p>';
+                showError('projectGrid', 'تعذر تحميل المشاريع', loadProjects);
             }
         }
 
-        function renderProjects(projects) {
+        function renderProjects() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const status = document.getElementById('statusFilter').value;
+            let projects = allProjects;
+            if (search) projects = projects.filter(p => p.name.toLowerCase().includes(search));
+            if (status) projects = projects.filter(p => p.status === status);
             const grid = document.getElementById('projectGrid');
-            if (!projects || projects.length === 0) {
-                grid.innerHTML = '<div class="card" style="text-align:center;padding:3rem;grid-column:1/-1;"><div style="font-size:3rem;margin-bottom:1rem;">📁</div><p>لا توجد مشاريع</p><p style="color:var(--text-light);font-size:0.85rem;">أنشئ مشروعك الأول</p></div>';
+            if (projects.length === 0) {
+                grid.innerHTML = `<div class="card" style="grid-column:1/-1;"><div class="empty-state"><div class="empty-icon">📁</div><h4>لا توجد مشاريع</h4><p>أنشئ مشروعك الأول وابدأ بتنظيم عمل فريقك</p><button class="btn btn-primary" onclick="openCreateModal()">+ إنشاء مشروع</button></div></div>`;
                 return;
             }
-
             grid.innerHTML = projects.map(p => {
                 const percent = p.completionRate || 0;
-                const progressColor = percent >= 80 ? '#16A34A' : percent >= 40 ? '#2563EB' : '#D97706';
-                return `
-                <div class="card project-card" style="border-right-color:${p.color || '#2563EB'};" onclick="openProject('${p._id}')">
+                const progressColor = percent >= 80 ? 'var(--success)' : percent >= 40 ? 'var(--primary)' : 'var(--warning)';
+                return `<div class="card project-card" style="border-right-color:${p.color || 'var(--primary)'};" onclick="openProject('${p._id}')">
                     <div class="actions">
-                        <button onclick="event.stopPropagation();window.location.href='project-settings.html?id=${p._id}'" title="إعدادات">⚙️</button>
-                        <button onclick="event.stopPropagation();deleteProject('${p._id}')" title="حذف">🗑️</button>
+                        <button class="btn-icon-sm" onclick="event.stopPropagation();window.location.href='project-settings.html?id=${p._id}'" title="إعدادات">⚙️</button>
+                        <button class="btn-icon-sm danger" onclick="event.stopPropagation();deleteProject('${p._id}')" title="حذف">🗑️</button>
                     </div>
                     <h3>${p.name}</h3>
                     ${p.description ? `<p class="desc">${p.description}</p>` : ''}
                     <div class="progress"><div class="progress-bar" style="width:${percent}%;background:${progressColor};"></div></div>
                     <div class="stats">
-                        <span>✅ ${p.doneCount || 0}/${p.taskCount || 0} مكتملة</span>
+                        <span>✅ ${p.doneCount || 0}/${p.taskCount || 0}</span>
                         <span>📊 ${percent}%</span>
-                        ${p.inProgressCount > 0 ? `<span>🔄 ${p.inProgressCount} قيد التنفيذ</span>` : ''}
-                        ${p.overdueCount > 0 ? `<span style="color:#DC2626;">⏰ ${p.overdueCount} متأخرة</span>` : ''}
+                        ${p.inProgressCount > 0 ? `<span>🔄 ${p.inProgressCount}</span>` : ''}
+                        ${p.overdueCount > 0 ? `<span class="badge-overdue">⏰ ${p.overdueCount}</span>` : ''}
                     </div>
                 </div>`;
             }).join('');
         }
 
-        function filterProjects() {
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            const status = document.getElementById('statusFilter').value;
-            
-            let filtered = allProjects;
-            if (search) filtered = filtered.filter(p => p.name.toLowerCase().includes(search));
-            if (status) filtered = filtered.filter(p => p.status === status);
-            
-            renderProjects(filtered);
-        }
-
-        function openProject(id) {
-            window.location.href = `kanban.html?projectId=${id}`;
-        }
+        function openProject(id) { window.location.href = `kanban.html?projectId=${id}`; }
 
         async function createProject() {
             const name = document.getElementById('projectName').value.trim();
-            if (!name) return alert('الاسم مطلوب');
-
-            const body = {
-                name,
-                description: document.getElementById('projectDesc').value.trim(),
-                color: document.getElementById('projectColor').value
-            };
-
+            if (!name) { showToast('الاسم مطلوب', 'warning'); return; }
+            const btn = document.getElementById('createBtn');
+            setButtonLoading(btn, true, 'جاري الإنشاء...');
+            const body = { name, description: document.getElementById('projectDesc').value.trim(), color: document.getElementById('projectColor').value };
             try {
-                const res = await fetch(`${API_BASE}/projects`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify(body)
-                });
-                if (res.ok) {
-                    closeCreateModal();
-                    showToast('✅ تم إنشاء المشروع');
-                    loadProjects();
-                } else {
-                    const data = await res.json();
-                    alert(data.error);
-                }
-            } catch (err) {
-                alert('خطأ في الاتصال');
-            }
+                const res = await fetch(`${API_BASE}/projects`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(body) });
+                if (res.ok) { closeCreateModal(); showToast('تم إنشاء المشروع', 'success'); loadProjects(); }
+                else { const d = await res.json(); showToast(d.error || 'خطأ', 'error'); }
+            } catch (err) { showToast('خطأ في الاتصال', 'error'); }
+            setButtonLoading(btn, false);
         }
 
-        async function deleteProject(id) {
-            if (!confirm('حذف المشروع وجميع مهامه؟')) return;
-            await fetch(`${API_BASE}/projects/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-            loadProjects();
+        function deleteProject(id) {
+            confirmDialog({ title: 'حذف المشروع', message: 'سيتم حذف المشروع وجميع مهامه. هل أنت متأكد؟', confirmText: 'حذف نهائي', danger: true, onConfirm: async () => { await fetch(`${API_BASE}/projects/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); showToast('تم حذف المشروع', 'success'); loadProjects(); } });
         }
 
-        function openCreateModal() {
-            document.getElementById('createModal').classList.add('show');
-            document.getElementById('projectName').focus();
-        }
-        function closeCreateModal() {
-            document.getElementById('createModal').classList.remove('show');
-            document.getElementById('projectName').value = '';
-            document.getElementById('projectDesc').value = '';
-        }
+        function openCreateModal() { document.getElementById('createModal').classList.add('show'); document.getElementById('projectName').focus(); }
+        function closeCreateModal() { document.getElementById('createModal').classList.remove('show'); document.getElementById('projectName').value = ''; document.getElementById('projectDesc').value = ''; }
 
-        document.getElementById('createModal').addEventListener('click', function(e) {
-            if (e.target === this) closeCreateModal();
-        });
-document.addEventListener('DOMContentLoaded', () => {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const avatar = document.getElementById('topAvatar');
-    const username = document.getElementById('topUsername');
-    
-    if (username) {
-        username.textContent = user.fullName || user.username || 'مستخدم';
-    }
-    
-    if (avatar) {
-        if (user.avatar) {
-            avatar.innerHTML = `<img src="${user.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-        } else {
-            avatar.textContent = (user.fullName || user.username || 'م')[0];
-        }
-    }
-});
         loadProjects();
     </script>
 </body>
 </html>
-

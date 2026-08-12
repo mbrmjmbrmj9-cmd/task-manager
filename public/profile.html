@@ -10,118 +10,93 @@
     <link rel="stylesheet" href="css/style.css">
     <style>
         :root { --sidebar-w: 240px; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+        body { min-height: 100vh; }
         .sidebar { width: var(--sidebar-w); background: var(--card); border-left: 1px solid var(--border); padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 100; overflow-y: auto; display: flex; flex-direction: column; gap: 0.25rem; }
         .sidebar .logo { font-size: 1.3rem; font-weight: 800; padding: 0 0.75rem; margin-bottom: 1rem; color: var(--primary); }
         .sidebar a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 0.9rem; white-space: nowrap; }
-        .sidebar a:hover, .sidebar a.active { background: #EFF6FF; color: var(--primary); }
+        .sidebar a:hover, .sidebar a.active { background: var(--primary-light); color: var(--primary); }
         .sidebar a svg { width: 20px; height: 20px; flex-shrink: 0; }
         .sidebar .label { transition: opacity 0.2s; }
-        .main { margin-right: var(--sidebar-w); padding: 2rem; min-height: 100vh; }
+        .main { margin-right: var(--sidebar-w); padding: 1.5rem; min-height: 100vh; }
         .back-link { display: inline-block; color: var(--primary); text-decoration: none; font-size: 0.9rem; margin-bottom: 1.5rem; }
         .page-title { font-size: 1.5rem; font-weight: 800; margin-bottom: 1.5rem; }
-
         .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-        .card { padding: 1.5rem; }
-        .card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
-
+        .card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; }
         .avatar-section { text-align: center; }
-        .avatar-large { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin-bottom: 0.5rem; background: #E2E8F0; cursor: pointer; }
+        .avatar-large { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin-bottom: 0.5rem; background: var(--secondary-light); cursor: pointer; }
         .avatar-actions { display: flex; gap: 0.5rem; justify-content: center; margin-top: 0.75rem; flex-wrap: wrap; }
-
-        .form-group { margin-bottom: 1rem; }
-        .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-light); margin-bottom: 0.35rem; }
-        .form-group input { width: 100%; height: 42px; border-radius: 10px; border: 1px solid var(--border); padding: 0 0.75rem; font-family: inherit; font-size: 0.9rem; background: var(--bg); color: var(--text); }
-        .form-group input:focus { outline: none; border-color: var(--primary); }
-
         .security-log { max-height: 300px; overflow-y: auto; }
-        .log-item { padding: 0.6rem 0.7rem; border-radius: 8px; font-size: 0.8rem; margin-bottom: 0.35rem; background: #F8FAFC; }
-        body.dark .log-item { background: #0F172A; }
+        .log-item { padding: 0.6rem 0.7rem; border-radius: var(--radius-sm); font-size: 0.8rem; margin-bottom: 0.35rem; background: var(--secondary-light); }
         .log-item .log-action { font-weight: 700; }
-        .log-item .log-time { font-size: 0.7rem; color: var(--text-light); display: block; margin-top: 0.15rem; }
-
-        .msg { text-align: center; margin-top: 0.5rem; font-size: 0.85rem; display: none; padding: 0.5rem; border-radius: 8px; }
-        .msg.success { display: block; background: #DCFCE7; color: #16A34A; }
-        .msg.error { display: block; background: #FEE2E2; color: #DC2626; }
-
+        .log-item .log-time { font-size: 0.7rem; color: var(--text-muted); display: block; margin-top: 0.15rem; }
+        .msg { text-align: center; margin-top: 0.5rem; font-size: 0.85rem; display: none; padding: 0.5rem; border-radius: var(--radius-sm); }
+        .msg.success { display: block; background: var(--success-light); color: var(--success); }
+        .msg.error { display: block; background: var(--danger-light); color: var(--danger); }
         .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; align-items: center; justify-content: center; }
         .lightbox.show { display: flex; }
-        .lightbox img { max-width: 90%; max-height: 90%; border-radius: 16px; }
+        .lightbox img { max-width: 90%; max-height: 90%; border-radius: var(--radius); }
         .lightbox .close { position: absolute; top: 20px; left: 20px; color: #fff; font-size: 2rem; cursor: pointer; }
-
         .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
         .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); padding: 0.5rem 1rem; z-index: 90; justify-content: space-around; }
         .bottom-nav a { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-light); text-decoration: none; font-size: 0.65rem; font-weight: 500; }
         .bottom-nav a.active { color: var(--primary); }
         .bottom-nav a svg { width: 22px; height: 22px; }
-
         @media (max-width: 1024px) { :root { --sidebar-w: 72px; } .sidebar { padding: 1rem 0.5rem; } .sidebar .logo { font-size: 1rem; text-align: center; } .sidebar .label, .sidebar .logo span { display: none; } .sidebar a { justify-content: center; padding: 0.5rem; } }
-        @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 1rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } .profile-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 0.75rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } .profile-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
-    <button class="btn btn-outline" onclick="toggleLang()" id="langBtn" style="height:36px;">🌐 EN</button>
     <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
     <div class="lightbox" id="lightbox" onclick="this.classList.remove('show')"><span class="close">&times;</span><img id="lightboxImg" src=""></div>
 
-    <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
-<aside class="sidebar" id="sidebar">
-    <div class="logo"><span>📋 Nivora</span></div>
-    <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="label">لوحة القيادة</span></a>
-    <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg><span class="label">المهام</span></a>
-    <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">المشاريع</span></a>
-    <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg><span class="label">Kanban</span></a>
-    <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">Gantt</span></a>
-    <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
-    <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
-    <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg><span class="label">Workflows</span></a>
-    <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">القوالب</span></a>
-    <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg><span class="label">الأرشيف</span></a>
-    <a href="chat.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="label">المحادثة</span></a>
-    <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
-    <a href="teams.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">فرق العمل</span></a>
-</aside>
+    <aside class="sidebar" id="sidebar">
+        <div class="logo"><span>📋 Nivora</span></div>
+        <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="label">لوحة القيادة</span></a>
+        <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg><span class="label">المهام</span></a>
+        <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">المشاريع</span></a>
+        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg><span class="label">Kanban</span></a>
+        <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">Gantt</span></a>
+        <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
+        <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
+        <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg><span class="label">Workflows</span></a>
+        <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">القوالب</span></a>
+        <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg><span class="label">الأرشيف</span></a>
+        <a href="chat.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="label">المحادثة</span></a>
+        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
+        <a href="teams.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">فرق العمل</span></a>
+    </aside>
 
     <main class="main">
         <a href="dashboard.html" class="back-link">← العودة للرئيسية</a>
-        <h1 class="page-title">👤 الملف الشخصي</h1>
-
+        <h1 class="page-title">الملف الشخصي</h1>
         <div class="profile-grid">
-            <!-- الصورة الرمزية -->
             <div class="card avatar-section">
-                <h3>📷 الصورة الشخصية</h3>
-                <img id="avatarLarge" class="avatar-large" src="" onclick="openLightbox(this.src)" title="اضغط للتكبير">
-                <p style="font-size:0.8rem;color:var(--text-light);">اضغط على الصورة للتكبير</p>
+                <h3>الصورة الشخصية</h3>
+                <img id="avatarLarge" class="avatar-large" src="" onclick="openLightbox(this.src)">
+                <p style="font-size:0.8rem;color:var(--text-muted);">اضغط للتكبير</p>
                 <div class="avatar-actions">
                     <input type="file" id="avatarInput" style="display:none;" accept="image/*" onchange="uploadAvatar()">
-                    <button class="btn btn-primary" onclick="document.getElementById('avatarInput').click()" style="height:34px;font-size:0.8rem;">📷 تغيير</button>
-                    <button class="btn btn-outline" onclick="removeAvatar()" style="height:34px;font-size:0.8rem;">🗑️ إزالة</button>
+                    <button class="btn btn-primary btn-sm" onclick="document.getElementById('avatarInput').click()">📷 تغيير</button>
+                    <button class="btn btn-outline btn-sm" onclick="removeAvatar()">🗑️ إزالة</button>
                 </div>
             </div>
-
-            <!-- تعديل البيانات -->
             <div class="card">
-                <h3>✏️ تعديل البيانات</h3>
-                <div class="form-group"><label>الاسم الكامل</label><input type="text" id="fullName" onchange="saveProfile()"></div>
-                <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="email" onchange="saveProfile()"></div>
+                <h3>تعديل البيانات</h3>
+                <div class="form-group"><label>الاسم الكامل</label><input type="text" class="input" id="fullName" onchange="saveProfile()"></div>
+                <div class="form-group"><label>البريد الإلكتروني</label><input type="email" class="input" id="email" onchange="saveProfile()"></div>
                 <p class="msg" id="profileMsg"></p>
             </div>
-
-            <!-- تغيير كلمة المرور -->
             <div class="card">
-                <h3>🔒 تغيير كلمة المرور</h3>
-                <div class="form-group"><label>كلمة المرور الحالية</label><input type="password" id="currentPassword" placeholder="أدخل كلمة المرور الحالية"></div>
-                <div class="form-group"><label>كلمة المرور الجديدة</label><input type="password" id="newPassword" placeholder="8 أحرف على الأقل"></div>
-                <div class="form-group"><label>تأكيد كلمة المرور</label><input type="password" id="confirmPassword" placeholder="أعد كتابة كلمة المرور"></div>
-                <button class="btn btn-primary" onclick="changePassword()" style="width:100%;">💾 تغيير كلمة المرور</button>
+                <h3>تغيير كلمة المرور</h3>
+                <div class="form-group"><label>الحالية</label><input type="password" class="input" id="currentPassword"></div>
+                <div class="form-group"><label>الجديدة</label><input type="password" class="input" id="newPassword"></div>
+                <div class="form-group"><label>التأكيد</label><input type="password" class="input" id="confirmPassword"></div>
+                <button class="btn btn-primary" onclick="changePassword()" style="width:100%;">تغيير</button>
                 <p class="msg" id="passwordMsg"></p>
             </div>
-
-            <!-- سجل الأمان -->
             <div class="card">
-                <h3>🔐 سجل الأمان</h3>
-                <div class="security-log" id="securityLog"><p style="color:var(--text-light);text-align:center;">جارٍ التحميل...</p></div>
+                <h3>سجل الأمان</h3>
+                <div class="security-log" id="securityLog"><p style="color:var(--text-muted);text-align:center;">جارٍ التحميل...</p></div>
             </div>
         </div>
     </main>
@@ -133,26 +108,21 @@
         <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>فريق</a>
         <a href="#" onclick="openSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>المزيد</a>
     </nav>
-    <script src="js/i18n.js"></script>
+
+    <script src="js/components.js"></script>
     <script>
         function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
         function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
         function openLightbox(src) { document.getElementById('lightboxImg').src = src; document.getElementById('lightbox').classList.add('show'); }
-
         const API = 'https://nivora-t9ov.onrender.com/api';
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'login.html';
         let user = JSON.parse(localStorage.getItem('user') || '{}');
 
-        // تحميل بيانات المستخدم
         async function loadProfile() {
             try {
                 const res = await fetch(`${API}/auth/profile`, { headers: { 'Authorization': `Bearer ${token}` } });
-                if (res.ok) {
-                    const data = await res.json();
-                    user = data;
-                    localStorage.setItem('user', JSON.stringify(data));
-                }
+                if (res.ok) { user = await res.json(); localStorage.setItem('user', JSON.stringify(user)); }
             } catch (err) {}
             document.getElementById('fullName').value = user.fullName || '';
             document.getElementById('email').value = user.email || '';
@@ -160,37 +130,34 @@
             loadSecurityLog();
         }
 
-        // تعديل البيانات
         async function saveProfile() {
             const fullName = document.getElementById('fullName').value.trim();
             const email = document.getElementById('email').value.trim();
+            const msg = document.getElementById('profileMsg');
             try {
                 const res = await fetch(`${API}/auth/profile`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ fullName, email }) });
-                const msg = document.getElementById('profileMsg');
-                if (res.ok) { msg.className = 'msg success'; msg.textContent = '✅ تم حفظ التغييرات'; user.fullName = fullName; user.email = email; localStorage.setItem('user', JSON.stringify(user)); }
-                else { const d = await res.json(); msg.className = 'msg error'; msg.textContent = '❌ ' + (d.error || 'خطأ'); }
+                if (res.ok) { msg.className = 'msg success'; msg.textContent = 'تم الحفظ'; user.fullName = fullName; user.email = email; localStorage.setItem('user', JSON.stringify(user)); }
+                else { const d = await res.json(); msg.className = 'msg error'; msg.textContent = d.error || 'خطأ'; }
                 setTimeout(() => msg.className = 'msg', 3000);
-            } catch (err) {}
+            } catch (err) { showToast('خطأ', 'error'); }
         }
 
-        // تغيير كلمة المرور
         async function changePassword() {
             const current = document.getElementById('currentPassword').value;
             const newP = document.getElementById('newPassword').value;
             const confirm = document.getElementById('confirmPassword').value;
             const msg = document.getElementById('passwordMsg');
-            if (!current || !newP || !confirm) { msg.className = 'msg error'; msg.textContent = '❌ جميع الحقول مطلوبة'; return; }
-            if (newP !== confirm) { msg.className = 'msg error'; msg.textContent = '❌ كلمتا المرور غير متطابقتين'; return; }
-            if (newP.length < 8) { msg.className = 'msg error'; msg.textContent = '❌ 8 أحرف على الأقل'; return; }
+            if (!current || !newP || !confirm) { msg.className = 'msg error'; msg.textContent = 'جميع الحقول مطلوبة'; return; }
+            if (newP !== confirm) { msg.className = 'msg error'; msg.textContent = 'غير متطابقتين'; return; }
+            if (newP.length < 8) { msg.className = 'msg error'; msg.textContent = '8 أحرف على الأقل'; return; }
             try {
                 const res = await fetch(`${API}/auth/change-password`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ currentPassword: current, newPassword: newP }) });
-                if (res.ok) { msg.className = 'msg success'; msg.textContent = '✅ تم تغيير كلمة المرور بنجاح'; document.getElementById('currentPassword').value = ''; document.getElementById('newPassword').value = ''; document.getElementById('confirmPassword').value = ''; }
-                else { const d = await res.json(); msg.className = 'msg error'; msg.textContent = '❌ ' + (d.error || 'خطأ'); }
+                if (res.ok) { msg.className = 'msg success'; msg.textContent = 'تم التغيير'; document.getElementById('currentPassword').value = ''; document.getElementById('newPassword').value = ''; document.getElementById('confirmPassword').value = ''; }
+                else { const d = await res.json(); msg.className = 'msg error'; msg.textContent = d.error || 'خطأ'; }
                 setTimeout(() => msg.className = 'msg', 3000);
-            } catch (err) { msg.className = 'msg error'; msg.textContent = '❌ خطأ في الاتصال'; }
+            } catch (err) { showToast('خطأ في الاتصال', 'error'); }
         }
 
-        // رفع الصورة
         async function uploadAvatar() {
             const file = document.getElementById('avatarInput').files[0]; if (!file) return;
             const fd = new FormData(); fd.append('file', file);
@@ -200,29 +167,30 @@
                 await fetch(`${API}/auth/avatar`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ avatar: uploadData.url }) });
                 user.avatar = uploadData.url; localStorage.setItem('user', JSON.stringify(user));
                 document.getElementById('avatarLarge').src = uploadData.url;
+                showToast('تم التحديث', 'success');
             }
         }
 
-        async function removeAvatar() {
-            if (!confirm('إزالة الصورة؟')) return;
-            await fetch(`${API}/auth/avatar`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ avatar: '' }) });
-            user.avatar = ''; localStorage.setItem('user', JSON.stringify(user));
-            document.getElementById('avatarLarge').src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="35" r="20" fill="%2394A3B8"/><ellipse cx="50" cy="80" rx="35" ry="25" fill="%2394A3B8"/></svg>';
+        function removeAvatar() {
+            confirmDialog({ title: 'إزالة الصورة', message: 'إزالة الصورة الشخصية؟', confirmText: 'إزالة', danger: true, onConfirm: async () => {
+                await fetch(`${API}/auth/avatar`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ avatar: '' }) });
+                user.avatar = ''; localStorage.setItem('user', JSON.stringify(user));
+                document.getElementById('avatarLarge').src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="35" r="20" fill="%2394A3B8"/><ellipse cx="50" cy="80" rx="35" ry="25" fill="%2394A3B8"/></svg>';
+                showToast('تمت الإزالة', 'success');
+            } });
         }
 
-        // سجل الأمان
         async function loadSecurityLog() {
             try {
                 const res = await fetch(`${API}/auth/security-log`, { headers: { 'Authorization': `Bearer ${token}` } });
                 const logs = await res.json();
-                const container = document.getElementById('securityLog');
-                if (!logs || logs.length === 0) { container.innerHTML = '<p style="color:var(--text-light);text-align:center;">لا يوجد نشاط</p>'; return; }
-                container.innerHTML = logs.reverse().map(l => `<div class="log-item"><span class="log-action">${l.action === 'login_success' ? '✅ تسجيل دخول' : l.action === 'login_failed' ? '❌ محاولة فاشلة' : l.action === 'password_changed' ? '🔒 تغيير كلمة المرور' : l.action === 'password_reset' ? '🔄 استعادة كلمة المرور' : l.action}</span><span class="log-time">${new Date(l.timestamp || l.createdAt).toLocaleString('ar-SA')} - ${l.ip || ''} ${l.device ? '· ' + l.device.substring(0, 30) : ''}</span></div>`).join('');
-            } catch (err) { document.getElementById('securityLog').innerHTML = '<p style="color:var(--text-light);">تعذر تحميل السجل</p>'; }
+                const c = document.getElementById('securityLog');
+                if (!logs || logs.length === 0) { c.innerHTML = '<p style="color:var(--text-muted);">لا يوجد نشاط</p>'; return; }
+                c.innerHTML = logs.reverse().map(l => `<div class="log-item"><span class="log-action">${l.action === 'login_success' ? '✅ دخول' : l.action === 'login_failed' ? '❌ فشل' : l.action === 'password_changed' ? '🔒 تغيير' : l.action === 'password_reset' ? '🔄 استعادة' : l.action}</span><span class="log-time">${formatDateTime(l.timestamp || l.createdAt)}</span></div>`).join('');
+            } catch (err) { document.getElementById('securityLog').innerHTML = '<p style="color:var(--text-muted);">تعذر التحميل</p>'; }
         }
 
         loadProfile();
     </script>
 </body>
 </html>
-

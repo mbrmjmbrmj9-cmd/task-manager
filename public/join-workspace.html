@@ -7,52 +7,79 @@
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#2563EB">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
     <style>
-        :root { --primary: #2563EB; --bg: #F8FAFC; --card: #FFFFFF; --text: #1E293B; --text-light: #64748B; --border: #E2E8F0; }
-        body.dark { --bg: #0F172A; --card: #1E293B; --text: #F8FAFC; --text-light: #94A3B8; --border: #334155; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; transition: background 0.3s; }
-        .container { width: 100%; max-width: 440px; }
-        .back { display: inline-flex; align-items: center; gap: 0.35rem; background: var(--card); padding: 0.5rem 1rem; border-radius: 20px; color: var(--text-light); text-decoration: none; font-size: 0.85rem; margin-bottom: 1.5rem; border: 1px solid var(--border); }
-        .card { background: var(--card); border-radius: 24px; padding: 2.5rem 2rem; box-shadow: 0 20px 50px rgba(0,0,0,0.06); border: 1px solid var(--border); }
-        .card h1 { font-size: 1.3rem; font-weight: 800; text-align: center; margin-bottom: 0.3rem; }
-        .card .sub { text-align: center; color: var(--text-light); font-size: 0.85rem; margin-bottom: 1.5rem; }
-        .input-group { margin-bottom: 1rem; }
-        .input-group input { width: 100%; height: 48px; padding: 0 1rem; border-radius: 12px; border: 1px solid var(--border); font-family: inherit; font-size: 1.1rem; text-align: center; letter-spacing: 4px; font-weight: 700; background: var(--bg); color: var(--text); }
-        .input-group input:focus { outline: none; border-color: var(--primary); }
-        .btn-full { width: 100%; height: 48px; border-radius: 12px; border: none; cursor: pointer; font-family: inherit; font-weight: 700; font-size: 1rem; transition: all 0.2s; }
-        .btn-primary { background: var(--primary); color: #fff; }
-        .btn-primary:hover { background: #1D4ED8; }
-        .dark-toggle { position: fixed; top: 1rem; left: 1rem; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 0.7rem; cursor: pointer; font-size: 1.1rem; }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; position: relative; }
+        body::before { content: ''; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 20% 50%, var(--primary-light) 0%, transparent 50%), radial-gradient(circle at 80% 80%, var(--primary-light) 0%, transparent 50%); opacity: 0.5; z-index: -1; }
+        .container { width: 100%; max-width: 460px; }
+        .back { display: inline-flex; align-items: center; gap: 0.4rem; background: var(--card); padding: 0.55rem 1.1rem; border-radius: var(--radius-full); color: var(--text-light); text-decoration: none; font-size: 0.88rem; margin-bottom: 1.75rem; border: 1px solid var(--border); transition: all var(--transition); }
+        .back:hover { border-color: var(--primary); color: var(--primary); }
+        .auth-logo { text-align: center; margin-bottom: 2rem; }
+        .auth-logo .logo-icon { width: 60px; height: 60px; border-radius: var(--radius-lg); background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 800; margin: 0 auto 1rem; box-shadow: var(--shadow-md); }
+        .auth-logo h1 { font-size: 1.7rem; font-weight: 800; color: var(--primary); }
+        .card { background: var(--card); border-radius: var(--radius-xl); padding: 2.5rem 2rem; box-shadow: var(--shadow-xl); border: 1px solid var(--border); text-align: center; }
+        .card .join-icon { width: 72px; height: 72px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 1.25rem; }
+        .card h1 { font-size: 1.4rem; font-weight: 800; margin-bottom: 0.5rem; }
+        .card .sub { color: var(--text-light); font-size: 0.9rem; margin-bottom: 2rem; line-height: 1.7; }
+        .invite-input { width: 100%; height: 56px; border-radius: var(--radius-sm); border: 2px solid var(--border); font-family: inherit; font-size: 1.3rem; text-align: center; letter-spacing: 6px; font-weight: 800; background: var(--bg); color: var(--primary); transition: all var(--transition); text-transform: uppercase; margin-bottom: 1.25rem; }
+        .invite-input:hover { border-color: var(--text-muted); }
+        .invite-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37,99,235,0.1); }
+        .invite-input::placeholder { font-size: 0.9rem; letter-spacing: 1px; font-weight: 500; color: var(--text-muted); }
+        .btn-join { width: 100%; height: 54px; border-radius: var(--radius-sm); border: none; cursor: pointer; font-family: inherit; font-weight: 700; font-size: 1.05rem; transition: all var(--transition); background: var(--primary); color: #fff; }
+        .btn-join:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 8px 25px rgba(37,99,235,0.25); }
+        .btn-join:active { transform: translateY(0); }
+        .btn-join:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .helper-text { font-size: 0.8rem; color: var(--text-muted); margin-top: 1rem; }
+        .dark-toggle { position: fixed; top: 1.2rem; left: 1.2rem; background: var(--card); border: 1px solid var(--border); border-radius: 50%; width: 42px; height: 42px; cursor: pointer; font-size: 1.2rem; z-index: 10; box-shadow: var(--shadow-sm); transition: all var(--transition); }
+        .dark-toggle:hover { transform: scale(1.05); }
     </style>
 </head>
 <body>
     <button class="dark-toggle" onclick="toggleDark()" id="darkBtn">🌙</button>
+
     <div class="container">
         <a href="workspace.html" class="back">← رجوع</a>
+
+        <div class="auth-logo">
+            <div class="logo-icon">N</div>
+            <h1>Nivora</h1>
+        </div>
+
         <div class="card">
+            <div class="join-icon">👥</div>
             <h1>الانضمام لفريق</h1>
-            <p class="sub">أدخل رمز الدعوة للانضمام إلى فريق موجود</p>
-            <div class="input-group"><input type="text" id="inviteCode" placeholder="أدخل رمز الدعوة"></div>
-            <button class="btn-full btn-primary" onclick="join()">انضمام ←</button>
+            <p class="sub">أدخل رمز الدعوة الذي حصلت عليه من مدير الفريق للانضمام إلى مساحة العمل</p>
+
+            <input type="text" id="inviteCode" class="invite-input" placeholder="أدخل الرمز" maxlength="8" autocomplete="off" oninput="this.value = this.value.toUpperCase()" onkeydown="if(event.key==='Enter') join()">
+
+            <button class="btn-join" id="joinBtn" onclick="join()">انضمام</button>
+            <p class="helper-text">الرمز مكون من 8 أحرف كبيرة</p>
         </div>
     </div>
+
+    <script src="js/components.js"></script>
     <script>
         function toggleDark() { document.body.classList.toggle('dark'); const d = document.body.classList.contains('dark'); localStorage.setItem('dark', d); document.getElementById('darkBtn').textContent = d ? '☀️' : '🌙'; }
         if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
+
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'login.html';
+
         async function join() {
-            const code = document.getElementById('inviteCode').value.trim();
-            if (!code) return alert('الرمز مطلوب');
+            const code = document.getElementById('inviteCode').value.trim().toUpperCase();
+            if (!code) { showToast('الرمز مطلوب', 'warning'); return; }
+            if (code.length < 8) { showToast('الرمز يجب أن يكون 8 أحرف', 'warning'); return; }
+            const btn = document.getElementById('joinBtn');
+            setButtonLoading(btn, true, 'جاري الانضمام...');
             try {
                 const res = await fetch('https://nivora-t9ov.onrender.com/api/workspaces/join', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ code }) });
                 const data = await res.json();
-                if (res.ok) { localStorage.setItem('workspaceId', data._id); localStorage.setItem('inviteCode', data.inviteCode); window.location.href = 'dashboard.html'; }
-                else { alert(data.error); }
-            } catch (err) { alert('خطأ في الاتصال'); }
+                if (res.ok) { localStorage.setItem('workspaceId', data._id); localStorage.setItem('inviteCode', data.inviteCode || code); showToast('تم الانضمام بنجاح', 'success'); setTimeout(() => window.location.href = 'dashboard.html', 800); }
+                else { showToast(data.error || 'رمز غير صحيح', 'error'); }
+            } catch (err) { showToast('خطأ في الاتصال', 'error'); }
+            setButtonLoading(btn, false);
         }
     </script>
 </body>
 </html>
-

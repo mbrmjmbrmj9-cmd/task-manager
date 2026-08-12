@@ -10,12 +10,11 @@
     <link rel="stylesheet" href="css/style.css">
     <style>
         :root { --sidebar-w: 240px; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+        body { min-height: 100vh; }
         .sidebar { width: var(--sidebar-w); background: var(--card); border-left: 1px solid var(--border); padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 100; overflow-y: auto; display: flex; flex-direction: column; gap: 0.25rem; }
         .sidebar .logo { font-size: 1.3rem; font-weight: 800; padding: 0 0.75rem; margin-bottom: 1rem; color: var(--primary); }
         .sidebar a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 0.9rem; white-space: nowrap; }
-        .sidebar a:hover, .sidebar a.active { background: #EFF6FF; color: var(--primary); }
+        .sidebar a:hover, .sidebar a.active { background: var(--primary-light); color: var(--primary); }
         .sidebar a svg { width: 20px; height: 20px; flex-shrink: 0; }
         .sidebar .label { transition: opacity 0.2s; }
         .main { margin-right: var(--sidebar-w); padding: 1.5rem; min-height: 100vh; }
@@ -26,64 +25,44 @@
         .view-nav a { padding: 0.5rem 0.85rem; font-size: 0.8rem; font-weight: 600; color: var(--text-light); text-decoration: none; border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; }
         .view-nav a:hover { color: var(--primary); }
         .view-nav a.active { color: var(--primary); border-bottom-color: var(--primary); }
-
         .toolbar { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
-        .toolbar input, .toolbar select { height: 34px; border-radius: 8px; border: 1px solid var(--border); padding: 0 0.5rem; font-family: inherit; font-size: 0.8rem; background: var(--card); color: var(--text); }
-        .toolbar input { flex: 1; min-width: 150px; }
+        .toolbar input { height: 34px; border-radius: var(--radius-sm); border: 1px solid var(--border); padding: 0 0.5rem; font-family: inherit; font-size: 0.8rem; background: var(--bg); color: var(--text); flex: 1; min-width: 150px; }
         .spacer { flex: 1; }
-
         .filter-tabs { display: flex; gap: 0.35rem; margin-bottom: 1rem; flex-wrap: wrap; }
-        .filter-tab { padding: 0.4rem 0.85rem; border-radius: 20px; border: 1px solid var(--border); cursor: pointer; font-size: 0.8rem; font-weight: 500; background: var(--card); color: var(--text-light); font-family: inherit; transition: all 0.15s; white-space: nowrap; }
+        .filter-tab { padding: 0.4rem 0.85rem; border-radius: var(--radius-full); border: 1px solid var(--border); cursor: pointer; font-size: 0.8rem; font-weight: 500; background: var(--card); color: var(--text-light); font-family: inherit; transition: all var(--transition-fast); white-space: nowrap; }
         .filter-tab:hover { border-color: var(--primary); color: var(--primary); }
         .filter-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-
         .archive-table { width: 100%; border-collapse: collapse; }
-        .archive-table th, .archive-table td { padding: 0.85rem 0.75rem; border-bottom: 1px solid var(--border); font-size: 0.85rem; text-align: right; }
-        .archive-table th { color: var(--text-light); font-weight: 700; font-size: 0.75rem; background: #F8FAFC; white-space: nowrap; }
-        body.dark .archive-table th { background: #0F172A; }
-        .archive-table tbody tr { transition: background 0.1s; }
-        .archive-table tbody tr:hover { background: #F8FAFC; }
-        body.dark .archive-table tbody tr:hover { background: #1A2332; }
+        .archive-table th, .archive-table td { padding: 0.85rem 0.75rem; border-bottom: 1px solid var(--border-light); font-size: 0.85rem; text-align: right; }
+        .archive-table th { color: var(--text-light); font-weight: 700; font-size: 0.75rem; background: var(--secondary-light); white-space: nowrap; }
+        .archive-table tbody tr { transition: background var(--transition-fast); }
+        .archive-table tbody tr:hover { background: var(--secondary-light); }
         .archive-table a { color: var(--text); text-decoration: none; font-weight: 600; }
         .archive-table a:hover { color: var(--primary); }
-        .badge-type { font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 10px; font-weight: 600; white-space: nowrap; }
-        .badge-project { background: #EFF6FF; color: #2563EB; }
-        .badge-task { background: #FEF3C7; color: #92400E; }
-        .badge-date { font-size: 0.7rem; color: var(--text-light); background: #F1F5F9; padding: 0.15rem 0.5rem; border-radius: 4px; }
-
+        .badge-type { font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: var(--radius-full); font-weight: 600; white-space: nowrap; }
+        .badge-project { background: var(--primary-light); color: var(--primary); }
+        .badge-task { background: var(--warning-light); color: var(--warning); }
+        .badge-date { font-size: 0.7rem; color: var(--text-muted); background: var(--secondary-light); padding: 0.15rem 0.5rem; border-radius: var(--radius-xs); }
         .action-btns { display: flex; gap: 0.35rem; }
-        .action-btns button { height: 30px; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; font-family: inherit; font-size: 0.72rem; font-weight: 600; padding: 0 0.5rem; transition: all 0.15s; }
-        .btn-restore { background: #DCFCE7; color: #16A34A; border-color: #BBF7D0; }
-        .btn-restore:hover { background: #BBF7D0; }
-        .btn-view { background: #EFF6FF; color: #2563EB; border-color: #BFDBFE; }
-        .btn-view:hover { background: #BFDBFE; }
-        .btn-delete { background: #FEE2E2; color: #DC2626; border-color: #FECACA; }
-        .btn-delete:hover { background: #FECACA; }
-
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(2px); }
+        .action-btns button { height: 30px; border-radius: var(--radius-xs); border: 1px solid var(--border); cursor: pointer; font-family: inherit; font-size: 0.72rem; font-weight: 600; padding: 0 0.5rem; transition: all var(--transition-fast); }
+        .btn-restore { background: var(--success-light); color: var(--success); border-color: var(--success-soft); }
+        .btn-restore:hover { background: var(--success-soft); }
+        .btn-view { background: var(--primary-light); color: var(--primary); border-color: var(--primary-soft); }
+        .btn-view:hover { background: var(--primary-soft); }
+        .btn-delete { background: var(--danger-light); color: var(--danger); border-color: var(--danger-soft); }
+        .btn-delete:hover { background: var(--danger-soft); }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: var(--overlay); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(2px); }
         .modal-overlay.show { display: flex; }
-        .modal-content { background: var(--card); border-radius: 20px; width: 100%; max-width: 440px; box-shadow: 0 30px 60px rgba(0,0,0,0.2); animation: modalIn 0.2s ease; }
-        @keyframes modalIn { from { opacity: 0; transform: translateY(30px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .modal { background: var(--card); border-radius: var(--radius-lg); width: 100%; max-width: 440px; box-shadow: var(--shadow-xl); animation: modalIn 0.2s ease; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); }
-        .modal-header h2 { font-size: 1.1rem; font-weight: 800; }
-        .modal-close { background: #F1F5F9; border: none; font-size: 1rem; cursor: pointer; color: #64748B; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-        .modal-close:hover { background: #E2E8F0; }
+        .modal-header h3 { font-size: 1.1rem; font-weight: 800; }
+        .modal-close { background: var(--secondary-light); border: none; font-size: 1rem; cursor: pointer; color: var(--text-light); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .modal-close:hover { background: var(--danger-light); color: var(--danger); }
         .modal-body { padding: 1.5rem; text-align: center; }
         .modal-body .warning-icon { font-size: 3rem; margin-bottom: 1rem; }
-        .modal-body h3 { margin-bottom: 0.5rem; }
+        .modal-body h4 { margin-bottom: 0.5rem; }
         .modal-body p { color: var(--text-light); font-size: 0.9rem; margin-bottom: 1.5rem; }
         .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border); display: flex; justify-content: center; gap: 0.75rem; }
-
-        .empty-state { text-align: center; padding: 4rem 2rem; }
-        .empty-state .icon { font-size: 4rem; margin-bottom: 1rem; }
-        .empty-state h3 { margin-bottom: 0.5rem; }
-        .empty-state p { color: var(--text-light); }
-        .skeleton { background: linear-gradient(90deg, #E2E8F0 25%, #F1F5F9 50%, #E2E8F0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
-        body.dark .skeleton { background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%); background-size: 200% 100%; }
-        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #16A34A; color: #fff; padding: 0.75rem 1.5rem; border-radius: 12px; z-index: 9999; font-weight: 600; font-size: 0.9rem; animation: toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards; }
-        @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(-20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
-        @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateX(-50%) translateY(-20px); } }
         .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
         .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); padding: 0.5rem 1rem; z-index: 90; justify-content: space-around; }
         .bottom-nav a { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-light); text-decoration: none; font-size: 0.65rem; font-weight: 500; }
@@ -95,38 +74,43 @@
 </head>
 <body>
     <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
-<aside class="sidebar" id="sidebar">
-    <div class="logo"><span>📋 Nivora</span></div>
-    <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="label">لوحة القيادة</span></a>
-    <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg><span class="label">المهام</span></a>
-    <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">المشاريع</span></a>
-    <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg><span class="label">Kanban</span></a>
-    <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">Gantt</span></a>
-    <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
-    <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
-    <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg><span class="label">Workflows</span></a>
-    <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">القوالب</span></a>
-    <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg><span class="label">الأرشيف</span></a>
-    <a href="chat.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="label">المحادثة</span></a>
-    <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
-    <a href="teams.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">فرق العمل</span></a>
-</aside>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="logo"><span>📋 Nivora</span></div>
+        <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="label">لوحة القيادة</span></a>
+        <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg><span class="label">المهام</span></a>
+        <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">المشاريع</span></a>
+        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg><span class="label">Kanban</span></a>
+        <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">Gantt</span></a>
+        <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
+        <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
+        <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg><span class="label">Workflows</span></a>
+        <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">القوالب</span></a>
+        <a href="archive.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg><span class="label">الأرشيف</span></a>
+        <a href="chat.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="label">المحادثة</span></a>
+        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
+        <a href="teams.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">فرق العمل</span></a>
+    </aside>
 
     <main class="main">
-        <div class="topbar"><div><h1>📦 الأرشيف</h1><p class="page-desc">العناصر المؤرشفة محفوظة هنا ويمكن استعادتها عند الحاجة</p></div>
-            <div style="display:flex;gap:0.5rem;">
-                <!-- أيقونة المستخدم في الـ Topbar -->
-<div style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;" onclick="window.location.href='profile.html'">
-    <div id="topAvatar" style="width:32px;height:32px;border-radius:50%;background:#E2E8F0;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:#64748B;overflow:hidden;"></div>
-    <span id="topUsername" style="font-size:0.8rem;font-weight:600;"></span>
-</div>
-                <button class="btn btn-outline" onclick="toggleLang()" id="langBtn" style="height:36px;">🌐 EN</button>
-                <button class="btn btn-outline" onclick="toggleDark()" id="darkBtn" style="height:36px;">🌙</button>
-                <button class="btn btn-outline" onclick="logout()" style="height:36px;">خروج</button>
+        <div class="topbar">
+            <div><h1>الأرشيف</h1><p class="page-desc">العناصر المؤرشفة محفوظة هنا ويمكن استعادتها</p></div>
+            <div style="display:flex;gap:0.5rem;align-items:center;">
+                <div style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;" onclick="window.location.href='profile.html'">
+                    <div id="topAvatar" style="width:32px;height:32px;border-radius:50%;background:var(--secondary-light);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:var(--text-light);overflow:hidden;"></div>
+                    <span id="topUsername" style="font-size:0.8rem;font-weight:600;"></span>
+                </div>
+                <button class="btn btn-ghost btn-icon" onclick="toggleDark()" id="darkBtn" style="width:36px;height:36px;">🌙</button>
+                <button class="btn btn-outline btn-sm" onclick="logout()">خروج</button>
             </div>
         </div>
+
         <div class="view-nav">
-            <a href="tasks.html">📋 قائمة</a><a href="kanban.html">📌 أعمدة</a><a href="tasks.html">📊 جدول</a><a href="gantt.html">📈 Gantt</a><a href="calendar.html">📅 تقويم</a><a href="reports.html">📉 إحصائيات</a><a href="chat.html">💬 محادثة</a>
+            <a href="tasks.html">📋 قائمة</a>
+            <a href="kanban.html">📌 أعمدة</a>
+            <a href="gantt.html">📈 Gantt</a>
+            <a href="calendar.html">📅 تقويم</a>
+            <a href="reports.html">📉 إحصائيات</a>
         </div>
 
         <div class="filter-tabs">
@@ -136,9 +120,9 @@
         </div>
 
         <div class="toolbar">
-            <input type="text" id="searchInput" placeholder="🔍 بحث في الأرشيف..." oninput="renderArchive()">
+            <input type="text" id="searchInput" placeholder="🔍 بحث في الأرشيف..." oninput="debouncedRender()">
             <span class="spacer"></span>
-            <button class="btn btn-outline" onclick="loadArchive()" style="height:34px;">🔄 تحديث</button>
+            <button class="btn btn-outline btn-sm" onclick="loadArchive()">🔄 تحديث</button>
         </div>
 
         <table class="archive-table">
@@ -155,41 +139,47 @@
         <a href="#" onclick="openSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>المزيد</a>
     </nav>
 
-    <!-- Modal تأكيد الحذف النهائي -->
     <div class="modal-overlay" id="deleteModal" onclick="if(event.target===this)closeDeleteModal()">
-        <div class="modal-content">
-            <div class="modal-header"><h2>🗑️ حذف نهائي</h2><button class="modal-close" onclick="closeDeleteModal()">✕</button></div>
+        <div class="modal">
+            <div class="modal-header"><h3>🗑️ حذف نهائي</h3><button class="modal-close" onclick="closeDeleteModal()">✕</button></div>
             <div class="modal-body">
                 <div class="warning-icon">⚠️</div>
-                <h3>هل أنت متأكد؟</h3>
-                <p id="deleteWarning">سيتم حذف هذا العنصر وجميع بياناته المرتبطة بشكل نهائي. لا يمكن التراجع عن هذا الإجراء.</p>
+                <h4>هل أنت متأكد؟</h4>
+                <p id="deleteWarning">سيتم حذف هذا العنصر نهائياً.</p>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-outline" onclick="closeDeleteModal()">إلغاء</button>
-                <button class="btn btn-primary" style="background:#DC2626;border-color:#DC2626;" id="confirmDeleteBtn" onclick="confirmDelete()">🗑️ حذف نهائي</button>
+                <button class="btn btn-danger" onclick="confirmDelete()">🗑️ حذف نهائي</button>
             </div>
         </div>
     </div>
-    <script src="js/i18n.js"></script>
+
+    <script src="js/components.js"></script>
     <script>
         function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
         function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
         const API_BASE = 'https://nivora-t9ov.onrender.com/api';
         const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
         if (!token) window.location.href = 'login.html';
         function logout() { localStorage.clear(); window.location.href = 'login.html'; }
         function toggleDark() { document.body.classList.toggle('dark'); const d = document.body.classList.contains('dark'); localStorage.setItem('dark', d); document.getElementById('darkBtn').textContent = d ? '☀️' : '🌙'; }
         if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
-        function showToast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 3000); }
-
         let allArchiveItems = [], currentFilter = 'all', deleteTarget = null;
+        const debouncedRender = debounce(() => renderArchive(), 200);
 
-        function showSkeleton() {
-            document.getElementById('archiveBody').innerHTML = Array(4).fill('<tr><td><div class="skeleton" style="height:14px;width:80%;"></div></td><td><div class="skeleton" style="height:14px;width:50px;"></div></td><td><div class="skeleton" style="height:14px;width:80px;"></div></td><td><div class="skeleton" style="height:14px;width:60%;"></div></td><td><div class="skeleton" style="height:30px;width:120px;"></div></td></tr>').join('');
-        }
+        document.addEventListener('DOMContentLoaded', () => {
+            const avatar = document.getElementById('topAvatar');
+            const username = document.getElementById('topUsername');
+            if (username) username.textContent = user.fullName || user.username || 'مستخدم';
+            if (avatar) {
+                if (user.avatar) avatar.innerHTML = `<img src="${user.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                else avatar.textContent = getInitials(user.fullName || user.username);
+            }
+        });
 
         async function loadArchive() {
-            showSkeleton();
+            showSkeleton('archiveBody', 'table', 4);
             try {
                 const [tasksRes, projectsRes] = await Promise.all([
                     fetch(`${API_BASE}/tasks/archived/list`, { headers: { 'Authorization': `Bearer ${token}` } }),
@@ -197,128 +187,64 @@
                 ]);
                 const tasks = await tasksRes.json();
                 const projects = await projectsRes.json();
-                
-                allArchiveItems = [
-                    ...(Array.isArray(tasks) ? tasks : []).map(t => ({ ...t, _type: 'task' })),
-                    ...(Array.isArray(projects) ? projects : []).map(p => ({ ...p, _type: 'project' }))
-                ];
-                
-                // ترتيب حسب تاريخ الأرشفة (الأحدث أولاً)
+                allArchiveItems = [...(Array.isArray(tasks) ? tasks : []).map(t => ({ ...t, _type: 'task' })), ...(Array.isArray(projects) ? projects : []).map(p => ({ ...p, _type: 'project' }))];
                 allArchiveItems.sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
-                
                 renderArchive();
-            } catch (err) {
-                document.getElementById('archiveBody').innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="icon">❌</div><p>تعذر تحميل الأرشيف</p></div></td></tr>';
-            }
+            } catch (err) { showError('archiveBody', 'تعذر تحميل الأرشيف', loadArchive); }
         }
 
-        function filterByType(type) {
-            currentFilter = type;
-            document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
-            renderArchive();
-        }
+        function filterByType(type) { currentFilter = type; document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active')); event.target.classList.add('active'); renderArchive(); }
 
         function renderArchive() {
             const q = document.getElementById('searchInput').value.toLowerCase();
             let items = allArchiveItems;
-            
             if (currentFilter === 'project') items = items.filter(i => i._type === 'project');
             else if (currentFilter === 'task') items = items.filter(i => i._type === 'task');
-            
             if (q) items = items.filter(i => (i.title || i.name || '').toLowerCase().includes(q));
-            
             const tbody = document.getElementById('archiveBody');
-            
             if (items.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5">
-                    <div class="empty-state">
-                        <div class="icon">📦</div>
-                        <h3>لا توجد عناصر مؤرشفة</h3>
-                        <p>${currentFilter === 'all' ? 'عند أرشفة المشاريع أو المهام ستظهر هنا' : currentFilter === 'project' ? 'لا توجد مشاريع مؤرشفة' : 'لا توجد مهام مؤرشفة'}</p>
-                    </div>
-                </td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">📦</div><h4>لا توجد عناصر مؤرشفة</h4><p>${currentFilter === 'all' ? 'عند أرشفة المشاريع أو المهام ستظهر هنا' : currentFilter === 'project' ? 'لا توجد مشاريع مؤرشفة' : 'لا توجد مهام مؤرشفة'}</p></div></td></tr>`;
                 return;
             }
-            
             tbody.innerHTML = items.map(item => {
                 const isProject = item._type === 'project';
                 const title = item.title || item.name || 'بدون عنوان';
-                const typeLabel = isProject ? '📁 مشروع' : '📋 مهمة';
+                const typeLabel = isProject ? 'مشروع' : 'مهمة';
                 const typeBadge = isProject ? 'badge-project' : 'badge-task';
                 const archivedDate = item.archivedAt || item.updatedAt || item.createdAt;
-                const projectName = item.project || '-';
                 const link = isProject ? `kanban.html?projectId=${item._id}` : `task.html?id=${item._id}`;
-                
                 return `<tr>
                     <td><a href="${link}">${title}</a></td>
                     <td><span class="badge-type ${typeBadge}">${typeLabel}</span></td>
-                    <td><span class="badge-date">📅 ${new Date(archivedDate).toLocaleDateString('ar-SA')}</span></td>
-                    <td>${isProject ? '-' : (projectName || '-')}</td>
-                    <td>
-                        <div class="action-btns">
-                            <button class="btn-view" onclick="window.location.href='${link}'">👁️ فتح</button>
-                            <button class="btn-restore" onclick="restoreItem('${item._id}', '${item._type}')">🔄 استعادة</button>
-                            <button class="btn-delete" onclick="openDeleteModal('${item._id}', '${item._type}', '${title.replace(/'/g, "\\'")}')">🗑️</button>
-                        </div>
-                    </td>
+                    <td><span class="badge-date">📅 ${formatDate(archivedDate)}</span></td>
+                    <td>${isProject ? '-' : (item.project || '-')}</td>
+                    <td><div class="action-btns">
+                        <button class="btn-view" onclick="window.location.href='${link}'">👁️</button>
+                        <button class="btn-restore" onclick="restoreItem('${item._id}', '${item._type}')">🔄 استعادة</button>
+                        <button class="btn-delete" onclick="openDeleteModal('${item._id}', '${item._type}', '${title.replace(/'/g, "\\'")}')">🗑️</button>
+                    </div></td>
                 </tr>`;
             }).join('');
         }
 
-        async function restoreItem(id, type) {
-            if (!confirm('استعادة هذا العنصر إلى الحالة النشطة؟')) return;
-            
-            if (type === 'task') {
-                await fetch(`${API_BASE}/tasks/${id}/restore`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` } });
-            } else if (type === 'project') {
-                await fetch(`${API_BASE}/projects/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ status: 'active' }) });
-            }
-            
-            showToast('✅ تمت الاستعادة بنجاح');
-            loadArchive();
+        function restoreItem(id, type) {
+            confirmDialog({ title: 'استعادة العنصر', message: 'استعادة هذا العنصر إلى الحالة النشطة؟', confirmText: 'استعادة', danger: false, onConfirm: async () => {
+                if (type === 'task') await fetch(`${API_BASE}/tasks/${id}/restore`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` } });
+                else if (type === 'project') await fetch(`${API_BASE}/projects/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ status: 'active' }) });
+                showToast('تمت الاستعادة', 'success'); loadArchive();
+            } });
         }
 
-        function openDeleteModal(id, type, title) {
-            deleteTarget = { id, type };
-            document.getElementById('deleteWarning').textContent = `سيتم حذف "${title}" وجميع بياناته المرتبطة بشكل نهائي. لا يمكن التراجع عن هذا الإجراء.`;
-            document.getElementById('deleteModal').classList.add('show');
-        }
-
+        function openDeleteModal(id, type, title) { deleteTarget = { id, type }; document.getElementById('deleteWarning').textContent = `سيتم حذف "${title}" نهائياً. لا يمكن التراجع.`; document.getElementById('deleteModal').classList.add('show'); }
         function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('show'); deleteTarget = null; }
-
         async function confirmDelete() {
             if (!deleteTarget) return;
-            
-            if (deleteTarget.type === 'task') {
-                await fetch(`${API_BASE}/tasks/${deleteTarget.id}/permanent`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-            } else if (deleteTarget.type === 'project') {
-                await fetch(`${API_BASE}/projects/${deleteTarget.id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-            }
-            
-            closeDeleteModal();
-            showToast('🗑️ تم الحذف النهائي');
-            loadArchive();
+            if (deleteTarget.type === 'task') await fetch(`${API_BASE}/tasks/${deleteTarget.id}/permanent`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+            else if (deleteTarget.type === 'project') await fetch(`${API_BASE}/projects/${deleteTarget.id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+            closeDeleteModal(); showToast('تم الحذف', 'success'); loadArchive();
         }
-document.addEventListener('DOMContentLoaded', () => {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const avatar = document.getElementById('topAvatar');
-    const username = document.getElementById('topUsername');
-    
-    if (username) {
-        username.textContent = user.fullName || user.username || 'مستخدم';
-    }
-    
-    if (avatar) {
-        if (user.avatar) {
-            avatar.innerHTML = `<img src="${user.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-        } else {
-            avatar.textContent = (user.fullName || user.username || 'م')[0];
-        }
-    }
-});
+
         loadArchive();
     </script>
 </body>
 </html>
-
