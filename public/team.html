@@ -71,6 +71,19 @@
         .bottom-nav a svg { width: 22px; height: 22px; }
         @media (max-width: 1024px) { :root { --sidebar-w: 72px; } .sidebar { padding: 1rem 0.5rem; } .sidebar .logo { font-size: 1rem; text-align: center; } .sidebar .label, .sidebar .logo span { display: none; } .sidebar a { justify-content: center; padding: 0.5rem; } }
         @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 0.75rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } table { font-size: 0.7rem; } th, td { padding: 0.5rem; } .invite-card { flex-direction: column; align-items: flex-start; } }
+        .activity-item { display: flex; gap: 0.6rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.82rem; align-items: flex-start; }
+.activity-item:last-child { border-bottom: none; }
+.activity-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+.activity-dot.create { background: #3B82F6; }
+.activity-dot.complete { background: #22C55E; }
+.activity-dot.comment { background: #8B5CF6; }
+.activity-dot.file { background: #D97706; }
+.activity-dot.member { background: #EC4899; }
+.activity-dot.default { background: #94A3B8; }
+.activity-content { flex: 1; }
+.activity-content .act-text { font-size: 0.82rem; }
+.activity-content .act-time { font-size: 0.7rem; color: var(--text-light); display: block; margin-top: 0.1rem; }
+.activity-content .act-task { color: var(--primary); cursor: pointer; }
     </style>
 </head>
 <body>
@@ -126,6 +139,13 @@
                 <tbody id="membersBody"></tbody>
             </table>
         </div>
+        <!-- سجل النشاط -->
+<div class="card" style="margin-top:1.5rem;">
+    <h3 style="font-size:0.95rem;font-weight:700;margin-bottom:1rem;">📜 النشاط الأخير</h3>
+    <div id="activityLog" style="max-height:400px;overflow-y:auto;">
+        <p style="color:var(--text-light);text-align:center;">جارٍ التحميل...</p>
+    </div>
+</div>
     </main>
 
     <nav class="bottom-nav">
@@ -218,6 +238,7 @@
             } catch (err) {
                 document.getElementById('membersBody').innerHTML = '<tr><td colspan="4" style="text-align:center;color:#DC2626;">خطأ في تحميل الأعضاء</td></tr>';
             }
+            loadActivity();
         }
 
         async function changeRole(uid, role) {
@@ -284,6 +305,38 @@
         }
     }
 });
+async function loadActivity() {
+    try {
+        const res = await fetch(`${API}/workspaces/${wsId}/activity`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const activities = await res.json();
+        const container = document.getElementById('activityLog');
+        
+        if (!activities || activities.length === 0) {
+            container.innerHTML = '<p style="color:var(--text-light);text-align:center;">لا يوجد نشاط حديث</p>';
+            return;
+        }
+        
+        const recent = activities.slice(0, 30);
+        
+        container.innerHTML = recent.map(a => {
+            const dotClass = a.type === 'project' ? 'create' : a.type === 'member' ? 'member' : 
+                a.action?.includes('إنشاء') ? 'create' : a.action?.includes('مكتمل') || a.action?.includes('done') ? 'complete' : 
+                a.action?.includes('تعليق') ? 'comment' : a.action?.includes('ملف') ? 'file' : 'default';
+            
+            const icon = a.type === 'project' ? '📁' : a.type === 'member' ? '👤' : '📋';
+            
+            return `<div class="activity-item">
+                <span class="activity-dot ${dotClass}"></span>
+                <div class="activity-content">
+                    <span class="act-text"><strong>${a.username || 'مستخدم'}</strong> ${a.action || ''} - ${a.details || ''} ${a.taskTitle ? `<span class="act-task" onclick="window.location.href='task.html?id=${a.taskId}'">${a.taskTitle}</span>` : ''}</span>
+                    <span class="act-time">${new Date(a.createdAt).toLocaleString('ar-SA')}</span>
+                </div>
+            </div>`;
+        }).join('');
+    } catch (err) {
+        document.getElementById('activityLog').innerHTML = '<p style="color:var(--text-light);text-align:center;">تعذر تحميل النشاط</p>';
+    }
+}
     </script>
 </body>
 </html>

@@ -241,5 +241,67 @@ router.patch('/:id/settings', authenticate, requireRole('owner'), async (req, re
         res.status(500).json({ error: 'خطأ في تحديث الإعدادات' });
     }
 });
+// ========== سجل النشاط ==========
 
+// جلب سجل نشاط workspace
+router.get('/:id/activity', authenticate, async (req, res) => {
+    try {
+        const ws = await Workspace.findById(req.params.id);
+        if (!ws) return res.status(404).json({ error: 'مساحة العمل غير موجودة' });
+        
+        const Task = require('../models/Task');
+        const Project = require('../models/Project');
+        
+        const activities = [];
+        
+        // نشاط المشاريع
+        const projects = await Project.find({ workspaceId: ws._id }).sort({ updatedAt: -1 }).limit(10);
+        projects.forEach(p => {
+            activities.push({
+                type: 'project',
+                action: 'إنشاء مشروع',
+                username: 'مستخدم',
+                details: p.name,
+                taskId: p._id,
+                createdAt: p.createdAt
+            });
+        });
+        
+        // نشاط المهام
+        const tasks = await Task.find({ workspaceId: ws._id }).sort({ updatedAt: -1 }).limit(30);
+        tasks.forEach(t => {
+            if (t.activity && t.activity.length > 0) {
+                t.activity.forEach(a => {
+                    activities.push({
+                        type: 'task',
+                        action: a.action,
+                        username: a.username,
+                        details: a.details,
+                        taskId: t._id,
+                        taskTitle: t.title,
+                        createdAt: a.createdAt || t.updatedAt
+                    });
+                });
+            }
+        });
+        
+        // نشاط الأعضاء
+        ws.members.forEach(m => {
+            activities.push({
+                type: 'member',
+                action: 'انضمام عضو',
+                username: m.userId?.toString() || 'مستخدم',
+                details: 'انضم إلى الفريق',
+                createdAt: m.joinedAt
+            });
+        });
+        
+        // ترتيب حسب الأحدث
+        activities.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        
+        res.json(activities.slice(0, 50));
+    } catch (err) {
+        res.status(500).json({ error: 'خطأ في جلب سجل النشاط' });
+    }
+});
 module.exports = router;
