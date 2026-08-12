@@ -80,6 +80,20 @@
                     <span id="topUsername" style="font-size:0.8rem;font-weight:600;"></span>
                 </div>
                 <button class="btn btn-primary" onclick="openCreateModal()">+ فريق جديد</button>
+                <!-- زر الإشعارات -->
+<div style="position:relative;">
+    <button class="btn btn-ghost btn-icon" onclick="toggleNotifications()" id="notifBtn" style="width:36px;height:36px;position:relative;">
+        🔔
+        <span id="notifBadge" style="display:none;position:absolute;top:2px;left:2px;background:var(--danger);color:#fff;font-size:0.6rem;font-weight:700;width:16px;height:16px;border-radius:50%;align-items:center;justify-content:center;"></span>
+    </button>
+    <div id="notifDropdown" style="display:none;position:absolute;top:42px;left:0;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);min-width:320px;max-height:400px;overflow-y:auto;z-index:500;">
+        <div style="padding:0.85rem 1rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+            <strong style="font-size:0.9rem;">الإشعارات</strong>
+            <button onclick="markAllRead()" style="background:none;border:none;color:var(--primary);cursor:pointer;font-size:0.75rem;font-weight:600;">تعليم الكل</button>
+        </div>
+        <div id="notifList"></div>
+    </div>
+</div>
                 <button class="btn btn-ghost btn-icon" onclick="toggleDark()" id="darkBtn" style="width:36px;height:36px;">🌙</button>
                 <button class="btn btn-outline btn-sm" onclick="logout()">خروج</button>
             </div>
@@ -168,7 +182,75 @@
         function deleteTeam(id) {
             confirmDialog({ title: 'حذف الفريق', message: 'حذف نهائي؟ لا يمكن التراجع.', confirmText: 'حذف', danger: true, onConfirm: async () => { await fetch(`${API}/workspaces/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); if (currentWsId === id) { localStorage.removeItem('workspaceId'); localStorage.removeItem('inviteCode'); } showToast('تم الحذف', 'success'); loadTeams(); } });
         }
+// ========== نظام الإشعارات ==========
+let notifications = [];
 
+async function loadNotifications() {
+    try {
+        const res = await fetch(`${API}/notifications`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        notifications = data.notifications || data;
+        renderNotifications();
+        updateNotifBadge();
+    } catch (err) {}
+}
+
+function renderNotifications() {
+    const container = document.getElementById('notifList');
+    if (!notifications.length) {
+        container.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:2rem;">لا توجد إشعارات</p>';
+        return;
+    }
+    container.innerHTML = notifications.slice(0, 20).map(n => `
+        <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border-light);cursor:pointer;${n.isRead ? '' : 'background:var(--primary-light);'}" onclick="readNotification('${n._id}')">
+            <div style="font-size:0.85rem;font-weight:600;">${n.message}</div>
+            <div style="font-size:0.7rem;color:var(--text-muted);margin-top:0.2rem;">${timeAgo(n.createdAt)}</div>
+        </div>
+    `).join('');
+}
+
+function updateNotifBadge() {
+    const unread = notifications.filter(n => !n.isRead).length;
+    const badge = document.getElementById('notifBadge');
+    if (badge) {
+        if (unread > 0) {
+            badge.textContent = unread > 9 ? '9+' : unread;
+            badge.style.display = 'flex';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+}
+
+function toggleNotifications() {
+    const dd = document.getElementById('notifDropdown');
+    if (!dd) return;
+    const isVisible = dd.style.display === 'block';
+    dd.style.display = isVisible ? 'none' : 'block';
+    if (!isVisible) loadNotifications();
+}
+
+async function readNotification(id) {
+    await fetch(`${API}/notifications/${id}/read`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` } });
+    loadNotifications();
+}
+
+async function markAllRead() {
+    await fetch(`${API}/notifications/read-all`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` } });
+    loadNotifications();
+}
+
+// إغلاق الـ Dropdown عند النقر خارجه
+document.addEventListener('click', function(e) {
+    const dd = document.getElementById('notifDropdown');
+    const btn = document.getElementById('notifBtn');
+    if (dd && btn && !btn.contains(e.target) && !dd.contains(e.target)) {
+        dd.style.display = 'none';
+    }
+});
+
+// تحميل الإشعارات عند فتح الصفحة
+loadNotifications();
         loadTeams();
     </script>
 </body>

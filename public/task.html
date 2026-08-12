@@ -437,7 +437,75 @@
             if (targetTab) targetTab.classList.add('active');
             if (targetContent) targetContent.classList.add('active');
         }
+// ========== نظام الإشعارات ==========
+let notifications = [];
 
+async function loadNotifications() {
+    try {
+        const res = await fetch(`${API_BASE}/notifications`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        notifications = data.notifications || data;
+        renderNotifications();
+        updateNotifBadge();
+    } catch (err) {}
+}
+
+function renderNotifications() {
+    const container = document.getElementById('notifList');
+    if (!notifications.length) {
+        container.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:2rem;">لا توجد إشعارات</p>';
+        return;
+    }
+    container.innerHTML = notifications.slice(0, 20).map(n => `
+        <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border-light);cursor:pointer;${n.isRead ? '' : 'background:var(--primary-light);'}" onclick="readNotification('${n._id}')">
+            <div style="font-size:0.85rem;font-weight:600;">${n.message}</div>
+            <div style="font-size:0.7rem;color:var(--text-muted);margin-top:0.2rem;">${timeAgo(n.createdAt)}</div>
+        </div>
+    `).join('');
+}
+
+function updateNotifBadge() {
+    const unread = notifications.filter(n => !n.isRead).length;
+    const badge = document.getElementById('notifBadge');
+    if (badge) {
+        if (unread > 0) {
+            badge.textContent = unread > 9 ? '9+' : unread;
+            badge.style.display = 'flex';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+}
+
+function toggleNotifications() {
+    const dd = document.getElementById('notifDropdown');
+    if (!dd) return;
+    const isVisible = dd.style.display === 'block';
+    dd.style.display = isVisible ? 'none' : 'block';
+    if (!isVisible) loadNotifications();
+}
+
+async function readNotification(id) {
+    await fetch(`${API_BASE}/notifications/${id}/read`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` } });
+    loadNotifications();
+}
+
+async function markAllRead() {
+    await fetch(`${API_BASE}/notifications/read-all`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` } });
+    loadNotifications();
+}
+
+// إغلاق الـ Dropdown عند النقر خارجه
+document.addEventListener('click', function(e) {
+    const dd = document.getElementById('notifDropdown');
+    const btn = document.getElementById('notifBtn');
+    if (dd && btn && !btn.contains(e.target) && !dd.contains(e.target)) {
+        dd.style.display = 'none';
+    }
+});
+
+// تحميل الإشعارات عند فتح الصفحة
+loadNotifications();
         loadTask();
     </script>
 </body>
