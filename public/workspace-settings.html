@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nivora | إعدادات مساحة العمل</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#2563EB">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        :root { --sidebar-w: 240px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+        .sidebar { width: var(--sidebar-w); background: var(--card); border-left: 1px solid var(--border); padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 100; overflow-y: auto; display: flex; flex-direction: column; gap: 0.25rem; }
+        .sidebar .logo { font-size: 1.3rem; font-weight: 800; padding: 0 0.75rem; margin-bottom: 1rem; color: var(--primary); }
+        .sidebar a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 0.9rem; white-space: nowrap; }
+        .sidebar a:hover, .sidebar a.active { background: #EFF6FF; color: var(--primary); }
+        .sidebar a svg { width: 20px; height: 20px; flex-shrink: 0; }
+        .sidebar .label { transition: opacity 0.2s; }
+        .main { margin-right: var(--sidebar-w); padding: 1.5rem; min-height: 100vh; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; flex-wrap: wrap; gap: 0.5rem; }
+        .topbar h1 { font-size: 1.5rem; font-weight: 800; }
+        .page-desc { font-size: 0.85rem; color: var(--text-light); margin-bottom: 1.5rem; }
+        .back-link { display: inline-block; color: var(--primary); text-decoration: none; font-size: 0.9rem; margin-bottom: 1rem; }
+
+        .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .card { padding: 1.5rem; }
+        .card h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .info-row { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: var(--text-light); }
+        .info-value { font-weight: 600; }
+        .invite-code { background: #EFF6FF; padding: 0.4rem 0.8rem; border-radius: 8px; font-weight: 800; letter-spacing: 2px; font-size: 1rem; }
+        body.dark .invite-code { background: #1E3A5F; }
+
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-light); margin-bottom: 0.35rem; }
+        .form-group input { width: 100%; height: 42px; border-radius: 10px; border: 1px solid var(--border); padding: 0 0.75rem; font-family: inherit; font-size: 0.9rem; background: var(--bg); color: var(--text); }
+
+        .progress-bar { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; flex: 1; }
+        .progress-fill { height: 100%; border-radius: 4px; }
+        .usage-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+        .usage-label { min-width: 70px; font-size: 0.8rem; color: var(--text-light); }
+        .usage-value { font-size: 0.8rem; font-weight: 600; min-width: 40px; text-align: left; }
+
+        .danger-zone { border: 1px solid #FECACA; padding: 1.25rem; border-radius: 12px; }
+        .danger-zone h3 { color: #DC2626; }
+        .danger-zone p { font-size: 0.82rem; color: var(--text-light); margin-bottom: 0.75rem; }
+        .btn-danger { background: #DC2626; color: #fff; border: none; }
+        .btn-danger:hover { background: #B91C1C; }
+
+        .msg { padding: 0.5rem; border-radius: 8px; font-size: 0.85rem; margin-bottom: 0.75rem; display: none; }
+        .msg.success { display: block; background: #DCFCE7; color: #16A34A; }
+        .msg.error { display: block; background: #FEE2E2; color: #DC2626; }
+
+        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+        .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); padding: 0.5rem 1rem; z-index: 90; justify-content: space-around; }
+        .bottom-nav a { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-light); text-decoration: none; font-size: 0.65rem; font-weight: 500; }
+        .bottom-nav a.active { color: var(--primary); }
+        .bottom-nav a svg { width: 22px; height: 22px; }
+        @media (max-width: 1024px) { :root { --sidebar-w: 72px; } .sidebar { padding: 1rem 0.5rem; } .sidebar .logo { font-size: 1rem; text-align: center; } .sidebar .label, .sidebar .logo span { display: none; } .sidebar a { justify-content: center; padding: 0.5rem; } }
+        @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 0.75rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } .settings-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="logo"><span>📋 Nivora</span></div>
+        <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="label">لوحة القيادة</span></a>
+        <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg><span class="label">المهام</span></a>
+        <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">المشاريع</span></a>
+        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg><span class="label">Kanban</span></a>
+        <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">Gantt</span></a>
+        <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
+        <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
+        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
+    </aside>
+
+    <main class="main">
+        <a href="index.html" class="back-link">← العودة للرئيسية</a>
+        <div class="topbar">
+            <div><h1>⚙️ إعدادات مساحة العمل</h1><p class="page-desc">إدارة إعدادات فريقك</p></div>
+            <div style="display:flex;gap:0.5rem;">
+                <button class="btn btn-outline" onclick="toggleDark()" id="darkBtn" style="height:36px;">🌙</button>
+                <button class="btn btn-outline" onclick="logout()" style="height:36px;">خروج</button>
+            </div>
+        </div>
+
+        <div class="settings-grid">
+            <!-- معلومات عامة -->
+            <div class="card">
+                <h3>📋 معلومات الفريق</h3>
+                <div class="form-group"><label>اسم الفريق</label><input type="text" id="wsName" onchange="saveName()"></div>
+                <div class="info-row"><span class="info-label">رمز الدعوة</span><span class="invite-code" id="inviteCode">---</span></div>
+                <div class="info-row"><span class="info-label">الخطة</span><span class="info-value" id="planName">-</span></div>
+                <p class="msg" id="nameMsg"></p>
+            </div>
+
+            <!-- حدود الاستخدام -->
+            <div class="card">
+                <h3>📊 حدود الاستخدام</h3>
+                <div id="usageContent"><p style="color:var(--text-light);">جارٍ التحميل...</p></div>
+            </div>
+
+            <!-- نقل الملكية -->
+            <div class="card">
+                <h3>👑 نقل الملكية</h3>
+                <p style="font-size:0.82rem;color:var(--text-light);margin-bottom:1rem;">نقل ملكية الفريق إلى عضو آخر. ستصبح مديراً بعد النقل.</p>
+                <div class="form-group"><label>اختر المالك الجديد</label><select id="newOwnerSelect" style="width:100%;height:42px;border-radius:10px;border:1px solid var(--border);padding:0 0.75rem;font-family:inherit;background:var(--bg);color:var(--text);"><option value="">اختر عضواً...</option></select></div>
+                <button class="btn btn-primary" onclick="transferOwnership()" style="width:100%;">🔄 نقل الملكية</button>
+                <p class="msg" id="transferMsg"></p>
+            </div>
+
+            <!-- منطقة الخطر -->
+            <div class="card">
+                <div class="danger-zone">
+                    <h3>🗑️ حذف الفريق</h3>
+                    <p>سيتم حذف مساحة العمل وجميع المشاريع والمهام والبيانات المرتبطة بها بشكل نهائي. لا يمكن التراجع عن هذا الإجراء.</p>
+                    <button class="btn btn-danger" onclick="deleteWorkspace()" style="width:100%;">🗑️ حذف الفريق نهائياً</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <nav class="bottom-nav">
+        <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>الرئيسية</a>
+        <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg>مهام</a>
+        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg>Kanban</a>
+        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>فريق</a>
+        <a href="#" onclick="openSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>المزيد</a>
+    </nav>
+
+    <script>
+        function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
+        function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
+        const API = 'https://nivora-t9ov.onrender.com/api';
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'login.html';
+        function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+        function toggleDark() { document.body.classList.toggle('dark'); const d = document.body.classList.contains('dark'); localStorage.setItem('dark', d); document.getElementById('darkBtn').textContent = d ? '☀️' : '🌙'; }
+        if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
+
+        const wsId = localStorage.getItem('workspaceId');
+        if (!wsId) window.location.href = 'workspace.html';
+
+        async function loadSettings() {
+            // تحميل معلومات workspace
+            const res = await fetch(`${API}/workspaces/${wsId}/members`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const members = await res.json();
+            
+            // تحميل حدود الاستخدام
+            const uRes = await fetch(`${API}/workspaces/${wsId}/usage`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const usage = await uRes.json();
+            
+            document.getElementById('inviteCode').textContent = localStorage.getItem('inviteCode') || '---';
+            document.getElementById('planName').textContent = usage.plan || 'free';
+            
+            // عرض حدود الاستخدام
+            document.getElementById('usageContent').innerHTML = `
+                <div class="usage-row">
+                    <span class="usage-label">👥 الأعضاء</span>
+                    <div class="progress-bar"><div class="progress-fill" style="width:${(usage.currentMembers / usage.maxMembers) * 100}%;background:#2563EB;"></div></div>
+                    <span class="usage-value">${usage.currentMembers}/${usage.maxMembers}</span>
+                </div>
+                <div class="usage-row">
+                    <span class="usage-label">📁 المشاريع</span>
+                    <div class="progress-bar"><div class="progress-fill" style="width:${(usage.currentProjects / usage.maxProjects) * 100}%;background:#16A34A;"></div></div>
+                    <span class="usage-value">${usage.currentProjects}/${usage.maxProjects}</span>
+                </div>
+                <div class="info-row"><span class="info-label">المتبقي أعضاء</span><span class="info-value">${usage.membersRemaining}</span></div>
+                <div class="info-row"><span class="info-label">المتبقي مشاريع</span><span class="info-value">${usage.projectsRemaining}</span></div>
+            `;
+            
+            // ملء حقل الاسم
+            const wsRes = await fetch(`${API}/workspaces`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const wss = await wsRes.json();
+            const ws = wss.find(w => w._id === wsId);
+            if (ws) document.getElementById('wsName').value = ws.name || '';
+            
+            // ملء قائمة الأعضاء لنقل الملكية
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            document.getElementById('newOwnerSelect').innerHTML = '<option value="">اختر عضواً...</option>' + 
+                members.filter(m => (m.userId?._id || m.userId) !== user.id)
+                    .map(m => `<option value="${m.userId?._id || m.userId}">${m.userId?.fullName || m.userId?.username || 'مستخدم'}</option>`).join('');
+        }
+
+        async function saveName() {
+            const name = document.getElementById('wsName').value.trim();
+            if (!name) return;
+            const res = await fetch(`${API}/workspaces/${wsId}/settings`, {
+                method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ name })
+            });
+            const msg = document.getElementById('nameMsg');
+            if (res.ok) { msg.className = 'msg success'; msg.textContent = '✅ تم حفظ الاسم'; }
+            else { msg.className = 'msg error'; msg.textContent = '❌ خطأ'; }
+            setTimeout(() => msg.className = 'msg', 3000);
+        }
+
+        async function transferOwnership() {
+            const newOwnerId = document.getElementById('newOwnerSelect').value;
+            if (!newOwnerId) return alert('اختر عضواً');
+            if (!confirm('نقل ملكية الفريق؟ ستصبح مديراً.')) return;
+            const res = await fetch(`${API}/workspaces/${wsId}/transfer-ownership`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ newOwnerId })
+            });
+            const msg = document.getElementById('transferMsg');
+            if (res.ok) { msg.className = 'msg success'; msg.textContent = '✅ تم نقل الملكية بنجاح'; setTimeout(() => location.reload(), 1500); }
+            else { const d = await res.json(); msg.className = 'msg error'; msg.textContent = '❌ ' + d.error; }
+        }
+
+        async function deleteWorkspace() {
+            if (!confirm('حذف الفريق نهائياً؟ لا يمكن التراجع.')) return;
+            if (!confirm('آخر تأكيد: سيتم حذف كل شيء.')) return;
+            await fetch(`${API}/workspaces/${wsId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+            localStorage.removeItem('workspaceId');
+            localStorage.removeItem('inviteCode');
+            window.location.href = 'workspace.html';
+        }
+
+        loadSettings();
+    </script>
+</body>
+</html>
