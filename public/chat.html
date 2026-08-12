@@ -10,208 +10,69 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <style>
-        body { display: flex; min-height: 100vh; background: var(--bg); }
-        .sidebar { width: 240px; background: var(--card); border-left: 1px solid var(--border); padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 100; }
-        .sidebar .logo { font-size: 1.3rem; font-weight: 800; margin-bottom: 1rem; }
-        .sidebar a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text); text-decoration: none; font-weight: 500; font-size: 0.9rem; }
+        :root { --sidebar-w: 240px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; }
+        .sidebar { width: var(--sidebar-w); background: var(--card); border-left: 1px solid var(--border); padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 100; overflow-y: auto; display: flex; flex-direction: column; gap: 0.25rem; }
+        .sidebar .logo { font-size: 1.3rem; font-weight: 800; padding: 0 0.75rem; margin-bottom: 1rem; color: var(--primary); }
+        .sidebar a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 0.9rem; white-space: nowrap; }
         .sidebar a:hover, .sidebar a.active { background: #EFF6FF; color: var(--primary); }
-        .main { margin-right: 240px; flex: 1; display: flex; flex-direction: column; height: 100vh; }
-        .topbar { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .sidebar a svg { width: 20px; height: 20px; flex-shrink: 0; }
+        .sidebar .label { transition: opacity 0.2s; }
+        .main { margin-right: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; height: 100vh; }
+        .topbar { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
         .topbar h1 { font-size: 1.2rem; font-weight: 800; }
-        .search-row { padding: 0.5rem 1.5rem; border-bottom: 1px solid var(--border); }
-        .search-row input { width: 100%; height: 36px; border-radius: 8px; border: 1px solid var(--border); padding: 0 0.75rem; font-family: inherit; font-size: 0.85rem; background: var(--bg); color: var(--text); }
-        .online-users { font-size: 0.85rem; color: var(--text-light); }
-        .pinned { padding: 0.5rem 1.5rem; background: #FEF3C7; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
-        .pinned strong { cursor: pointer; }
-        .messages { flex: 1; overflow-y: auto; padding: 1rem 1.5rem; }
-        .msg { margin-bottom: 0.75rem; padding: 0.5rem 0.75rem; border-radius: 12px; max-width: 70%; position: relative; }
-        .msg.mine { background: #2563EB; color: white; margin-right: auto; }
-        .msg.other { background: #F1F5F9; color: #1E293B; margin-left: auto; }
-        .msg .user { font-size: 0.75rem; font-weight: 700; margin-bottom: 0.25rem; }
-        .msg .text { font-size: 0.9rem; }
-        .msg .time { font-size: 0.65rem; opacity: 0.7; margin-top: 0.25rem; }
-        .msg .actions { display: none; position: absolute; top: 5px; left: 5px; gap: 0.25rem; }
+        .online-users { font-size: 0.85rem; color: var(--text-light); display: flex; align-items: center; gap: 0.35rem; }
+        .online-dot { width: 8px; height: 8px; border-radius: 50%; background: #22C55E; }
+        .messages { flex: 1; overflow-y: auto; padding: 1rem 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; }
+        .msg { max-width: 72%; padding: 0.6rem 0.85rem; border-radius: 14px; position: relative; animation: msgIn 0.2s ease; }
+        @keyframes msgIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .msg.mine { background: #2563EB; color: #fff; margin-right: auto; border-bottom-left-radius: 4px; }
+        .msg.other { background: #F1F5F9; color: #1E293B; margin-left: auto; border-bottom-right-radius: 4px; }
+        body.dark .msg.other { background: #1E293B; color: #F1F5F9; }
+        .msg .user { font-size: 0.7rem; font-weight: 700; margin-bottom: 0.2rem; opacity: 0.8; }
+        .msg .text { font-size: 0.88rem; line-height: 1.5; }
+        .msg .time { font-size: 0.6rem; opacity: 0.6; margin-top: 0.25rem; text-align: left; }
+        .msg .actions { position: absolute; top: -8px; left: 8px; display: none; gap: 0.15rem; }
         .msg:hover .actions { display: flex; }
-        .msg .actions button { background: none; border: none; cursor: pointer; font-size: 0.8rem; padding: 0.15rem; border-radius: 4px; }
-        .msg .actions button:hover { background: rgba(0,0,0,0.1); }
-        .msg .reactions { display: flex; gap: 0.25rem; margin-top: 0.25rem; flex-wrap: wrap; }
-        .msg .reaction { background: rgba(0,0,0,0.1); padding: 0.1rem 0.35rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; }
-        .typing-indicator { font-size: 0.8rem; color: var(--text-light); padding: 0.5rem 1.5rem; font-style: italic; }
-        .input-row { display: flex; gap: 0.5rem; padding: 1rem 1.5rem; border-top: 1px solid var(--border); align-items: center; }
-        .input-row input { flex: 1; }
-        .emoji-btn { cursor: pointer; font-size: 1.2rem; }
-        .emoji-picker { display: none; position: absolute; bottom: 60px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem; z-index: 10; }
-        .emoji-picker.show { display: flex; gap: 0.25rem; flex-wrap: wrap; width: 250px; }
-        .emoji-picker span { cursor: pointer; font-size: 1.2rem; padding: 0.2rem; }
-        .emoji-picker span:hover { background: #EFF6FF; border-radius: 4px; }
-
-        /* ========== أنماط Responsive للـ Chat ========== */
-
-/* Tablet */
-@media (max-width: 1024px) {
-    .sidebar { width: 72px; padding: 1rem 0.5rem; }
-    .sidebar .logo { font-size: 1rem; text-align: center; }
-    .sidebar a { justify-content: center; padding: 0.5rem; font-size: 0; }
-    .sidebar a svg { margin: 0; }
-    .main { margin-right: 72px; }
-}
-
-/* Mobile */
-@media (max-width: 768px) {
-    .sidebar {
-        position: fixed;
-        right: -260px;
-        width: 260px;
-        top: 0;
-        bottom: 0;
-        z-index: 200;
-        transition: right 0.3s ease;
-    }
-    .sidebar.open {
-        right: 0;
-    }
-    .sidebar a {
-        font-size: 0.9rem;
-        justify-content: flex-start;
-        padding: 0.6rem 0.75rem;
-    }
-    
-    .main {
-        margin-right: 0;
-    }
-    
-    /* Overlay للتطبيق الجانبي */
-    .sidebar-overlay {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,0.5);
-        z-index: 199;
-    }
-    .sidebar-overlay.show {
-        display: block;
-    }
-    
-    /* Topbar */
-    .topbar {
-        padding: 0.75rem 1rem;
-    }
-    .topbar h1 {
-        font-size: 1rem;
-    }
-    .online-users {
-        display: none;
-    }
-    
-    /* شريط البحث */
-    .search-row {
-        padding: 0.5rem 1rem;
-    }
-    .search-row input {
-        height: 36px;
-        font-size: 0.8rem;
-    }
-    
-    /* منطقة الرسائل */
-    .messages {
-        padding: 0.75rem;
-    }
-    .msg {
-        max-width: 85%;
-        font-size: 0.85rem;
-    }
-    .msg .text {
-        font-size: 0.85rem;
-    }
-    .msg .user {
-        font-size: 0.7rem;
-    }
-    .msg .time {
-        font-size: 0.6rem;
-    }
-    .msg .actions {
-        display: flex !important;
-        opacity: 0.5;
-        gap: 0.15rem;
-    }
-    .msg .actions button {
-        font-size: 0.7rem;
-        padding: 0.1rem;
-    }
-    
-    /* رسالة مثبتة */
-    .pinned {
-        padding: 0.4rem 1rem;
-        font-size: 0.75rem;
-    }
-    
-    /* صف الإدخال */
-    .input-row {
-        padding: 0.75rem 1rem;
-        gap: 0.25rem;
-    }
-    .input-row input {
-        height: 40px;
-        font-size: 0.85rem;
-    }
-    .input-row .btn {
-        height: 40px;
-        padding: 0 0.75rem;
-        font-size: 0.8rem;
-    }
-    .emoji-btn {
-        font-size: 1rem;
-    }
-    
-    /* Emoji Picker */
-    .emoji-picker {
-        width: 200px;
-        bottom: 55px;
-        left: 1rem;
-    }
-    .emoji-picker span {
-        font-size: 1rem;
-        padding: 0.15rem;
-    }
-    
-    /* مؤشر الكتابة */
-    .typing-indicator {
-        padding: 0.25rem 1rem;
-        font-size: 0.7rem;
-    }
-}
-
-/* شاشات صغيرة جدًا */
-@media (max-width: 480px) {
-    .msg {
-        max-width: 90%;
-    }
-    .input-row input {
-        font-size: 0.8rem;
-    }
-}
+        .msg .actions button { background: var(--card); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; font-size: 0.65rem; padding: 0.1rem 0.35rem; color: var(--text-light); }
+        .msg .actions button:hover { background: #F1F5F9; }
+        .msg .reactions { display: flex; gap: 0.2rem; margin-top: 0.3rem; flex-wrap: wrap; }
+        .msg .reaction { background: rgba(255,255,255,0.2); padding: 0.1rem 0.4rem; border-radius: 8px; font-size: 0.75rem; cursor: pointer; }
+        .msg.other .reaction { background: rgba(0,0,0,0.06); }
+        .system-msg { text-align: center; font-size: 0.75rem; color: var(--text-light); padding: 0.25rem; }
+        .typing-indicator { font-size: 0.75rem; color: var(--text-light); padding: 0.25rem 1.5rem; font-style: italic; }
+        .input-row { display: flex; gap: 0.5rem; padding: 1rem 1.5rem; border-top: 1px solid var(--border); align-items: center; background: var(--card); }
+        .input-row input { flex: 1; height: 44px; border-radius: 22px; border: 1px solid var(--border); padding: 0 1rem; font-family: inherit; font-size: 0.9rem; background: var(--bg); color: var(--text); }
+        .input-row input:focus { outline: none; border-color: var(--primary); }
+        .emoji-btn { cursor: pointer; font-size: 1.3rem; background: none; border: none; padding: 0.25rem; }
+        .emoji-picker { display: none; position: absolute; bottom: 65px; right: 1.5rem; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 0.5rem; z-index: 20; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .emoji-picker.show { display: flex; gap: 0.3rem; flex-wrap: wrap; width: 260px; }
+        .emoji-picker span { cursor: pointer; font-size: 1.3rem; padding: 0.25rem; border-radius: 6px; }
+        .emoji-picker span:hover { background: #EFF6FF; }
+        .empty-chat { text-align: center; color: var(--text-light); padding: 3rem; }
+        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+        .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); padding: 0.5rem 1rem; z-index: 90; justify-content: space-around; }
+        .bottom-nav a { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-light); text-decoration: none; font-size: 0.65rem; font-weight: 500; }
+        .bottom-nav a.active { color: var(--primary); }
+        .bottom-nav a svg { width: 22px; height: 22px; }
+        @media (max-width: 1024px) { :root { --sidebar-w: 72px; } .sidebar { padding: 1rem 0.5rem; } .sidebar .logo { font-size: 1rem; text-align: center; } .sidebar .label, .sidebar .logo span { display: none; } .sidebar a { justify-content: center; padding: 0.5rem; } }
+        @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; z-index: 200; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; } .bottom-nav { display: flex; } .topbar { padding: 0.75rem 1rem; } .topbar h1 { font-size: 1rem; } .messages { padding: 0.75rem; } .msg { max-width: 85%; } .input-row { padding: 0.75rem 1rem; } }
     </style>
 </head>
 <body>
-    <!-- Sidebar Overlay -->
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
-
-<!-- زر فتح القائمة الجانبية في الجوال -->
-<button class="mobile-menu-btn" id="mobileMenuBtn" onclick="openSidebar()" style="display:none;position:fixed;top:12px;right:12px;z-index:150;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:0.4rem 0.6rem;cursor:pointer;font-size:1.2rem;">☰</button>
-    <aside class="sidebar">
-        <div class="logo">📋 Nivora</div>
-        <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>لوحة القيادة</a>
-        <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg>المهام</a>
-        <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>المشاريع</a>
-        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg>Kanban</a>
-        <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>Gantt</a>
-        <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>التقويم</a>
-        <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>التقارير</a>
-        <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg>Workflows</a>
-        <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>القوالب</a>
-        <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>الأرشيف</a>
-        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>الفريق</a>
-        <a href="chat.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>المحادثة</a>
+    <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+    <aside class="sidebar" id="sidebar">
+        <div class="logo"><span>📋 Nivora</span></div>
+        <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="label">لوحة القيادة</span></a>
+        <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg><span class="label">المهام</span></a>
+        <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">المشاريع</span></a>
+        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg><span class="label">Kanban</span></a>
+        <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">Gantt</span></a>
+        <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
+        <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
+        <a href="chat.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="label">المحادثة</span></a>
+        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
     </aside>
 
     <div class="main">
@@ -223,228 +84,100 @@
     <div id="topAvatar" style="width:32px;height:32px;border-radius:50%;background:#E2E8F0;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:#64748B;overflow:hidden;"></div>
     <span id="topUsername" style="font-size:0.8rem;font-weight:600;"></span>
 </div>
-                <button class="btn btn-outline" onclick="toggleLang()" id="langBtn" style="height:36px;">🌐 EN</button>
-                <button class="btn btn-outline" onclick="toggleDark()" id="darkBtn" style="height:36px;">🌙</button>
-                <span class="online-users" id="onlineUsers">🟢 0 متصل</span>
+                <span class="online-users"><span class="online-dot"></span> <span id="onlineCount">0</span> متصل</span>
+                <button class="btn btn-outline" onclick="toggleDark()" id="darkBtn" style="height:32px;font-size:0.75rem;">🌙</button>
+                <button class="btn btn-outline" onclick="logout()" style="height:32px;font-size:0.75rem;">خروج</button>
             </div>
         </div>
-        <div class="search-row">
-            <input type="text" id="searchInput" placeholder="🔍 بحث في المحادثة..." oninput="filterMessages()">
+        <div class="messages" id="messages">
+            <div class="empty-chat">💬 لا توجد رسائل بعد. كن أول من يتحدث!</div>
         </div>
-        <div class="pinned" id="pinnedMessage" style="display:none;">
-            📌 <strong id="pinnedText"></strong>
-            <button onclick="unpinMessage()" style="background:none;border:none;cursor:pointer;margin-right:0.5rem;">✕</button>
-        </div>
-        <div class="messages" id="messages"></div>
         <div class="typing-indicator" id="typingIndicator"></div>
         <div class="input-row" style="position:relative;">
             <div class="emoji-picker" id="emojiPicker">
                 <span onclick="addEmoji('👍')">👍</span><span onclick="addEmoji('❤️')">❤️</span><span onclick="addEmoji('😂')">😂</span>
                 <span onclick="addEmoji('🔥')">🔥</span><span onclick="addEmoji('🎉')">🎉</span><span onclick="addEmoji('😢')">😢</span>
                 <span onclick="addEmoji('👀')">👀</span><span onclick="addEmoji('✅')">✅</span>
+                <span onclick="addEmoji('🚀')">🚀</span><span onclick="addEmoji('💡')">💡</span>
+                <span onclick="addEmoji('👏')">👏</span><span onclick="addEmoji('🙏')">🙏</span>
             </div>
-            <span class="emoji-btn" onclick="toggleEmoji()">😀</span>
-            <input type="text" class="input" id="msgInput" placeholder="اكتب رسالة...">
-            <button class="btn btn-primary" onclick="sendMessage()">إرسال</button>
+            <button class="emoji-btn" onclick="toggleEmoji()">😀</button>
+            <input type="text" id="msgInput" placeholder="اكتب رسالة... استخدم @ للإشارة" autocomplete="off">
+            <button class="btn btn-primary" onclick="sendMessage()" style="height:44px;border-radius:22px;padding:0 1.5rem;">إرسال</button>
         </div>
     </div>
 
+    <nav class="bottom-nav">
+        <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>الرئيسية</a>
+        <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg>مهام</a>
+        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg>Kanban</a>
+        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>فريق</a>
+        <a href="#" onclick="openSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>المزيد</a>
+    </nav>
+
     <script>
+        function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
+        function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
         const socket = io('https://nivora-t9ov.onrender.com');
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'login.html';
+        function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+        function toggleDark() { document.body.classList.toggle('dark'); const d = document.body.classList.contains('dark'); localStorage.setItem('dark', d); document.getElementById('darkBtn').textContent = d ? '☀️' : '🌙'; }
+        if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
+
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         const username = user.fullName || user.username || 'مستخدم';
-        let messages = [];
-        let pinned = null;
-        let editingId = null;
-        let onlineCount = 1;
+        let messages = [], onlineCount = 1;
 
         socket.emit('join', username);
-
-        socket.on('user-joined', (name) => { onlineCount++; updateOnlineCount(); addSystemMessage(`${name} انضم`); });
-        socket.on('user-left', (name) => { onlineCount--; updateOnlineCount(); addSystemMessage(`${name} غادر`); });
-        socket.on('chat-message', (msg) => { msg.id = Date.now().toString(); messages.push(msg); renderMessages(); });
-        socket.on('edit-message', (data) => { const msg = messages.find(m => m.id === data.id); if (msg) { msg.text = data.text; msg.edited = true; renderMessages(); } });
-        socket.on('delete-message', (id) => { messages = messages.filter(m => m.id !== id); renderMessages(); });
-        socket.on('react-message', (data) => { const msg = messages.find(m => m.id === data.id); if (msg) { if (!msg.reactions) msg.reactions = {}; msg.reactions[data.emoji] = (msg.reactions[data.emoji] || 0) + 1; renderMessages(); } });
-        socket.on('pin-message', (msg) => { pinned = msg; document.getElementById('pinnedMessage').style.display = 'block'; document.getElementById('pinnedText').textContent = msg.text; });
+        socket.on('user-joined', (name) => { onlineCount++; updateOnlineCount(); addSystemMsg(`${name} انضم`); });
+        socket.on('user-left', (name) => { onlineCount = Math.max(1, onlineCount - 1); updateOnlineCount(); addSystemMsg(`${name} غادر`); });
+        socket.on('chat-message', (msg) => { msg._id = Date.now().toString(); messages.push(msg); renderMessages(); });
+        socket.on('edit-message', (data) => { const m = messages.find(m => m._id === data._id); if (m) { m.text = data.text; m.edited = true; renderMessages(); } });
+        socket.on('delete-message', (id) => { messages = messages.filter(m => m._id !== id); renderMessages(); });
+        socket.on('react-message', (data) => { const m = messages.find(m => m._id === data._id); if (m) { if (!m.reactions) m.reactions = {}; m.reactions[data.emoji] = (m.reactions[data.emoji] || 0) + 1; renderMessages(); } });
         socket.on('typing', (name) => { document.getElementById('typingIndicator').textContent = `${name} يكتب...`; });
         socket.on('stop-typing', () => { document.getElementById('typingIndicator').textContent = ''; });
 
-        function updateOnlineCount() { document.getElementById('onlineUsers').innerHTML = `🟢 ${onlineCount} متصل`; }
+        function updateOnlineCount() { document.getElementById('onlineCount').textContent = onlineCount; }
 
-        function renderMessages(filter = '') {
+        function renderMessages() {
             const container = document.getElementById('messages');
-            const filtered = filter ? messages.filter(m => m.text.includes(filter)) : messages;
-            container.innerHTML = filtered.map(m => {
+            if (messages.length === 0) { container.innerHTML = '<div class="empty-chat">💬 لا توجد رسائل بعد. كن أول من يتحدث!</div>'; return; }
+            container.innerHTML = messages.map(m => {
                 const isMine = m.username === username;
-                const reactions = m.reactions ? Object.entries(m.reactions).map(([e, c]) => `<span class="reaction" onclick="addReaction('${m.id}','${e}')">${e} ${c}</span>`).join('') : '';
-                return `<div class="msg ${isMine ? 'mine' : 'other'}" data-id="${m.id}"><div class="user">${m.username}${m.edited ? ' <small>(معدلة)</small>' : ''}</div><div class="text">${m.text}</div>${reactions ? `<div class="reactions">${reactions}</div>` : ''}<div class="time">${new Date().toLocaleTimeString('ar-SA')}</div><div class="actions">${isMine ? `<button onclick="editMessage('${m.id}')">✏️</button><button onclick="deleteMessage('${m.id}')">🗑️</button>` : ''}<button onclick="addReaction('${m.id}','👍')">👍</button><button onclick="pinMessage('${m.id}')">📌</button></div></div>`;
+                const reactions = m.reactions ? Object.entries(m.reactions).map(([e, c]) => `<span class="reaction" onclick="addReaction('${m._id}','${e}')">${e} ${c}</span>`).join('') : '';
+                return `<div class="msg ${isMine ? 'mine' : 'other'}">
+                    <div class="user">${m.username}${m.edited ? ' <small>(معدلة)</small>' : ''}</div>
+                    <div class="text">${m.text}</div>
+                    ${reactions ? `<div class="reactions">${reactions}</div>` : ''}
+                    <div class="time">${new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}</div>
+                    <div class="actions">
+                        ${isMine ? `<button onclick="editMessage('${m._id}')">✏️</button><button onclick="deleteMessage('${m._id}')">🗑️</button>` : ''}
+                        <button onclick="addReaction('${m._id}','👍')">👍</button>
+                    </div>
+                </div>`;
             }).join('');
             container.scrollTop = container.scrollHeight;
         }
 
-        function addSystemMessage(text) { const div = document.createElement('div'); div.style.cssText = 'text-align:center;color:var(--text-light);font-size:0.8rem;margin:0.5rem 0;'; div.textContent = text; document.getElementById('messages').appendChild(div); }
-        function sendMessage() { const input = document.getElementById('msgInput'); const text = input.value.trim(); if (!text) return; if (editingId) { socket.emit('edit-message', { id: editingId, text }); editingId = null; input.placeholder = 'اكتب رسالة...'; } else { socket.emit('chat-message', { username, text }); } input.value = ''; socket.emit('stop-typing'); }
-        function editMessage(id) { const msg = messages.find(m => m.id === id); if (!msg) return; document.getElementById('msgInput').value = msg.text; document.getElementById('msgInput').placeholder = 'تعديل الرسالة...'; editingId = id; document.getElementById('msgInput').focus(); }
-        function deleteMessage(id) { if (!confirm('حذف الرسالة؟')) return; socket.emit('delete-message', id); messages = messages.filter(m => m.id !== id); renderMessages(); }
+        function addSystemMsg(text) { const d = document.createElement('div'); d.className = 'system-msg'; d.textContent = text; document.getElementById('messages').appendChild(d); document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight; }
+
+        function sendMessage() {
+            const input = document.getElementById('msgInput'); const text = input.value.trim(); if (!text) return;
+            socket.emit('chat-message', { username, text }); input.value = ''; socket.emit('stop-typing');
+        }
+
+        function editMessage(id) { const m = messages.find(m => m._id === id); if (!m) return; const newText = prompt('تعديل:', m.text); if (newText) socket.emit('edit-message', { id, text: newText }); }
+        function deleteMessage(id) { if (confirm('حذف؟')) socket.emit('delete-message', id); }
         function addReaction(id, emoji) { socket.emit('react-message', { id, emoji }); }
-        function pinMessage(id) { const msg = messages.find(m => m.id === id); if (msg) socket.emit('pin-message', msg); }
-        function unpinMessage() { pinned = null; document.getElementById('pinnedMessage').style.display = 'none'; }
-        function filterMessages() { renderMessages(document.getElementById('searchInput').value); }
         function toggleEmoji() { document.getElementById('emojiPicker').classList.toggle('show'); }
         function addEmoji(emoji) { document.getElementById('msgInput').value += emoji; document.getElementById('msgInput').focus(); }
 
-        function toggleDark() { document.body.classList.toggle('dark'); const isDark = document.body.classList.contains('dark'); localStorage.setItem('dark', isDark); document.getElementById('darkBtn').textContent = isDark ? '☀️' : '🌙'; }
-        if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
-        if (typeof currentLang !== 'undefined') { document.getElementById('langBtn').innerHTML = currentLang === 'ar' ? '🌐 EN' : '🌐 AR'; }
-
+        document.getElementById('msgInput').addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });
         let typingTimeout;
         document.getElementById('msgInput').addEventListener('input', () => { socket.emit('typing', username); clearTimeout(typingTimeout); typingTimeout = setTimeout(() => socket.emit('stop-typing'), 2000); });
-        document.getElementById('msgInput').addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });
-        document.addEventListener('click', (e) => { if (!e.target.closest('.emoji-btn') && !e.target.closest('.emoji-picker')) { document.getElementById('emojiPicker').classList.remove('show'); } });
-
- // دوال فتح وإغلاق القائمة الجانبية في الجوال
-function openSidebar() {
-    document.querySelector('.sidebar').classList.add('open');
-    document.getElementById('sidebarOverlay').classList.add('show');
-}
-function closeSidebar() {
-    document.querySelector('.sidebar').classList.remove('open');
-    document.getElementById('sidebarOverlay').classList.remove('show');
-}
-
-// إظهار زر القائمة في الجوال
-function updateMobileUI() {
-    const btn = document.getElementById('mobileMenuBtn');
-    if (window.innerWidth <= 768) {
-        btn.style.display = 'block';
-    } else {
-        btn.style.display = 'none';
-        closeSidebar();
-    }
-}
-window.addEventListener('resize', updateMobileUI);
-// ========== @Mention Auto-complete ==========
-let mentionUsers = [];
-let mentionIndex = -1;
-let mentionStartPos = -1;
-
-// تحميل قائمة المستخدمين في workspace
-async function loadMentionUsers() {
-    try {
-        const wsId = localStorage.getItem('workspaceId');
-        if (!wsId) return;
-        
-        const res = await fetch(`${API_BASE}/workspaces/${wsId}/members`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const members = await res.json();
-        mentionUsers = members
-            .filter(m => m.userId)
-            .map(m => m.userId.username || m.userId.email || '');
-    } catch (err) {
-        console.error('خطأ في تحميل المستخدمين للـ mention');
-    }
-}
-
-// إنشاء قائمة mention منسدلة
-function createMentionDropdown(filter = '') {
-    // إزالة القائمة القديمة
-    const oldDropdown = document.getElementById('mentionDropdown');
-    if (oldDropdown) oldDropdown.remove();
-    
-    const filtered = mentionUsers.filter(u => u.toLowerCase().includes(filter.toLowerCase()));
-    if (filtered.length === 0) return;
-    
-    const dropdown = document.createElement('div');
-    dropdown.id = 'mentionDropdown';
-    dropdown.style.cssText = `
-        position: absolute; bottom: 55px; right: 1.5rem; background: var(--card);
-        border: 1px solid var(--border); border-radius: 8px; max-height: 150px;
-        overflow-y: auto; z-index: 20; min-width: 180px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    `;
-    
-    filtered.forEach((user, index) => {
-        const item = document.createElement('div');
-        item.textContent = user;
-        item.style.cssText = `
-            padding: 0.5rem 0.75rem; cursor: pointer; font-size: 0.85rem;
-            ${index === 0 ? 'background: #EFF6FF; color: var(--primary);' : ''}
-        `;
-        item.addEventListener('click', () => selectMention(user));
-        dropdown.appendChild(item);
-    });
-    
-    document.querySelector('.input-row').appendChild(dropdown);
-    mentionIndex = 0;
-}
-
-// اختيار mention
-function selectMention(username) {
-    const input = document.getElementById('msgInput');
-    if (mentionStartPos >= 0) {
-        const before = input.value.substring(0, mentionStartPos);
-        const after = input.value.substring(input.selectionStart);
-        input.value = before + '@' + username + ' ' + after;
-    }
-    removeMentionDropdown();
-    input.focus();
-}
-
-// إزالة القائمة المنسدلة
-function removeMentionDropdown() {
-    const dropdown = document.getElementById('mentionDropdown');
-    if (dropdown) dropdown.remove();
-    mentionStartPos = -1;
-    mentionIndex = -1;
-}
-
-// مراقبة الإدخال للـ mention
-document.getElementById('msgInput').addEventListener('input', function(e) {
-    const cursorPos = this.selectionStart;
-    const textBeforeCursor = this.value.substring(0, cursorPos);
-    const atSignIndex = textBeforeCursor.lastIndexOf('@');
-    
-    if (atSignIndex >= 0) {
-        const textAfterAt = textBeforeCursor.substring(atSignIndex + 1);
-        if (!textAfterAt.includes(' ')) {
-            mentionStartPos = atSignIndex;
-            createMentionDropdown(textAfterAt);
-            return;
-        }
-    }
-    
-    removeMentionDropdown();
-});
-
-// التنقل بلوحة المفاتيح في القائمة
-document.getElementById('msgInput').addEventListener('keydown', function(e) {
-    const dropdown = document.getElementById('mentionDropdown');
-    if (!dropdown) return;
-    
-    if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        mentionIndex = Math.min(mentionIndex + 1, dropdown.children.length - 1);
-        updateDropdownSelection(dropdown);
-    } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        mentionIndex = Math.max(mentionIndex - 1, 0);
-        updateDropdownSelection(dropdown);
-    } else if (e.key === 'Enter' && mentionIndex >= 0) {
-        e.preventDefault();
-        const selected = dropdown.children[mentionIndex];
-        if (selected) selected.click();
-    } else if (e.key === 'Escape') {
-        removeMentionDropdown();
-    }
-});
-
-function updateDropdownSelection(dropdown) {
-    Array.from(dropdown.children).forEach((item, i) => {
-        item.style.background = i === mentionIndex ? '#EFF6FF' : '';
-        item.style.color = i === mentionIndex ? 'var(--primary)' : '';
-    });
-}
+        document.addEventListener('click', (e) => { if (!e.target.closest('.emoji-btn') && !e.target.closest('.emoji-picker')) document.getElementById('emojiPicker').classList.remove('show'); });
 document.addEventListener('DOMContentLoaded', () => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const avatar = document.getElementById('topAvatar');
@@ -462,9 +195,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
-// تحميل المستخدمين عند بدء الصفحة
-loadMentionUsers();
-updateMobileUI();       
         updateOnlineCount();
     </script>
 </body>
