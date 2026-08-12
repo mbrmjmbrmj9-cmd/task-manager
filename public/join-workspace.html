@@ -48,10 +48,11 @@
             try {
                 const res = await fetch('https://nivora-t9ov.onrender.com/api/workspaces/join', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ code }) });
                 const data = await res.json();
-                if (res.ok) { localStorage.setItem('workspaceId', data._id); localStorage.setItem('inviteCode', data.inviteCode); window.location.href = 'index.html'; }
+                if (res.ok) { localStorage.setItem('workspaceId', data._id); localStorage.setItem('inviteCode', data.inviteCode); window.location.href = 'dashboard.html'; }
                 else { alert(data.error); }
             } catch (err) { alert('خطأ في الاتصال'); }
         }
     </script>
 </body>
 </html>
+

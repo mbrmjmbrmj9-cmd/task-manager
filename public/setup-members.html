@@ -66,7 +66,8 @@
         let members = [];
         function addMember() { const name = document.getElementById('memberName').value.trim(); const email = document.getElementById('memberEmail').value.trim(); if (!name || !email) return; members.push({ name, email }); document.getElementById('memberName').value = ''; document.getElementById('memberEmail').value = ''; renderMembers(); }
         function renderMembers() { document.getElementById('memberBody').innerHTML = members.map((m, i) => `<tr><td>${m.name}</td><td>${m.email}</td><td><button class="btn-remove" onclick="members.splice(${i},1);renderMembers();">✕</button></td></tr>`).join(''); }
-        function finish() { window.location.href = 'index.html'; }
+        function finish() { window.location.href = 'dashboard.html'; }
     </script>
 </body>
 </html>
+

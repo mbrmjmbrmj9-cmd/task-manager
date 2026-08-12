@@ -269,7 +269,7 @@
                 const other = wss.filter(w => w._id !== wsId);
                 if (other.length > 0) { localStorage.setItem('workspaceId', other[0]._id); localStorage.setItem('inviteCode', other[0].inviteCode || ''); }
                 else { localStorage.removeItem('workspaceId'); localStorage.removeItem('inviteCode'); }
-                window.location.href = 'index.html';
+                window.location.href = 'dashboard.html';
             }
         }
 
@@ -345,3 +345,4 @@ async function loadActivity() {
     </script>
 </body>
 </html>
+
