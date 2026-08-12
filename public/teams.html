@@ -104,6 +104,11 @@
         <div class="topbar">
             <h1>🏢 فرق العمل</h1>
             <div style="display:flex;gap:0.5rem;">
+                <!-- أيقونة المستخدم في الـ Topbar -->
+<div style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;" onclick="window.location.href='profile.html'">
+    <div id="topAvatar" style="width:32px;height:32px;border-radius:50%;background:#E2E8F0;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:#64748B;overflow:hidden;"></div>
+    <span id="topUsername" style="font-size:0.8rem;font-weight:600;"></span>
+</div>
                 <a href="workspace.html" class="btn btn-primary" id="btnNewTeam" style="display:none;">➕ فريق جديد</a>
                 <button class="btn btn-outline" onclick="toggleDark()" id="darkBtn" style="height:36px;">🌙</button>
                 <button class="btn btn-outline" onclick="logout()">خروج</button>
@@ -184,6 +189,23 @@ function updateMobileUI() {
     }
 }
 window.addEventListener('resize', updateMobileUI);
+document.addEventListener('DOMContentLoaded', () => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const avatar = document.getElementById('topAvatar');
+    const username = document.getElementById('topUsername');
+    
+    if (username) {
+        username.textContent = user.fullName || user.username || 'مستخدم';
+    }
+    
+    if (avatar) {
+        if (user.avatar) {
+            avatar.innerHTML = `<img src="${user.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+        } else {
+            avatar.textContent = (user.fullName || user.username || 'م')[0];
+        }
+    }
+});
 updateMobileUI();   
 
         loadTeams();

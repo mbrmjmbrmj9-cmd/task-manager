@@ -95,6 +95,11 @@
     <main class="main">
         <div class="topbar"><div><h1>📅 التقويم</h1><p class="project-title" id="projectTitle"></p></div>
             <div style="display:flex;gap:0.5rem;">
+                <!-- أيقونة المستخدم في الـ Topbar -->
+<div style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;" onclick="window.location.href='profile.html'">
+    <div id="topAvatar" style="width:32px;height:32px;border-radius:50%;background:#E2E8F0;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:#64748B;overflow:hidden;"></div>
+    <span id="topUsername" style="font-size:0.8rem;font-weight:600;"></span>
+</div>
                 <select id="projectFilter" onchange="loadCalendar()" style="height:36px;border-radius:8px;border:1px solid var(--border);padding:0 0.5rem;font-family:inherit;font-size:0.8rem;background:var(--card);color:var(--text);"><option value="">كل المشاريع</option></select>
                 <button class="btn btn-outline" onclick="toggleDark()" id="darkBtn" style="height:36px;">🌙</button>
                 <button class="btn btn-outline" onclick="logout()" style="height:36px;">خروج</button>
@@ -241,7 +246,23 @@
             if (hidden > 0) html += `<div class="cal-more">+${hidden} أكثر</div>`;
             return html;
         }
-
+document.addEventListener('DOMContentLoaded', () => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const avatar = document.getElementById('topAvatar');
+    const username = document.getElementById('topUsername');
+    
+    if (username) {
+        username.textContent = user.fullName || user.username || 'مستخدم';
+    }
+    
+    if (avatar) {
+        if (user.avatar) {
+            avatar.innerHTML = `<img src="${user.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+        } else {
+            avatar.textContent = (user.fullName || user.username || 'م')[0];
+        }
+    }
+});
         loadProjects().then(() => loadCalendar());
     </script>
 </body>
