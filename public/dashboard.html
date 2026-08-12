@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nivora | لوحة القيادة</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#2563EB">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        :root { --sidebar-w: 240px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; transition: background 0.3s; }
+        .sidebar { width: var(--sidebar-w); background: var(--card); border-left: 1px solid var(--border); padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 100; overflow-y: auto; display: flex; flex-direction: column; gap: 0.25rem; }
+        .sidebar .logo { font-size: 1.3rem; font-weight: 800; padding: 0 0.75rem; margin-bottom: 1rem; color: var(--primary); }
+        .sidebar a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 0.9rem; white-space: nowrap; }
+        .sidebar a:hover, .sidebar a.active { background: #EFF6FF; color: var(--primary); }
+        .sidebar a svg { width: 20px; height: 20px; flex-shrink: 0; }
+        .sidebar .label { transition: opacity 0.2s; }
+        .main { margin-right: var(--sidebar-w); padding: 1.5rem; min-height: 100vh; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.75rem; }
+        .topbar h1 { font-size: 1.5rem; font-weight: 800; }
+        .welcome-text { font-size: 0.9rem; color: var(--text-light); margin-bottom: 1.5rem; }
+        .welcome-text strong { color: var(--text); }
+
+        .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+        .kpi-card { padding: 1.5rem; border-radius: 14px; display: flex; align-items: center; gap: 1rem; transition: transform 0.15s; }
+        .kpi-card:hover { transform: translateY(-2px); }
+        .kpi-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
+        .kpi-icon.blue { background: #EFF6FF; color: #2563EB; }
+        .kpi-icon.green { background: #DCFCE7; color: #16A34A; }
+        .kpi-icon.red { background: #FEE2E2; color: #DC2626; }
+        .kpi-icon.purple { background: #F5F3FF; color: #7C3AED; }
+        .kpi-icon.orange { background: #FFF7ED; color: #EA580C; }
+        .kpi-info { flex: 1; }
+        .kpi-label { font-size: 0.78rem; font-weight: 600; color: var(--text-light); margin-bottom: 0.2rem; }
+        .kpi-value { font-size: 2rem; font-weight: 800; line-height: 1; }
+
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+        .section-card { padding: 1.5rem; }
+        .section-card h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .task-list-mini { display: flex; flex-direction: column; gap: 0.4rem; }
+        .task-item-mini { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.7rem; border-radius: 8px; background: #F8FAFC; font-size: 0.82rem; cursor: pointer; transition: background 0.1s; }
+        body.dark .task-item-mini { background: #0F172A; }
+        .task-item-mini:hover { background: #F1F5F9; }
+        body.dark .task-item-mini:hover { background: #1E293B; }
+        .task-item-mini .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .task-item-mini .title { flex: 1; font-weight: 500; }
+        .task-item-mini .meta { font-size: 0.7rem; color: var(--text-light); }
+        .task-item-mini .priority { font-size: 0.7rem; }
+
+        .activity-list { display: flex; flex-direction: column; gap: 0.3rem; }
+        .activity-item { padding: 0.55rem 0.7rem; border-radius: 8px; font-size: 0.8rem; border-right: 3px solid transparent; }
+        .activity-item.create { border-right-color: #3B82F6; background: #F8FAFC; }
+        .activity-item.complete { border-right-color: #22C55E; background: #F8FAFC; }
+        .activity-item.comment { border-right-color: #8B5CF6; background: #F8FAFC; }
+        .activity-item.file { border-right-color: #D97706; background: #F8FAFC; }
+        body.dark .activity-item { background: #0F172A; }
+        .activity-item .act-user { font-weight: 700; }
+        .activity-item .act-time { font-size: 0.65rem; color: var(--text-light); display: block; margin-top: 0.1rem; }
+
+        .empty-mini { text-align: center; padding: 2rem 1rem; color: var(--text-light); font-size: 0.85rem; }
+
+        .skeleton { background: linear-gradient(90deg, #E2E8F0 25%, #F1F5F9 50%, #E2E8F0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
+        body.dark .skeleton { background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%); background-size: 200% 100%; }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
+        .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); padding: 0.5rem 1rem; z-index: 90; justify-content: space-around; }
+        .bottom-nav a { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-light); text-decoration: none; font-size: 0.65rem; font-weight: 500; }
+        .bottom-nav a.active { color: var(--primary); }
+        .bottom-nav a svg { width: 22px; height: 22px; }
+
+        @media (max-width: 1024px) { :root { --sidebar-w: 72px; } .sidebar { padding: 1rem 0.5rem; } .sidebar .logo { font-size: 1rem; text-align: center; } .sidebar .label, .sidebar .logo span { display: none; } .sidebar a { justify-content: center; padding: 0.5rem; } .kpi-grid { grid-template-columns: repeat(2, 1fr); } .dashboard-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 0.75rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; } .kpi-card { padding: 1rem; gap: 0.5rem; } .kpi-icon { width: 36px; height: 36px; font-size: 1.1rem; } .kpi-value { font-size: 1.5rem; } }
+    </style>
+</head>
+<body>
+    <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+    <div class="logo"><span>📋 Nivora</span></div>
+    <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="label">لوحة القيادة</span></a>
+    <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg><span class="label">المهام</span></a>
+    <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">المشاريع</span></a>
+    <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg><span class="label">Kanban</span></a>
+    <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">Gantt</span></a>
+    <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
+    <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
+    <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg><span class="label">Workflows</span></a>
+    <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">القوالب</span></a>
+    <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg><span class="label">الأرشيف</span></a>
+    <a href="chat.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="label">المحادثة</span></a>
+    <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
+    <a href="teams.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">فرق العمل</span></a>
+</aside>
+
+    <main class="main">
+        <div class="topbar">
+            <div>
+                <h1>👋 لوحة القيادة</h1>
+                <p class="welcome-text">مرحبًا <strong id="usernameDisplay"></strong>، إليك نظرة عامة على أعمالك</p>
+            </div>
+            <!-- أيقونة المستخدم في الـ Topbar -->
+<div style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;" onclick="window.location.href='profile.html'">
+    <div id="topAvatar" style="width:32px;height:32px;border-radius:50%;background:#E2E8F0;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:#64748B;overflow:hidden;"></div>
+    <span id="topUsername" style="font-size:0.8rem;font-weight:600;"></span>
+</div>
+            <div style="display:flex;gap:0.5rem;align-items:center;">
+                <select id="projectFilter" onchange="loadDashboard()" style="height:36px;border-radius:8px;border:1px solid var(--border);padding:0 0.5rem;font-family:inherit;font-size:0.8rem;background:var(--card);color:var(--text);"><option value="">كل المشاريع</option></select>
+                <button class="btn btn-outline" onclick="toggleLang()" id="langBtn" style="height:36px;">🌐 EN</button>
+                <button class="btn btn-outline" onclick="toggleDark()" id="darkBtn" style="height:36px;">🌙</button>
+                <button class="btn btn-outline" onclick="logout()" style="height:36px;">خروج</button>
+            </div>
+        </div>
+
+        <div class="kpi-grid" id="kpiGrid"></div>
+        <div class="dashboard-grid">
+            <div class="card section-card">
+                <h3>📋 مهامك القادمة</h3>
+                <div class="task-list-mini" id="upcomingTasks"></div>
+            </div>
+            <div class="card section-card">
+                <h3>📜 النشاط الأخير</h3>
+                <div class="activity-list" id="recentActivity"></div>
+            </div>
+        </div>
+    </main>
+
+    <nav class="bottom-nav">
+        <a href="index.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>الرئيسية</a>
+        <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg>مهام</a>
+        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg>Kanban</a>
+        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>فريق</a>
+        <a href="#" onclick="openSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>المزيد</a>
+    </nav>
+    <script src="js/i18n.js"></script>
+
+    <script>
+        function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
+        function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
+        const API_BASE = 'https://nivora-t9ov.onrender.com/api';
+        const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (!token) window.location.href = 'login.html';
+        function logout() { localStorage.clear(); window.location.href = 'login.html'; }
+        function toggleDark() { document.body.classList.toggle('dark'); const d = document.body.classList.contains('dark'); localStorage.setItem('dark', d); document.getElementById('darkBtn').textContent = d ? '☀️' : '🌙'; }
+        if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
+        document.getElementById('usernameDisplay').textContent = user.fullName || user.username || 'مستخدم';
+        function showSkeleton() { document.getElementById('kpiGrid').innerHTML = Array(5).fill('<div class="card kpi-card"><div class="kpi-icon skeleton" style="width:50px;height:50px;"></div><div class="kpi-info"><div class="skeleton" style="height:12px;width:60%;margin-bottom:6px;"></div><div class="skeleton" style="height:28px;width:40%;"></div></div></div>').join(''); document.getElementById('upcomingTasks').innerHTML = Array(3).fill('<div class="skeleton" style="height:40px;width:100%;margin-bottom:0.4rem;"></div>').join(''); document.getElementById('recentActivity').innerHTML = Array(4).fill('<div class="skeleton" style="height:36px;width:100%;margin-bottom:0.3rem;"></div>').join(''); }
+
+        async function loadProjects() { const res = await fetch(`${API_BASE}/projects`, { headers: { 'Authorization': `Bearer ${token}` } }); const projects = await res.json(); const sel = document.getElementById('projectFilter'); sel.innerHTML = '<option value="">كل المشاريع</option>' + projects.map(p => `<option value="${p._id}">${p.name}</option>`).join(''); }
+
+        async function loadDashboard() {
+            showSkeleton();
+            try {
+                const pid = document.getElementById('projectFilter').value;
+                const [tasksRes, projectsRes] = await Promise.all([fetch(`${API_BASE}/tasks${pid ? '?projectId=' + pid : ''}`, { headers: { 'Authorization': `Bearer ${token}` } }), fetch(`${API_BASE}/projects`, { headers: { 'Authorization': `Bearer ${token}` } })]);
+                const tasks = await tasksRes.json(); const projects = await projectsRes.json();
+                renderKPIs(tasks, projects);
+                renderUpcomingTasks(tasks);
+                renderRecentActivity(tasks);
+            } catch (err) { document.getElementById('kpiGrid').innerHTML = '<p style="text-align:center;color:#DC2626;">تعذر تحميل البيانات</p>'; }
+        }
+
+        function renderKPIs(tasks, projects) {
+            const total = tasks.length;
+            const done = tasks.filter(t => t.status === 'done').length;
+            const inProgress = tasks.filter(t => t.status === 'in-progress').length;
+            const overdue = tasks.filter(t => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'done').length;
+            const rate = total > 0 ? Math.round((done / total) * 100) : 0;
+            const cards = [
+                { icon: '📋', cls: 'blue', label: 'إجمالي المهام', value: total },
+                { icon: '✅', cls: 'green', label: 'المكتملة', value: done },
+                { icon: '🔄', cls: 'orange', label: 'قيد التنفيذ', value: inProgress },
+                { icon: '⏰', cls: 'red', label: 'المتأخرة', value: overdue },
+                { icon: '📈', cls: 'purple', label: 'نسبة الإنجاز', value: rate + '%' }
+            ];
+            document.getElementById('kpiGrid').innerHTML = cards.map(c => `
+                <div class="card kpi-card">
+                    <div class="kpi-icon ${c.cls}">${c.icon}</div>
+                    <div class="kpi-info"><div class="kpi-label">${c.label}</div><div class="kpi-value" style="color:${c.cls==='blue'?'#2563EB':c.cls==='green'?'#16A34A':c.cls==='red'?'#DC2626':c.cls==='orange'?'#EA580C':'#7C3AED'}">${c.value}</div></div>
+                </div>`).join('');
+        }
+
+        function renderUpcomingTasks(tasks) {
+            const upcoming = tasks.filter(t => t.status !== 'done' && t.status !== 'archived').sort((a, b) => new Date(a.dueDate || '2099') - new Date(b.dueDate || '2099')).slice(0, 5);
+            if (upcoming.length === 0) { document.getElementById('upcomingTasks').innerHTML = '<div class="empty-mini">🎉 لا توجد مهام قادمة</div>'; return; }
+            document.getElementById('upcomingTasks').innerHTML = upcoming.map(t => {
+                const colors = { 'new': '#3B82F6', 'in-progress': '#D97706', 'review': '#8B5CF6', 'blocked': '#EF4444' };
+                return `<div class="task-item-mini" onclick="window.location.href='task.html?id=${t._id}'">
+                    <span class="dot" style="background:${colors[t.status] || '#94A3B8'};"></span>
+                    <span class="title">${t.title}</span>
+                    <span class="meta">${t.dueDate ? new Date(t.dueDate).toLocaleDateString('ar-SA') : '-'}</span>
+                    <span class="priority">${t.priority === 'critical' ? '🔴' : t.priority === 'high' ? '🟠' : t.priority === 'medium' ? '🟡' : '🟢'}</span>
+                </div>`;
+            }).join('');
+        }
+
+        function renderRecentActivity(tasks) {
+            const allActivity = [];
+            tasks.forEach(t => { if (t.activity) t.activity.forEach(a => allActivity.push({ ...a.toObject ? a.toObject() : a, taskTitle: t.title, taskId: t._id })); });
+            allActivity.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            const recent = allActivity.slice(0, 8);
+            if (recent.length === 0) { document.getElementById('recentActivity').innerHTML = '<div class="empty-mini">📭 لا يوجد نشاط حديث</div>'; return; }
+            document.getElementById('recentActivity').innerHTML = recent.map(a => {
+                const cls = a.action?.includes('إنشاء') ? 'create' : a.action?.includes('مكتمل') || a.action?.includes('done') ? 'complete' : a.action?.includes('تعليق') ? 'comment' : 'file';
+                return `<div class="activity-item ${cls}">
+                    <span class="act-user">${a.username || 'مستخدم'}</span> - ${a.action} - <span style="color:var(--primary);cursor:pointer;" onclick="window.location.href='task.html?id=${a.taskId}'">${a.taskTitle || ''}</span>
+                    <span class="act-time">${new Date(a.createdAt).toLocaleString('ar-SA')}</span>
+                </div>`;
+            }).join('');
+        }
+        
+document.addEventListener('DOMContentLoaded', () => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const avatar = document.getElementById('topAvatar');
+    const username = document.getElementById('topUsername');
+    
+    if (username) {
+        username.textContent = user.fullName || user.username || 'مستخدم';
+    }
+    
+    if (avatar) {
+        if (user.avatar) {
+            avatar.innerHTML = `<img src="${user.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+        } else {
+            avatar.textContent = (user.fullName || user.username || 'م')[0];
+        }
+    }
+});
+        loadProjects().then(() => loadDashboard());
+    </script>
+</body>
+</html>
