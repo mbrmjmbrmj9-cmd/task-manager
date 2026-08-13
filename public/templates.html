@@ -332,9 +332,10 @@ let notifications = [];
 
 async function loadNotifications() {
     try {
-        const res = await fetch(`${API_BASE}/notifications`, { headers: { 'Authorization': `Bearer ${token}` } });
-        const data = await res.json();
-        notifications = data.notifications || data;
+        const res = await fetch(`${API_BASE}/notifications?limit=100`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const response = await res.json();
+        // ✅ التعامل مع paginatedResponse
+        notifications = response.data || response.notifications || response;
         renderNotifications();
         updateNotifBadge();
     } catch (err) {}
