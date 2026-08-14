@@ -1,5 +1,8 @@
-const { app, BrowserWindow, shell } = require('electron');
-const path = require('path');
+const { app, BrowserWindow, shell, dialog } = require('electron');
+const https = require('https');
+
+const CURRENT_VERSION = '1.0.0';
+const VERSIONS_URL = 'https://task-manager-theta-beryl-91.vercel.app/versions.json';
 
 let mainWindow;
 
@@ -46,7 +49,41 @@ function createWindow() {
     });
 }
 
-app.whenReady().then(createWindow);
+function checkForUpdates() {
+    https.get(VERSIONS_URL, (res) => {
+        let data = '';
+        res.on('data', chunk => data += chunk);
+        res.on('end', () => {
+            try {
+                const json = JSON.parse(data);
+                const windowsInfo = json.windows;
+                const latestVersion = windowsInfo.version;
+                const downloadUrl = windowsInfo.url;
+                const notes = json.releaseNotes || 'تحديث جديد';
+
+                if (latestVersion !== CURRENT_VERSION) {
+                    const result = dialog.showMessageBoxSync({
+                        type: 'info',
+                        title: 'تحديث جديد',
+                        message: `يوجد تحديث جديد v${latestVersion}`,
+                        detail: notes + '\n\nهل تريد التحميل؟',
+                        buttons: ['تحميل', 'لاحقًا'],
+                        defaultId: 0
+                    });
+                    
+                    if (result === 0) {
+                        shell.openExternal(downloadUrl);
+                    }
+                }
+            } catch (e) {}
+        });
+    }).on('error', () => {});
+}
+
+app.whenReady().then(() => {
+    createWindow();
+    setTimeout(checkForUpdates, 3000);
+});
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
