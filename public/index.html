@@ -163,6 +163,10 @@
 
     <script src="js/components.js"></script>
     <script>
+        // ✅ فحص تسجيل الدخول - إذا المستخدم مسجل، وجهه للوحة القيادة
+if (localStorage.getItem('token')) {
+    window.location.replace('dashboard.html');
+}
         function toggleDark() { document.body.classList.toggle('dark'); const d = document.body.classList.contains('dark'); localStorage.setItem('dark', d); document.getElementById('darkBtn').textContent = d ? '☀️' : '🌙'; }
         if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
 

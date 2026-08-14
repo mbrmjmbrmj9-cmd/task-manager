@@ -3,6 +3,7 @@ const https = require('https');
 
 const CURRENT_VERSION = '1.0.0';
 const VERSIONS_URL = 'https://task-manager-theta-beryl-91.vercel.app/versions.json';
+const HOME_URL = 'https://task-manager-theta-beryl-91.vercel.app/index.html';
 
 let mainWindow;
 
@@ -21,14 +22,14 @@ function createWindow() {
         }
     });
 
-    // ✅ إخفاء شريط القوائم
     mainWindow.setMenuBarVisibility(false);
 
     mainWindow.once('ready-to-show', () => {
         mainWindow.show();
     });
 
-    mainWindow.loadURL('https://task-manager-theta-beryl-91.vercel.app');
+    // ✅ فتح صفحة تسجيل الدخول مباشرة
+    mainWindow.loadURL(HOME_URL);
 
     mainWindow.webContents.setWindowOpenHandler(({ url }) => {
         if (url.includes('accounts.google.com')) {
@@ -40,7 +41,7 @@ function createWindow() {
 
     mainWindow.webContents.on('did-fail-load', () => {
         setTimeout(() => {
-            if (mainWindow) mainWindow.loadURL('https://task-manager-theta-beryl-91.vercel.app');
+            if (mainWindow) mainWindow.loadURL(HOME_URL);
         }, 3000);
     });
 
