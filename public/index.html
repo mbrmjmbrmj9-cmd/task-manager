@@ -13,8 +13,6 @@
         :root { --landing-nav-h: 70px; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); transition: background var(--transition), color var(--transition); overflow-x: hidden; }
-
-        /* ===== Navbar ===== */
         .navbar { position: fixed; top: 0; left: 0; right: 0; height: var(--landing-nav-h); background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); z-index: 1000; transition: all var(--transition); }
         body.dark .navbar { background: rgba(15,23,42,0.85); }
         .navbar.scrolled { box-shadow: var(--shadow-md); }
@@ -23,32 +21,24 @@
         .nav-logo .logo-icon { width: 38px; height: 38px; border-radius: var(--radius-sm); background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.2rem; }
         .nav-logo span { font-size: 1.4rem; font-weight: 800; color: var(--text); }
         .nav-links { display: flex; align-items: center; gap: 1.75rem; }
-        .nav-links a:not(.btn) { text-decoration: none; color: var(--text-light); font-weight: 600; font-size: 0.9rem; transition: color var(--transition-fast); }
+        .nav-links a:not(.btn) { text-decoration: none; color: var(--text-light); font-weight: 600; font-size: 0.9rem; }
         .nav-links a:not(.btn):hover { color: var(--primary); }
         .nav-actions { display: flex; align-items: center; gap: 0.75rem; }
-
-        /* ===== Hero ===== */
         .hero { padding: calc(var(--landing-nav-h) + 5rem) 2rem 5rem; text-align: center; position: relative; }
         .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 30% 40%, var(--primary-light) 0%, transparent 55%), radial-gradient(circle at 70% 60%, var(--primary-light) 0%, transparent 55%); opacity: 0.6; z-index: -1; }
-        .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--primary-light); color: var(--primary); padding: 0.4rem 1.2rem; border-radius: var(--radius-full); font-size: 0.85rem; font-weight: 600; margin-bottom: 1.5rem; }
+        .hero-badge { display: inline-flex; gap: 0.5rem; background: var(--primary-light); color: var(--primary); padding: 0.4rem 1.2rem; border-radius: var(--radius-full); font-size: 0.85rem; font-weight: 600; margin-bottom: 1.5rem; }
         .hero h1 { font-size: 3.5rem; font-weight: 800; line-height: 1.25; margin-bottom: 1.25rem; }
-        .hero h1 .gradient-text { background: linear-gradient(135deg, var(--primary), #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .hero h1 .gradient-text { background: linear-gradient(135deg, var(--primary), #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .hero p { font-size: 1.2rem; color: var(--text-light); max-width: 650px; margin: 0 auto 2rem; line-height: 1.8; }
         .hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
         .hero-actions .btn { height: 52px; padding: 0 2.5rem; font-size: 1.05rem; border-radius: var(--radius-sm); }
-        .hero-stats { display: flex; justify-content: center; gap: 3rem; margin-top: 4rem; flex-wrap: wrap; }
-        .hero-stat { text-align: center; }
-        .hero-stat .stat-value { font-size: 2rem; font-weight: 800; color: var(--primary); }
-        .hero-stat .stat-label { font-size: 0.85rem; color: var(--text-light); margin-top: 0.2rem; }
-
-        /* ===== Features ===== */
         .features { padding: 5rem 2rem; max-width: 1200px; margin: 0 auto; }
         .section-header { text-align: center; margin-bottom: 3.5rem; }
         .section-header h2 { font-size: 2.3rem; font-weight: 800; margin-bottom: 0.75rem; }
         .section-header p { color: var(--text-light); font-size: 1.1rem; }
         .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
-        .feature-card { padding: 2rem 1.75rem; text-align: center; transition: all var(--transition); border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--card); }
-        .feature-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); border-color: var(--primary); }
+        .feature-card { padding: 2rem 1.75rem; text-align: center; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--card); transition: all var(--transition); }
+        .feature-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
         .feature-icon { width: 60px; height: 60px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; font-size: 1.6rem; }
         .feature-icon.blue { background: var(--primary-light); color: var(--primary); }
         .feature-icon.green { background: var(--success-light); color: var(--success); }
@@ -57,68 +47,56 @@
         .feature-icon.red { background: var(--danger-light); color: var(--danger); }
         .feature-icon.teal { background: #CCFBF1; color: #0D9488; }
         .feature-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; }
-        .feature-card p { color: var(--text-light); font-size: 0.9rem; line-height: 1.7; }
+        .feature-card p { color: var(--text-light); font-size: 0.9rem; }
 
-        /* ===== Plans ===== */
-        .plans-section { padding: 5rem 2rem; background: var(--secondary-light); }
+        /* ✅ قسم التحميل */
+        .download-section { padding: 5rem 2rem; background: var(--secondary-light); text-align: center; }
+        .download-buttons { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem; }
+        .download-btn { display: flex; align-items: center; gap: 1rem; padding: 1.25rem 2rem; border-radius: var(--radius-lg); text-decoration: none; font-weight: 700; transition: all var(--transition); min-width: 220px; }
+        .download-btn.android { background: var(--success-light); color: var(--success); border: 2px solid var(--success); }
+        .download-btn.android:hover { background: var(--success); color: #fff; transform: translateY(-3px); }
+        .download-btn.windows { background: var(--primary-light); color: var(--primary); border: 2px solid var(--primary); }
+        .download-btn.windows:hover { background: var(--primary); color: #fff; transform: translateY(-3px); }
+        .download-btn .btn-icon { font-size: 2.5rem; }
+        .download-btn .os-name { font-size: 1.1rem; display: block; }
+        .download-btn .os-desc { font-size: 0.8rem; opacity: 0.8; }
+
+        .plans-section { padding: 5rem 2rem; }
         .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 1.5rem; max-width: 1100px; margin: 0 auto; }
-        .plan-card { background: var(--card); border-radius: var(--radius-xl); padding: 2.5rem 2rem; text-align: center; border: 2px solid var(--border); transition: all var(--transition); position: relative; }
-        .plan-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
-        .plan-card.featured { border-color: var(--primary); box-shadow: var(--shadow-md); }
-        .plan-card.featured::before { content: 'الأكثر شيوعاً'; position: absolute; top: -15px; right: 50%; transform: translateX(50%); background: var(--primary); color: #fff; padding: 0.4rem 1.5rem; border-radius: var(--radius-full); font-size: 0.8rem; font-weight: 700; white-space: nowrap; }
+        .plan-card { background: var(--card); border-radius: var(--radius-xl); padding: 2.5rem 2rem; text-align: center; border: 2px solid var(--border); position: relative; }
+        .plan-card.featured { border-color: var(--primary); }
+        .plan-card.featured::before { content: 'الأكثر شيوعاً'; position: absolute; top: -15px; right: 50%; transform: translateX(50%); background: var(--primary); color: #fff; padding: 0.4rem 1.5rem; border-radius: var(--radius-full); font-size: 0.8rem; font-weight: 700; }
         .plan-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
         .plan-name { font-size: 1.3rem; font-weight: 800; }
         .plan-price { font-size: 3.2rem; font-weight: 800; margin: 1rem 0; color: var(--primary); }
-        .plan-price span { font-size: 0.95rem; color: var(--text-muted); font-weight: 500; }
+        .plan-price span { font-size: 0.95rem; color: var(--text-muted); }
         .plan-features { list-style: none; margin: 1.5rem 0 2rem; text-align: right; }
-        .plan-features li { padding: 0.5rem 0; font-size: 0.9rem; color: var(--text-light); display: flex; align-items: center; gap: 0.5rem; }
-        .plan-features li::before { content: '✓'; color: var(--success); font-weight: 800; }
+        .plan-features li { padding: 0.5rem 0; font-size: 0.9rem; color: var(--text-light); }
+        .plan-features li::before { content: '✓'; color: var(--success); font-weight: 800; margin-left: 0.5rem; }
         .plan-card .btn { width: 100%; height: 48px; font-size: 1rem; }
-
-        /* ===== CTA ===== */
-        .cta { padding: 6rem 2rem; text-align: center; position: relative; }
-        .cta::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, var(--primary-light) 0%, transparent 60%); opacity: 0.5; z-index: -1; }
+        .cta { padding: 6rem 2rem; text-align: center; }
         .cta h2 { font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem; }
-        .cta p { color: var(--text-light); font-size: 1.15rem; margin-bottom: 2rem; }
-        .cta .btn { height: 54px; padding: 0 3rem; font-size: 1.1rem; border-radius: var(--radius-sm); }
-
-        /* ===== Footer ===== */
         footer { background: #0F172A; color: #CBD5E0; padding: 4rem 2rem 1.5rem; }
-        body.dark footer { background: #020617; }
         .footer-container { max-width: 1100px; margin: 0 auto; }
         .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 2.5rem; margin-bottom: 2.5rem; }
-        .footer-brand .footer-logo { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem; }
-        .footer-brand .footer-logo .logo-icon { width: 36px; height: 36px; border-radius: var(--radius-sm); background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; }
-        .footer-brand p { color: #94A3B8; font-size: 0.88rem; line-height: 1.7; }
         .footer-col h4 { color: #fff; margin-bottom: 1.2rem; font-size: 0.95rem; }
-        .footer-col a { display: block; color: #94A3B8; text-decoration: none; font-size: 0.88rem; padding: 0.35rem 0; transition: color var(--transition-fast); }
-        .footer-col a:hover { color: #fff; }
+        .footer-col a { display: block; color: #94A3B8; text-decoration: none; font-size: 0.88rem; padding: 0.35rem 0; }
         .footer-bottom { text-align: center; padding-top: 1.5rem; border-top: 1px solid #1E293B; font-size: 0.85rem; color: #64748B; }
-
-        /* ===== Responsive ===== */
         @media (max-width: 768px) {
-            .nav-container { padding: 0 1rem; }
-            .nav-links { gap: 1rem; }
             .nav-links a:not(.btn) { display: none; }
             .hero h1 { font-size: 2.2rem; }
-            .hero p { font-size: 1rem; }
-            .hero-stats { gap: 1.5rem; }
-            .section-header h2 { font-size: 1.8rem; }
-            .features-grid { grid-template-columns: 1fr; }
-            .plans-grid { grid-template-columns: 1fr; }
+            .features-grid, .plans-grid { grid-template-columns: 1fr; }
+            .download-btn { min-width: 100%; justify-content: center; }
         }
     </style>
 </head>
 <body>
-    <!-- ===== Navbar ===== -->
     <nav class="navbar" id="navbar">
         <div class="nav-container">
-            <a href="index.html" class="nav-logo">
-                <div class="logo-icon">N</div>
-                <span>Nivora</span>
-            </a>
+            <a href="index.html" class="nav-logo"><div class="logo-icon">N</div><span>Nivora</span></a>
             <div class="nav-links">
                 <a href="#features">المميزات</a>
+                <a href="#download">التطبيق</a>
                 <a href="#plans">الخطط</a>
                 <div class="nav-actions">
                     <button class="btn btn-ghost btn-icon" onclick="toggleDark()" id="darkBtn" style="width:36px;height:36px;">🌙</button>
@@ -128,87 +106,56 @@
         </div>
     </nav>
 
-    <!-- ===== Hero ===== -->
     <section class="hero">
         <div class="hero-badge">🚀 منصة سحابية متكاملة</div>
         <h1>نظّم <span class="gradient-text">مهامك</span>، أدر فريقك،<br>وأنجز أكثر</h1>
-        <p>منصة Nivora تجمع إدارة المشاريع والمهام والفرق في مساحة عمل واحدة. Kanban، Gantt، Chat، تقارير ذكية، والمزيد.</p>
+        <p>منصة Nivora تجمع إدارة المشاريع والمهام والفرق في مساحة عمل واحدة.</p>
         <div class="hero-actions">
             <a href="login.html" class="btn btn-primary">ابدأ مجاناً</a>
-            <a href="#features" class="btn btn-outline">اكتشف المميزات</a>
-        </div>
-        <div class="hero-stats">
-            <div class="hero-stat"><div class="stat-value">10K+</div><div class="stat-label">فريق يستخدم Nivora</div></div>
-            <div class="hero-stat"><div class="stat-value">1M+</div><div class="stat-label">مهمة منجزة</div></div>
-            <div class="hero-stat"><div class="stat-value">99.9%</div><div class="stat-label">وقت التشغيل</div></div>
+            <a href="#download" class="btn btn-outline">📱 احصل على التطبيق</a>
         </div>
     </section>
 
-    <!-- ===== Features ===== -->
     <section class="features" id="features">
-        <div class="section-header">
-            <h2>كل ما تحتاجه في مكان واحد</h2>
-            <p>أدوات قوية مصممة لتسريع عمل فريقك</p>
-        </div>
+        <div class="section-header"><h2>كل ما تحتاجه في مكان واحد</h2></div>
         <div class="features-grid">
-            <div class="feature-card"><div class="feature-icon blue">📌</div><h3>Kanban Board</h3><p>اسحب وأفلت المهام بين الأعمدة وتابع سير العمل بصريًا</p></div>
-            <div class="feature-card"><div class="feature-icon green">📈</div><h3>Gantt Chart</h3><p>مخطط زمني مع تبعيات لإدارة الجداول بدقة</p></div>
-            <div class="feature-card"><div class="feature-icon purple">💬</div><h3>Chat فوري</h3><p>تواصل مع فريقك في الوقت الحقيقي داخل المشروع</p></div>
-            <div class="feature-card"><div class="feature-icon orange">📊</div><h3>تقارير ذكية</h3><p>إحصائيات ورسوم بيانية لأداء الفريق</p></div>
-            <div class="feature-card"><div class="feature-icon red">⚙️</div><h3>Workflows مخصصة</h3><p>ابنِ مسارات عمل تناسب فريقك</p></div>
-            <div class="feature-card"><div class="feature-icon teal">📅</div><h3>تقويم متكامل</h3><p>اعرض مهامك وتواريخك في تقويم واحد</p></div>
+            <div class="feature-card"><div class="feature-icon blue">📌</div><h3>Kanban Board</h3><p>اسحب وأفلت المهام</p></div>
+            <div class="feature-card"><div class="feature-icon green">📈</div><h3>Gantt Chart</h3><p>مخطط زمني</p></div>
+            <div class="feature-card"><div class="feature-icon purple">💬</div><h3>Chat فوري</h3><p>تواصل مع فريقك</p></div>
+            <div class="feature-card"><div class="feature-icon orange">📊</div><h3>تقارير ذكية</h3><p>إحصائيات</p></div>
+            <div class="feature-card"><div class="feature-icon red">⚙️</div><h3>Workflows</h3><p>مسارات عمل</p></div>
+            <div class="feature-card"><div class="feature-icon teal">📅</div><h3>تقويم</h3><p>مواعيدك</p></div>
         </div>
     </section>
 
-    <!-- ===== Plans ===== -->
-    <section class="plans-section" id="plans">
+    <!-- ✅ قسم التحميل -->
+    <section class="download-section" id="download">
         <div class="section-header">
-            <h2>اختر الخطة المناسبة</h2>
-            <p>جميع الخطط تشمل مهام غير محدودة</p>
+            <h2>📱 احصل على تطبيق Nivora</h2>
+            <p>تجربة أسرع وأسهل على جهازك</p>
         </div>
+        <div class="download-buttons" id="downloadButtons"></div>
+    </section>
+
+    <section class="plans-section" id="plans">
+        <div class="section-header"><h2>اختر الخطة المناسبة</h2></div>
         <div class="plans-grid">
-            <div class="plan-card">
-                <div class="plan-icon">🆓</div>
-                <div class="plan-name">مجاني</div>
-                <div class="plan-price">$0<span>/شهرياً</span></div>
-                <ul class="plan-features"><li>3 مستخدمين</li><li>5 مشاريع</li><li>مهام غير محدودة</li><li>Kanban Board</li><li>تقويم</li></ul>
-                <a href="login.html" class="btn btn-outline">ابدأ مجاناً</a>
-            </div>
-            <div class="plan-card featured">
-                <div class="plan-icon">⭐</div>
-                <div class="plan-name">Pro</div>
-                <div class="plan-price">$29<span>/شهرياً</span></div>
-                <ul class="plan-features"><li>20 مستخدم</li><li>100 مشروع</li><li>Gantt Chart</li><li>Workflows مخصصة</li><li>Chat + مرفقات</li><li>تقارير متقدمة</li></ul>
-                <a href="login.html" class="btn btn-primary">اشتراك Pro</a>
-            </div>
-            <div class="plan-card">
-                <div class="plan-icon">🚀</div>
-                <div class="plan-name">Business</div>
-                <div class="plan-price">$99<span>/شهرياً</span></div>
-                <ul class="plan-features"><li>100 مستخدم</li><li>مشاريع غير محدودة</li><li>كل مميزات Pro</li><li>API Access</li><li>دعم 24/7</li><li>AI Assistant</li></ul>
-                <a href="login.html" class="btn btn-primary">اشتراك Business</a>
-            </div>
+            <div class="plan-card"><div class="plan-icon">🆓</div><div class="plan-name">مجاني</div><div class="plan-price">$0<span>/شهرياً</span></div><ul class="plan-features"><li>3 مستخدمين</li><li>5 مشاريع</li><li>Kanban</li></ul><a href="login.html" class="btn btn-outline">ابدأ مجاناً</a></div>
+            <div class="plan-card featured"><div class="plan-icon">⭐</div><div class="plan-name">Pro</div><div class="plan-price">$29<span>/شهرياً</span></div><ul class="plan-features"><li>20 مستخدم</li><li>100 مشروع</li><li>Gantt</li><li>Workflows</li></ul><a href="login.html" class="btn btn-primary">اشتراك Pro</a></div>
+            <div class="plan-card"><div class="plan-icon">🚀</div><div class="plan-name">Business</div><div class="plan-price">$99<span>/شهرياً</span></div><ul class="plan-features"><li>100 مستخدم</li><li>مشاريع غير محدودة</li><li>كل مميزات Pro</li></ul><a href="login.html" class="btn btn-primary">اشتراك Business</a></div>
         </div>
     </section>
 
-    <!-- ===== CTA ===== -->
     <section class="cta">
         <h2>جاهز لتنظيم أعمالك؟</h2>
-        <p>انضم إلى آلاف الفرق التي تستخدم Nivora</p>
         <a href="login.html" class="btn btn-primary">ابدأ الآن مجاناً 🚀</a>
     </section>
 
-    <!-- ===== Footer ===== -->
     <footer>
         <div class="footer-container">
             <div class="footer-grid">
-                <div class="footer-brand">
-                    <div class="footer-logo"><div class="logo-icon">N</div><strong style="color:#fff;font-size:1.2rem;">Nivora</strong></div>
-                    <p>منصة سحابية لإدارة العمل والمشاريع والفرق. نظّم، تعاون، وأنجز.</p>
-                </div>
-                <div class="footer-col"><h4>المنتج</h4><a href="#features">المميزات</a><a href="#plans">الخطط والأسعار</a><a href="login.html">تسجيل الدخول</a></div>
-                <div class="footer-col"><h4>الدعم</h4><a href="#">مركز المساعدة</a><a href="#">تواصل معنا</a><a href="#">الأسئلة الشائعة</a></div>
-                <div class="footer-col"><h4>قانوني</h4><a href="#">سياسة الخصوصية</a><a href="#">شروط الاستخدام</a></div>
+                <div class="footer-col"><h4>المنتج</h4><a href="#features">المميزات</a><a href="#plans">الخطط</a></div>
+                <div class="footer-col"><h4>الدعم</h4><a href="#">مركز المساعدة</a><a href="#">تواصل</a></div>
             </div>
             <div class="footer-bottom">© 2026 Nivora. جميع الحقوق محفوظة.</div>
         </div>
@@ -219,7 +166,34 @@
         function toggleDark() { document.body.classList.toggle('dark'); const d = document.body.classList.contains('dark'); localStorage.setItem('dark', d); document.getElementById('darkBtn').textContent = d ? '☀️' : '🌙'; }
         if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
 
-        // Navbar scroll effect
+        // ✅ نظام اكتشاف الجهاز
+        function detectDevice() {
+            const ua = navigator.userAgent;
+            if (/Android/i.test(ua)) return 'android';
+            if (/Windows/i.test(ua)) return 'windows';
+            if (/iPhone|iPad|iPod/i.test(ua)) return 'ios';
+            return 'other';
+        }
+
+        const ANDROID_URL = 'https://github.com/mbrmjmbrmj9-cmd/task-manager/releases/download/v1.0.0/app-debug.apk';
+        const WINDOWS_URL = 'https://github.com/mbrmjmbrmj9-cmd/task-manager/releases/download/v1.0.0/Nivora Setup 1.0.0.exe';
+
+        function renderDownloadButtons() {
+            const device = detectDevice();
+            const container = document.getElementById('downloadButtons');
+            if (device === 'android') {
+                container.innerHTML = `<a href="${ANDROID_URL}" class="download-btn android"><span class="btn-icon">🤖</span><span><span class="os-name">تحميل للأندرويد</span><br><span class="os-desc">APK - مجاناً</span></span></a>`;
+            } else if (device === 'windows') {
+                container.innerHTML = `<a href="${WINDOWS_URL}" class="download-btn windows"><span class="btn-icon">💻</span><span><span class="os-name">تحميل للويندوز</span><br><span class="os-desc">EXE - مجاناً</span></span></a>`;
+            } else if (device === 'ios') {
+                container.innerHTML = `<p style="color:var(--text-light);">📱 تطبيق iOS قريبًا</p>`;
+            } else {
+                container.innerHTML = `<a href="${ANDROID_URL}" class="download-btn android"><span class="btn-icon">🤖</span><span><span class="os-name">تحميل للأندرويد</span><br><span class="os-desc">APK</span></span></a><a href="${WINDOWS_URL}" class="download-btn windows"><span class="btn-icon">💻</span><span><span class="os-name">تحميل للويندوز</span><br><span class="os-desc">EXE</span></span></a>`;
+            }
+        }
+
+        renderDownloadButtons();
+
         window.addEventListener('scroll', () => {
             const navbar = document.getElementById('navbar');
             if (window.scrollY > 50) navbar.classList.add('scrolled');
