@@ -28,7 +28,7 @@
         .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 30% 40%, var(--primary-light) 0%, transparent 55%), radial-gradient(circle at 70% 60%, var(--primary-light) 0%, transparent 55%); opacity: 0.6; z-index: -1; }
         .hero-badge { display: inline-flex; gap: 0.5rem; background: var(--primary-light); color: var(--primary); padding: 0.4rem 1.2rem; border-radius: var(--radius-full); font-size: 0.85rem; font-weight: 600; margin-bottom: 1.5rem; }
         .hero h1 { font-size: 3.5rem; font-weight: 800; line-height: 1.25; margin-bottom: 1.25rem; }
-        .hero h1 .gradient-text { background: linear-gradient(135deg, var(--primary), #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero h1 .gradient-text { background: linear-gradient(135deg, var(--primary), #7C3AED); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .hero p { font-size: 1.2rem; color: var(--text-light); max-width: 650px; margin: 0 auto 2rem; line-height: 1.8; }
         .hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
         .hero-actions .btn { height: 52px; padding: 0 2.5rem; font-size: 1.05rem; border-radius: var(--radius-sm); }

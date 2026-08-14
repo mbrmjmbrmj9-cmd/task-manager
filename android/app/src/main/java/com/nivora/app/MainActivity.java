@@ -19,6 +19,7 @@ public class MainActivity extends BridgeActivity {
     
     private static final String CURRENT_VERSION = "1.0.0";
     private static final String VERSIONS_URL = "https://task-manager-theta-beryl-91.vercel.app/versions.json";
+    private static final String HOME_URL = "https://task-manager-theta-beryl-91.vercel.app/index.html";
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +33,9 @@ public class MainActivity extends BridgeActivity {
                     settings.setJavaScriptEnabled(true);
                     settings.setDomStorageEnabled(true);
                     settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+                    
+                    // ✅ فتح صفحة تسجيل الدخول مباشرة
+                    webView.loadUrl(HOME_URL);
                     
                     webView.setWebViewClient(new WebViewClient() {
                         @Override
