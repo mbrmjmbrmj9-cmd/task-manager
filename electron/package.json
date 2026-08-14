@@ -1,0 +1,25 @@
+{
+  "name": "nivora-desktop",
+  "version": "1.0.0",
+  "description": "Nivora Desktop App",
+  "author": "Nivora",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win"
+  },
+  "build": {
+    "appId": "com.nivora.desktop",
+    "productName": "Nivora",
+    "win": {
+  "target": "nsis",
+  "icon": "icon.ico"
+},
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}

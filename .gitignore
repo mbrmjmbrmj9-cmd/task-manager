@@ -1,2 +1,6 @@
-server/config/google.js 
- 
+node_modules/
+electron/node_modules/
+android/build/
+android/app/build/
+electron/dist/
+ios/

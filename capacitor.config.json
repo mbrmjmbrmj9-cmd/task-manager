@@ -1,0 +1,10 @@
+{
+  "appId": "com.nivora.app",
+  "appName": "Nivora",
+  "webDir": "public",
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true,
+    "allowNavigation": ["nivora-t9ov.onrender.com", "task-manager-theta-beryl-91.vercel.app"]
+  }
+}
