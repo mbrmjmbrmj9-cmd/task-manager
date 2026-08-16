@@ -20,7 +20,8 @@ const AUTH_ERRORS = {
     NOT_TASK_OWNER: 'لا تملك صلاحية على هذه المهمة',
     NOT_PROJECT_OWNER: 'لا تملك صلاحية على هذا المشروع',
     ADMIN_REQUIRED: 'مطلوب تسجيل الدخول للوحة التحكم',
-    ADMIN_NOT_AUTHORIZED: 'غير مصرح للوصول للوحة التحكم'
+    ADMIN_NOT_AUTHORIZED: 'غير مصرح للوصول للوحة التحكم',
+    TENANT_ACCESS_DENIED: 'لا تملك صلاحية الوصول لهذه البيانات'
 };
 
 /**
@@ -45,19 +46,16 @@ function authenticate(req, res, next) {
 
 /**
  * التحقق من الصلاحيات داخل Workspace
- * @param  {...string} roles - الأدوار المسموحة (owner, admin, member)
  */
 function requireRole(...roles) {
     return async (req, res, next) => {
         try {
-            // استخراج workspaceId من params أو body أو query
             const wsId = req.params.workspaceId || 
                          req.params.id || 
                          req.body.workspaceId || 
                          req.query.workspaceId;
 
             if (!wsId) {
-                // إذا لم يكن هناك workspaceId، نبحث عن workspace ينتمي له المستخدم
                 const ws = await Workspace.findOne({ 'members.userId': req.user.id });
                 if (!ws) {
                     return res.status(404).json({ error: AUTH_ERRORS.WORKSPACE_NOT_FOUND });
@@ -102,7 +100,7 @@ function requireRole(...roles) {
 }
 
 /**
- * التحقق من ملكية المهمة (المالك أو Owner/Admin في workspace)
+ * التحقق من ملكية المهمة
  */
 async function requireTaskOwnership(req, res, next) {
     try {
@@ -111,13 +109,11 @@ async function requireTaskOwnership(req, res, next) {
             return res.status(404).json({ error: AUTH_ERRORS.TASK_NOT_FOUND });
         }
         
-        // المستخدم هو مالك المهمة
         if (task.userId.toString() === req.user.id) {
             req.task = task;
             return next();
         }
         
-        // أو المستخدم Admin/Owner في workspace
         if (task.workspaceId) {
             const ws = await Workspace.findById(task.workspaceId);
             if (ws) {
@@ -137,7 +133,7 @@ async function requireTaskOwnership(req, res, next) {
 }
 
 /**
- * التحقق من ملكية المشروع (المالك أو Owner/Admin في workspace)
+ * التحقق من ملكية المشروع
  */
 async function requireProjectOwnership(req, res, next) {
     try {
@@ -146,13 +142,11 @@ async function requireProjectOwnership(req, res, next) {
             return res.status(404).json({ error: AUTH_ERRORS.PROJECT_NOT_FOUND });
         }
         
-        // المستخدم هو مالك المشروع
         if (project.userId.toString() === req.user.id) {
             req.project = project;
             return next();
         }
         
-        // أو المستخدم Admin/Owner في workspace
         if (project.workspaceId) {
             const ws = await Workspace.findById(project.workspaceId);
             if (ws) {
@@ -192,7 +186,7 @@ function adminAuth(req, res, next) {
 }
 
 /**
- * التحقق من العضوية فقط (بدون فحص دور محدد)
+ * التحقق من العضوية فقط
  */
 async function requireMembership(req, res, next) {
     try {
@@ -224,6 +218,41 @@ async function requireMembership(req, res, next) {
     }
 }
 
+/**
+ * ✅ التحقق من الوصول إلى Tenant (Workspace)
+ * يمنع الوصول غير المصرح لبيانات Workspaces أخرى
+ */
+async function requireTenantAccess(req, res, next) {
+    try {
+        const requestedWsId = req.params.workspaceId || 
+                              req.params.id || 
+                              req.body.workspaceId || 
+                              req.query.workspaceId;
+
+        // إذا لا يوجد سياق Workspace - السماح (المصادقة تكفي)
+        if (!requestedWsId) {
+            return next();
+        }
+
+        const ws = await Workspace.findById(requestedWsId);
+        if (!ws) {
+            return res.status(404).json({ error: AUTH_ERRORS.WORKSPACE_NOT_FOUND });
+        }
+
+        const isMember = ws.members.some(m => m.userId.toString() === req.user.id);
+        if (!isMember) {
+            return res.status(403).json({ error: AUTH_ERRORS.TENANT_ACCESS_DENIED });
+        }
+
+        req.workspace = ws;
+        req.memberRole = ws.members.find(m => m.userId.toString() === req.user.id)?.role;
+        next();
+    } catch (err) {
+        console.error('خطأ في requireTenantAccess:', err);
+        res.status(500).json({ error: 'خطأ في التحقق من الوصول' });
+    }
+}
+
 module.exports = { 
     authenticate, 
     requireRole, 
@@ -231,5 +260,6 @@ module.exports = {
     requireProjectOwnership, 
     adminAuth,
     requireMembership,
+    requireTenantAccess,
     AUTH_ERRORS 
 };

@@ -2,7 +2,7 @@ const express = require('express');
 const Task = require('../models/Task');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
-const { authenticate, requireTaskOwnership, AUTH_ERRORS } = require('../middleware/auth');
+const { authenticate, requireTaskOwnership, requireTenantAccess, AUTH_ERRORS } = require('../middleware/auth');
 const { requiredFields, maxLength, sanitize, allowedValues, requireValidObjectId } = require('../middleware/validate');
 
 const router = express.Router();
@@ -32,8 +32,8 @@ async function processMentions(text, taskId, projectId, fromUserId, fromUsername
     }
 }
 
-// ✅ جلب جميع المهام (مع فلترة)
-router.get('/', authenticate, async (req, res) => {
+// ✅ جلب جميع المهام (مع فلترة + Tenant Access)
+router.get('/', authenticate, requireTenantAccess, async (req, res) => {
     try {
         const filter = { userId: req.user.id };
         
@@ -60,8 +60,8 @@ router.get('/', authenticate, async (req, res) => {
     }
 });
 
-// ✅ جلب مهمة واحدة
-router.get('/:id', authenticate, requireValidObjectId('id'), async (req, res) => {
+// ✅ جلب مهمة واحدة (+ Tenant Access)
+router.get('/:id', authenticate, requireValidObjectId('id'), requireTenantAccess, async (req, res) => {
     try {
         const task = await Task.findOne({ _id: req.params.id, userId: req.user.id });
         if (!task) return res.status(404).json({ error: 'مهمة غير موجودة' });
@@ -76,6 +76,15 @@ router.post('/', authenticate, requiredFields('title'), sanitize('title'), maxLe
     try {
         const { title, description, priority, project, projectId, workspaceId, dueDate, status, assignee, startDate } = req.body;
         if (!title) return res.status(400).json({ error: 'العنوان مطلوب' });
+
+        // ✅ إذا كان هناك workspaceId، تحقق من العضوية
+        if (workspaceId) {
+            const Workspace = require('../models/Workspace');
+// في الأعلى
+            if (!ws) return res.status(404).json({ error: 'مساحة العمل غير موجودة' });
+            const isMember = ws.members.some(m => m.userId.toString() === req.user.id);
+            if (!isMember) return res.status(403).json({ error: AUTH_ERRORS.TENANT_ACCESS_DENIED });
+        }
 
         const task = await Task.create({
             title,
@@ -112,7 +121,6 @@ router.patch('/:id', authenticate, requireTaskOwnership, async (req, res) => {
             task.activity.push({ action: 'تغيير الحالة', username: req.user.username, details: `من ${task.status} إلى ${req.body.status}` });
         }
 
-        // ✅ حساب التقدم تلقائياً
         task.progress = calculateProgress(task);
 
         await task.save();
@@ -329,21 +337,13 @@ router.get('/stats/:projectId', authenticate, async (req, res) => {
 });
 
 // ========== دوال مساعدة ==========
-
-/**
- * ✅ حساب نسبة تقدم المهمة تلقائياً
- */
 function calculateProgress(task) {
     if (task.status === 'done') return 100;
     if (task.status === 'blocked') return task.progress || 0;
-    
     const statusProgress = { 'new': 0, 'in-progress': 40, 'review': 75, 'archived': 0 };
     return statusProgress[task.status] || 0;
 }
 
-/**
- * ✅ تحديث تقدم المهمة الأصلية بناءً على المهام الفرعية
- */
 async function updateParentProgress(parentTaskId) {
     try {
         const subtasks = await Task.find({ parentTask: parentTaskId });
@@ -351,19 +351,12 @@ async function updateParentProgress(parentTaskId) {
             await Task.findByIdAndUpdate(parentTaskId, { progress: 0 });
             return;
         }
-        
         const doneCount = subtasks.filter(s => s.status === 'done').length;
         const progress = Math.round((doneCount / subtasks.length) * 100);
-        
         await Task.findByIdAndUpdate(parentTaskId, { progress });
-        
         const parent = await Task.findById(parentTaskId);
         if (parent) {
-            parent.activity.push({ 
-                action: 'تحديث التقدم', 
-                username: 'النظام', 
-                details: `تقدم المهام الفرعية: ${progress}% (${doneCount}/${subtasks.length})` 
-            });
+            parent.activity.push({ action: 'تحديث التقدم', username: 'النظام', details: `تقدم المهام الفرعية: ${progress}% (${doneCount}/${subtasks.length})` });
             await parent.save();
         }
     } catch (err) {
