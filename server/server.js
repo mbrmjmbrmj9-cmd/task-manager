@@ -117,6 +117,13 @@ app.use('/api/workspaces', require('./routes/workspaces'));
 app.use('/api/plans', require('./routes/plans'));
 app.use('/api/templates', require('./routes/templates'));
 app.use('/api/chat', require('./routes/chat'));
+// Rate Limiting خاص للـ Admin
+const adminLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 200,
+    message: { error: 'طلبات كثيرة' }
+});
+app.use('/api/admin', adminLimiter);
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/subscriptions', require('./routes/subscriptions'));
 app.use('/api/folders', require('./routes/folders'));
@@ -158,6 +165,7 @@ io.on('connection', (socket) => {
     socket.on('pin-message', (msg) => io.emit('pin-message', msg));
     socket.on('disconnect', () => { if (socket.username) io.emit('user-left', socket.username); });
 });
+
 // ✅ معالج أخطاء مركزي
 app.use(errorHandler);
 server.listen(PORT, () => console.log(`🚀 الخادم يعمل على http://localhost:${PORT}`));
