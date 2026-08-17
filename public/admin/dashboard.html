@@ -112,7 +112,7 @@
             try {
                 const [stats, logs] = await Promise.all([
                     fetch(`${API}/advanced-stats`, { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json()),
-                    fetch(`${API}/audit-logs`, { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json())
+                    fetch(`${API}/audit-logs`, { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json()).then(d => d.data || d)
                 ]);
 
                 const statsData = [

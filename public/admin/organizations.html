@@ -90,7 +90,8 @@
             showSkeleton();
             try {
                 const res = await fetch(`${API}/organizations`, { headers: { 'Authorization': `Bearer ${token}` } });
-                allOrgs = await res.json();
+                const response = await res.json();
+                allOrgs = response.data || response;
                 renderOrgs();
             } catch (err) {
                 showError('orgBody', 'تعذر تحميل المؤسسات', loadOrgs);
