@@ -6,58 +6,104 @@
     <title>Nivora | الاستخدام</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { display: flex; min-height: 100vh; background: #0F172A; font-family: 'Cairo', sans-serif; color: white; margin: 0; }
-        .sidebar { width: 240px; background: #1E293B; padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 200; transition: right 0.3s ease; }
-        .sidebar h2 { color: #EF4444; margin-bottom: 1.5rem; font-size: 1.1rem; }
-        .sidebar a { display: block; padding: 0.6rem 0.75rem; color: #94A3B8; text-decoration: none; border-radius: 8px; margin-bottom: 0.25rem; font-size: 0.9rem; }
-        .sidebar a:hover, .sidebar a.active { background: #334155; color: white; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { display: flex; min-height: 100vh; background: #0F172A; font-family: 'Cairo', sans-serif; color: #fff; }
+        .sidebar { width: 240px; background: #1E293B; padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 200; transition: right 0.3s ease; overflow-y: auto; }
+        .sidebar .logo { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1.5rem; padding: 0 0.75rem; }
+        .sidebar .logo img { width: 34px; height: 34px; flex-shrink: 0; }
+        .sidebar .logo span { color: #EF4444; font-weight: 800; font-size: 1rem; }
+        .sidebar a { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.75rem; color: #94A3B8; text-decoration: none; border-radius: 8px; margin-bottom: 0.2rem; font-size: 0.9rem; transition: all 0.15s; }
+        .sidebar a:hover, .sidebar a.active { background: #334155; color: #fff; }
         .main { margin-right: 240px; flex: 1; padding: 2rem; }
-        h1 { margin-bottom: 1.5rem; font-size: 1.4rem; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 0.75rem; border-bottom: 1px solid #334155; text-align: right; font-size: 0.85rem; }
-        th { color: #94A3B8; font-weight: 600; }
-        .bar { height: 8px; border-radius: 4px; background: #334155; }
-        .bar-fill { height: 100%; border-radius: 4px; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem; }
+        .topbar h1 { font-size: 1.4rem; font-weight: 800; }
+        .toolbar select { height: 38px; border-radius: 8px; border: 1px solid #334155; background: #1E293B; color: #fff; padding: 0 0.5rem; font-family: inherit; font-size: 0.85rem; }
+        .usage-card { background: #1E293B; border-radius: 12px; padding: 1.5rem; border: 1px solid #334155; margin-bottom: 1rem; }
+        .usage-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; }
+        .metric-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+        .metric-label { min-width: 80px; font-size: 0.85rem; color: #94A3B8; }
+        .metric-value { font-size: 0.85rem; font-weight: 700; min-width: 50px; text-align: left; }
+        .bar { height: 8px; border-radius: 4px; background: #334155; flex: 1; overflow: hidden; }
+        .bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+        .empty-state { text-align: center; padding: 3rem; color: #94A3B8; }
+        .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
         .admin-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; }
         .admin-overlay.show { display: block; }
-        .admin-menu-btn { display: none; position: fixed; top: 12px; right: 12px; z-index: 150; background: #1E293B; color: white; border: 1px solid #334155; border-radius: 8px; padding: 0.4rem 0.6rem; cursor: pointer; font-size: 1.2rem; }
-        .skeleton { background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
-        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-        @media (max-width: 1024px) { .sidebar { width: 60px; padding: 1rem 0.5rem; } .sidebar h2 { font-size: 0.8rem; text-align: center; } .sidebar a { font-size: 0; justify-content: center; padding: 0.5rem; } .main { margin-right: 60px; } }
-        @media (max-width: 768px) { body { flex-direction: column; } .sidebar { right: -260px; width: 260px; padding: 1.5rem 1rem; } .sidebar.open { right: 0; } .sidebar h2 { font-size: 1rem; } .sidebar a { font-size: 0.9rem; justify-content: flex-start; padding: 0.6rem 0.75rem; } .main { margin-right: 0; padding: 1rem; } .admin-menu-btn { display: flex; } h1 { font-size: 1.2rem; } table { font-size: 0.7rem; } th, td { padding: 0.5rem; } }
+        .admin-menu-btn { display: none; position: fixed; top: 12px; right: 12px; z-index: 150; background: #1E293B; color: #fff; border: 1px solid #334155; border-radius: 8px; padding: 0.4rem 0.6rem; cursor: pointer; font-size: 1.2rem; }
+        @media (max-width: 1024px) { .sidebar { width: 60px; padding: 1rem 0.5rem; } .sidebar .logo span, .sidebar a span { display: none; } .sidebar .logo img { margin: 0 auto; } .sidebar a { justify-content: center; } .main { margin-right: 60px; } }
+        @media (max-width: 768px) { body { flex-direction: column; } .sidebar { right: -260px; width: 260px; padding: 1.5rem 1rem; } .sidebar.open { right: 0; } .sidebar .logo span, .sidebar a span { display: inline; } .sidebar a { justify-content: flex-start; } .main { margin-right: 0; padding: 1rem; } .admin-menu-btn { display: flex; } }
     </style>
 </head>
 <body>
     <div class="admin-overlay" id="adminOverlay" onclick="closeSidebar()"></div>
     <button class="admin-menu-btn" id="adminMenuBtn" onclick="openSidebar()">☰</button>
+
     <aside class="sidebar" id="sidebar">
-        <h2>🔐 Nivora Admin</h2>
-        <a href="dashboard.html">📊 لوحة القيادة</a>
-        <a href="organizations.html">🏢 المؤسسات</a>
-        <a href="subscriptions.html">💳 الاشتراكات</a>
-        <a href="users.html">👥 المستخدمون</a>
-        <a href="features.html">🚩 Feature Flags</a>
-        <a href="usage.html" class="active">📊 الاستخدام</a>
-        <a href="tickets.html">🎫 التذاكر</a>
-        <a href="health.html">🖥 صحة النظام</a>
-        <a href="#" onclick="logout()">🚪 خروج</a>
+        <div class="logo"><img src="../img/logo.svg" alt="Nivora"><span>Nivora Admin</span></div>
+        <a href="dashboard.html"><span>📊</span><span>لوحة القيادة</span></a>
+        <a href="organizations.html"><span>🏢</span><span>المؤسسات</span></a>
+        <a href="subscriptions.html"><span>💳</span><span>الاشتراكات</span></a>
+        <a href="users.html"><span>👥</span><span>المستخدمون</span></a>
+        <a href="features.html"><span>🚩</span><span>Feature Flags</span></a>
+        <a href="usage.html" class="active"><span>📊</span><span>الاستخدام</span></a>
+        <a href="tickets.html"><span>🎫</span><span>التذاكر</span></a>
+        <a href="health.html"><span>🖥</span><span>صحة النظام</span></a>
+        <a href="#" onclick="logout()"><span>🚪</span><span>خروج</span></a>
     </aside>
+
     <div class="main">
-        <h1>📊 استخدام المؤسسات</h1>
-        <div id="usageContent" style="color:#94A3B8;">اختر مؤسسة من صفحة المؤسسات لعرض الاستخدام.</div>
+        <div class="topbar">
+            <h1>📊 استخدام المؤسسات</h1>
+            <div class="toolbar">
+                <select id="orgSelect" onchange="loadUsage()"><option value="">اختر مؤسسة...</option></select>
+            </div>
+        </div>
+
+        <div id="usageContent"></div>
     </div>
+
+    <script src="../js/components.js"></script>
     <script>
         const API = 'https://nivora-t9ov.onrender.com/api/admin';
         const token = localStorage.getItem('adminToken');
         if (!token) window.location.href = 'login.html';
+
         function logout() { localStorage.removeItem('adminToken'); window.location.href = 'login.html'; }
         function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('adminOverlay').classList.add('show'); }
         function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('adminOverlay').classList.remove('show'); }
         function updateMobileUI() { const btn = document.getElementById('adminMenuBtn'); btn.style.display = window.innerWidth <= 768 ? 'flex' : 'none'; if (window.innerWidth > 768) closeSidebar(); }
         window.addEventListener('resize', updateMobileUI); updateMobileUI();
 
-        async function loadUsage() { const params = new URLSearchParams(window.location.search); const orgId = params.get('orgId'); if (!orgId) return; try { const [orgRes, usageRes] = await Promise.all([fetch(`${API}/organizations`,{headers:{'Authorization':`Bearer ${token}`}}).then(r=>r.json()), fetch(`${API}/usage/${orgId}`,{headers:{'Authorization':`Bearer ${token}`}}).then(r=>r.json())]); const org = orgRes.find(o=>o._id===orgId); document.getElementById('usageContent').innerHTML = `<h2 style="margin-bottom:1rem;">${org?.name||'مؤسسة'}</h2>${usageRes.length>0?usageRes.map(u=>`<div style="margin-bottom:1rem;"><strong>${u.metric}</strong>: ${u.value}<div class="bar"><div class="bar-fill" style="width:${Math.min(u.value,100)}%;background:#3B82F6;"></div></div></div>`).join(''):'<p>لا توجد بيانات استخدام</p>'}`; } catch (err) { document.getElementById('usageContent').innerHTML = '<p style="color:#EF4444;">خطأ في تحميل البيانات</p>'; } }
-        loadUsage();
+        async function loadOrganizations() {
+            try {
+                const res = await fetch(`${API}/organizations`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const orgs = await res.json();
+                const sel = document.getElementById('orgSelect');
+                sel.innerHTML = '<option value="">اختر مؤسسة...</option>' + orgs.map(o => `<option value="${o._id}">${o.name}</option>`).join('');
+                const params = new URLSearchParams(window.location.search);
+                const orgId = params.get('orgId');
+                if (orgId) { sel.value = orgId; loadUsage(); }
+            } catch (err) {}
+        }
+
+        async function loadUsage() {
+            const orgId = document.getElementById('orgSelect').value;
+            const container = document.getElementById('usageContent');
+            if (!orgId) {
+                container.innerHTML = '<div class="empty-state"><div class="icon">📊</div><p>اختر مؤسسة لعرض استخدامها</p></div>';
+                return;
+            }
+            try {
+                const [orgRes, usageRes] = await Promise.all([
+                    fetch(`${API}/organizations`, { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json()),
+                    fetch(`${API}/usage/${orgId}`, { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json())
+                ]);
+                const org = orgRes.find(o => o._id === orgId);
+                container.innerHTML = `<div class="usage-card"><h3>${org?.name || 'مؤسسة'}</h3>${usageRes.length > 0 ? usageRes.map(u => `<div class="metric-row"><span class="metric-label">${u.metric}</span><div class="bar"><div class="bar-fill" style="width:${Math.min(u.value, 100)}%;background:#3B82F6;"></div></div><span class="metric-value">${u.value}</span></div>`).join('') : '<p style="color:#94A3B8;">لا توجد بيانات استخدام</p>'}</div>`;
+            } catch (err) { showError('usageContent', 'تعذر تحميل البيانات', loadUsage); }
+        }
+
+        loadOrganizations();
     </script>
 </body>
 </html>

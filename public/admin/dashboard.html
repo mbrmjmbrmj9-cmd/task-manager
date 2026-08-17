@@ -6,202 +6,150 @@
     <title>Nivora | لوحة المدير</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { display: flex; min-height: 100vh; background: #0F172A; font-family: 'Cairo', sans-serif; color: white; }
-        .sidebar { width: 240px; background: #1E293B; padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; }
-        .sidebar h2 { color: #EF4444; margin-bottom: 1.5rem; }
-        .sidebar a { display: block; padding: 0.6rem 0.75rem; color: #94A3B8; text-decoration: none; border-radius: 8px; margin-bottom: 0.25rem; font-size: 0.9rem; }
-        .sidebar a:hover, .sidebar a.active { background: #334155; color: white; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { display: flex; min-height: 100vh; background: #0F172A; font-family: 'Cairo', sans-serif; color: #fff; }
+        .sidebar { width: 240px; background: #1E293B; padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 200; transition: right 0.3s ease; overflow-y: auto; }
+        .sidebar .logo { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1.5rem; padding: 0 0.75rem; }
+        .sidebar .logo img { width: 34px; height: 34px; flex-shrink: 0; }
+        .sidebar .logo span { color: #EF4444; font-weight: 800; font-size: 1rem; }
+        .sidebar a { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.75rem; color: #94A3B8; text-decoration: none; border-radius: 8px; margin-bottom: 0.2rem; font-size: 0.9rem; transition: all 0.15s; }
+        .sidebar a:hover, .sidebar a.active { background: #334155; color: #fff; }
         .main { margin-right: 240px; flex: 1; padding: 2rem; }
-        h1 { margin-bottom: 2rem; }
-        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-        .stat-card { background: #1E293B; padding: 1.5rem; border-radius: 12px; }
-        .stat-card .value { font-size: 2rem; font-weight: 800; }
-        .stat-card .label { color: #94A3B8; font-size: 0.85rem; margin-top: 0.25rem; }
-        .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem; }
+        .topbar h1 { font-size: 1.4rem; font-weight: 800; }
+        .topbar-actions { display: flex; gap: 0.5rem; }
+        .btn-refresh { background: #1E293B; border: 1px solid #334155; border-radius: 8px; padding: 0.5rem 0.75rem; cursor: pointer; color: #94A3B8; font-family: inherit; font-size: 0.8rem; transition: all 0.15s; }
+        .btn-refresh:hover { background: #334155; color: #fff; }
+        .quick-actions { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .quick-btn { display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1rem; background: #1E293B; border: 1px solid #334155; border-radius: 8px; cursor: pointer; color: #94A3B8; font-family: inherit; font-size: 0.8rem; text-decoration: none; transition: all 0.15s; }
+        .quick-btn:hover { background: #334155; color: #fff; transform: translateY(-1px); }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .stat-card { background: #1E293B; padding: 1.25rem; border-radius: 12px; display: flex; align-items: center; gap: 1rem; transition: all 0.15s; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
+        .stat-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+        .stat-info .value { font-size: 1.7rem; font-weight: 800; line-height: 1; }
+        .stat-info .label { color: #94A3B8; font-size: 0.78rem; margin-top: 0.2rem; }
+        .alert-item { padding: 0.7rem 1rem; border-radius: 8px; margin-bottom: 0.4rem; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; }
+        .alert-warning { background: rgba(245,158,11,0.1); color: #F59E0B; border-right: 3px solid #F59E0B; }
+        .alert-danger { background: rgba(239,68,68,0.1); color: #EF4444; border-right: 3px solid #EF4444; }
+        .alert-info { background: rgba(59,130,246,0.1); color: #3B82F6; border-right: 3px solid #3B82F6; }
+        .section-title { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 0.75rem; border-bottom: 1px solid #334155; text-align: right; font-size: 0.85rem; }
-        th { color: #94A3B8; }
-        /* ========== أنماط Responsive للوحة المدير ========== */
-
-/* Tablet */
-@media (max-width: 1024px) {
-    .sidebar { width: 60px; padding: 1rem 0.5rem; }
-    .sidebar h2 { font-size: 0.8rem; text-align: center; }
-    .sidebar a { font-size: 0; justify-content: center; padding: 0.5rem; }
-    .sidebar a::before { font-size: 1rem; }
-    .main { margin-right: 60px; padding: 1.5rem; }
-}
-
-/* Mobile */
-@media (max-width: 768px) {
-    body { flex-direction: column; }
-    
-    .sidebar {
-        position: fixed;
-        right: -260px;
-        width: 260px;
-        top: 0;
-        bottom: 0;
-        z-index: 200;
-        transition: right 0.3s ease;
-        padding: 1.5rem 1rem;
-    }
-    .sidebar.open { right: 0; }
-    .sidebar h2 { font-size: 1rem; }
-    .sidebar a { font-size: 0.9rem; justify-content: flex-start; padding: 0.6rem 0.75rem; }
-    
-    .main { margin-right: 0; padding: 1rem; }
-    
-    /* إحصائيات */
-    .stats { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
-    .stat-card { padding: 1rem; }
-    .stat-card .value { font-size: 1.5rem; }
-    
-    /* جداول */
-    table { font-size: 0.75rem; }
-    th, td { padding: 0.5rem; }
-    
-    /* رأس الصفحة */
-    h1 { font-size: 1.2rem; margin-bottom: 1rem; }
-    
-    /* أزرار */
-    .btn-sm { padding: 0.25rem 0.5rem; font-size: 0.7rem; }
-    select { font-size: 0.75rem; }
-    
-    /* Admin Overlay */
-    .admin-overlay {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,0.5);
-        z-index: 199;
-    }
-    .admin-overlay.show { display: block; }
-    
-    /* زر القائمة */
-    .admin-menu-btn {
-        display: flex !important;
-        position: fixed;
-        top: 12px;
-        right: 12px;
-        z-index: 150;
-        background: #1E293B;
-        color: white;
-        border: 1px solid #334155;
-        border-radius: 8px;
-        padding: 0.4rem 0.6rem;
-        cursor: pointer;
-        font-size: 1.2rem;
-    }
-}
-
-/* شاشات صغيرة جدًا */
-@media (max-width: 480px) {
-    .stats { grid-template-columns: 1fr; }
-    table { display: block; overflow-x: auto; }
-    h1 { font-size: 1.1rem; }
-}
+        th, td { padding: 0.7rem; border-bottom: 1px solid #334155; text-align: right; font-size: 0.85rem; }
+        th { color: #94A3B8; font-weight: 600; }
+        .skeleton { background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        .admin-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; }
+        .admin-overlay.show { display: block; }
+        .admin-menu-btn { display: none; position: fixed; top: 12px; right: 12px; z-index: 150; background: #1E293B; color: #fff; border: 1px solid #334155; border-radius: 8px; padding: 0.4rem 0.6rem; cursor: pointer; font-size: 1.2rem; }
+        @media (max-width: 1024px) { .sidebar { width: 60px; padding: 1rem 0.5rem; } .sidebar .logo span, .sidebar a span { display: none; } .sidebar .logo img { margin: 0 auto; } .sidebar a { justify-content: center; padding: 0.5rem; } .main { margin-right: 60px; } }
+        @media (max-width: 768px) { body { flex-direction: column; } .sidebar { right: -260px; width: 260px; padding: 1.5rem 1rem; } .sidebar.open { right: 0; } .sidebar .logo span, .sidebar a span { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .main { margin-right: 0; padding: 1rem; } .admin-menu-btn { display: flex; } .stats { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; } .stat-card { padding: 0.85rem; gap: 0.5rem; } .stat-icon { width: 32px; height: 32px; font-size: 1rem; } .stat-info .value { font-size: 1.3rem; } }
     </style>
 </head>
 <body>
-    <!-- Overlay للقائمة -->
-<div class="admin-overlay" id="adminOverlay" onclick="closeSidebar()"></div>
+    <div class="admin-overlay" id="adminOverlay" onclick="closeSidebar()"></div>
+    <button class="admin-menu-btn" id="adminMenuBtn" onclick="openSidebar()">☰</button>
 
-<!-- زر القائمة للجوال -->
-<button class="admin-menu-btn" id="adminMenuBtn" onclick="openSidebar()">☰</button>
-    <aside class="sidebar">
-    <h2>🔐 Nivora Admin</h2>
-    <a href="dashboard.html">📊 لوحة القيادة</a>
-    <a href="organizations.html">🏢 المؤسسات</a>
-    <a href="subscriptions.html">💳 الاشتراكات</a>
-    <a href="users.html">👥 المستخدمون</a>
-    <a href="features.html">🚩 Feature Flags</a>
-    <a href="usage.html">📊 الاستخدام</a>
-    <a href="tickets.html">🎫 التذاكر</a>
-    <a href="health.html">🖥 صحة النظام</a>
-    <a href="#" onclick="logout()">🚪 خروج</a>
-</aside>
+    <aside class="sidebar" id="sidebar">
+        <div class="logo"><img src="../img/logo.svg" alt="Nivora"><span>Nivora Admin</span></div>
+        <a href="dashboard.html" class="active"><span>📊</span><span>لوحة القيادة</span></a>
+        <a href="organizations.html"><span>🏢</span><span>المؤسسات</span></a>
+        <a href="subscriptions.html"><span>💳</span><span>الاشتراكات</span></a>
+        <a href="users.html"><span>👥</span><span>المستخدمون</span></a>
+        <a href="features.html"><span>🚩</span><span>Feature Flags</span></a>
+        <a href="usage.html"><span>📊</span><span>الاستخدام</span></a>
+        <a href="tickets.html"><span>🎫</span><span>التذاكر</span></a>
+        <a href="health.html"><span>🖥</span><span>صحة النظام</span></a>
+        <a href="#" onclick="logout()"><span>🚪</span><span>خروج</span></a>
+    </aside>
 
     <div class="main">
-        <h1>📊 لوحة القيادة</h1>
-        <div id="alertsContainer" style="margin-bottom:1.5rem;"></div>
-
-        <div class="stats">
-            <div class="stat-card"><div class="value" id="totalOrgs" style="color:#3B82F6;">0</div><div class="label">المؤسسات</div></div>
-            <div class="stat-card"><div class="value" id="totalUsers" style="color:#22C55E;">0</div><div class="label">المستخدمين</div></div>
-            <div class="stat-card"><div class="value" id="totalRevenue" style="color:#F59E0B;">$0</div><div class="label">إجمالي الإيرادات</div></div>
-            <div class="stat-card"><div class="value" id="activeSubs" style="color:#8B5CF6;">0</div><div class="label">اشتراكات نشطة</div></div>
-            <div class="stat-card"><div class="value" id="revenueThisMonth" style="color:#EC4899;">$0</div><div class="label">إيرادات الشهر</div></div>
-            <div class="stat-card"><div class="value" id="newSubs" style="color:#14B8A6;">0</div><div class="label">اشتراكات جديدة</div></div>
+        <div class="topbar">
+            <h1>📊 لوحة القيادة</h1>
+            <div class="topbar-actions">
+                <button class="btn-refresh" onclick="loadDashboard()">🔄 تحديث</button>
+            </div>
         </div>
 
-        <h2 style="margin-bottom:1rem;">📋 آخر النشاطات</h2>
+        <div class="quick-actions">
+            <a href="organizations.html" class="quick-btn">🏢 المؤسسات</a>
+            <a href="users.html" class="quick-btn">👥 المستخدمون</a>
+            <a href="subscriptions.html" class="quick-btn">💳 الاشتراكات</a>
+            <a href="tickets.html" class="quick-btn">🎫 التذاكر</a>
+        </div>
+
+        <div id="alertsContainer" style="margin-bottom:1rem;"></div>
+
+        <div class="stats" id="statsGrid"></div>
+
+        <h2 class="section-title" style="margin-top:1.5rem;">📋 آخر النشاطات</h2>
         <table>
             <thead><tr><th>المستخدم</th><th>الإجراء</th><th>التفاصيل</th><th>الوقت</th></tr></thead>
             <tbody id="auditBody"></tbody>
         </table>
     </div>
 
+    <script src="../js/components.js"></script>
     <script>
         const API = 'https://nivora-t9ov.onrender.com/api/admin';
         const token = localStorage.getItem('adminToken');
         if (!token) window.location.href = 'login.html';
+
         function logout() { localStorage.removeItem('adminToken'); window.location.href = 'login.html'; }
+        function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('adminOverlay').classList.add('show'); }
+        function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('adminOverlay').classList.remove('show'); }
+        function updateMobileUI() { const btn = document.getElementById('adminMenuBtn'); btn.style.display = window.innerWidth <= 768 ? 'flex' : 'none'; if (window.innerWidth > 768) closeSidebar(); }
+        window.addEventListener('resize', updateMobileUI);
+        updateMobileUI();
 
-        async function loadDashboard() {
-            const [stats, logs] = await Promise.all([
-                fetch(`${API}/advanced-stats`, { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json()),
-                fetch(`${API}/audit-logs`, { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json())
-            ]);
-
-            document.getElementById('totalOrgs').textContent = stats.totalOrgs;
-            document.getElementById('totalUsers').textContent = stats.totalUsers;
-            document.getElementById('totalRevenue').textContent = '$' + stats.totalRevenue;
-            document.getElementById('activeSubs').textContent = stats.activeSubs;
-            document.getElementById('revenueThisMonth').textContent = '$' + stats.revenueThisMonth;
-            document.getElementById('newSubs').textContent = stats.newSubsThisMonth;
-
-            document.getElementById('auditBody').innerHTML = logs.map(l => `
-                <tr><td>${l.username || '-'}</td><td>${l.action}</td><td>${l.details || '-'}</td><td>${new Date(l.createdAt).toLocaleString('ar-SA')}</td></tr>
-            `).join('') || '<tr><td colspan="4" style="text-align:center;padding:2rem;">لا توجد سجلات</td></tr>';
+        function showSkeleton() {
+            document.getElementById('statsGrid').innerHTML = Array(6).fill('<div class="stat-card"><div class="stat-icon skeleton" style="width:44px;height:44px;"></div><div class="stat-info"><div class="skeleton" style="height:24px;width:60px;margin-bottom:6px;"></div><div class="skeleton" style="height:12px;width:40px;"></div></div></div>').join('');
+            document.getElementById('auditBody').innerHTML = Array(5).fill('<tr><td><div class="skeleton" style="height:14px;width:70%;"></div></td><td><div class="skeleton" style="height:14px;width:50px;"></div></td><td><div class="skeleton" style="height:14px;width:80%;"></div></td><td><div class="skeleton" style="height:14px;width:60px;"></div></td></tr>').join('');
         }
 
-async function loadAlerts() {
-    const res = await fetch(`${API}/alerts`, { headers: { 'Authorization': `Bearer ${token}` } });
-    const alerts = await res.json();
-    const colors = { warning: '#FEF3C7', danger: '#FEE2E2', info: '#EFF6FF' };
-    const textColors = { warning: '#92400E', danger: '#DC2626', info: '#2563EB' };
-    document.getElementById('alertsContainer').innerHTML = alerts.map(a => `
-        <div style="background:${colors[a.type]};color:${textColors[a.type]};padding:0.75rem 1rem;border-radius:8px;margin-bottom:0.5rem;font-size:0.9rem;">
-            ${a.type === 'danger' ? '🔴' : a.type === 'warning' ? '🟡' : '🔵'} ${a.text}
-        </div>
-    `).join('');
-}
+        async function loadDashboard() {
+            showSkeleton();
+            try {
+                const [stats, logs] = await Promise.all([
+                    fetch(`${API}/advanced-stats`, { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json()),
+                    fetch(`${API}/audit-logs`, { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json())
+                ]);
 
-// دوال القائمة الجانبية للجوال
-function openSidebar() {
-    document.querySelector('.sidebar').classList.add('open');
-    document.getElementById('adminOverlay').classList.add('show');
-}
-function closeSidebar() {
-    document.querySelector('.sidebar').classList.remove('open');
-    document.getElementById('adminOverlay').classList.remove('show');
-}
+                const statsData = [
+                    { icon: '🏢', color: '#3B82F6', bg: 'rgba(59,130,246,0.1)', label: 'المؤسسات', value: stats.totalOrgs },
+                    { icon: '👥', color: '#22C55E', bg: 'rgba(34,197,94,0.1)', label: 'المستخدمين', value: stats.totalUsers },
+                    { icon: '💰', color: '#F59E0B', bg: 'rgba(245,158,11,0.1)', label: 'الإيرادات', value: '$' + stats.totalRevenue },
+                    { icon: '⭐', color: '#8B5CF6', bg: 'rgba(139,92,246,0.1)', label: 'اشتراكات نشطة', value: stats.activeSubs },
+                    { icon: '📈', color: '#EC4899', bg: 'rgba(236,72,153,0.1)', label: 'إيرادات الشهر', value: '$' + stats.revenueThisMonth },
+                    { icon: '🆕', color: '#14B8A6', bg: 'rgba(20,184,166,0.1)', label: 'اشتراكات جديدة', value: stats.newSubsThisMonth }
+                ];
 
-// تحديث واجهة الجوال
-function updateMobileUI() {
-    const btn = document.getElementById('adminMenuBtn');
-    if (window.innerWidth <= 768) {
-        btn.style.display = 'flex';
-    } else {
-        btn.style.display = 'none';
-        closeSidebar();
-    }
-}
-window.addEventListener('resize', updateMobileUI);
-updateMobileUI();
+                document.getElementById('statsGrid').innerHTML = statsData.map(s => `
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background:${s.bg};color:${s.color};">${s.icon}</div>
+                        <div class="stat-info"><div class="value" style="color:${s.color};">${s.value}</div><div class="label">${s.label}</div></div>
+                    </div>`).join('');
+
+                const logsData = Array.isArray(logs) ? logs : [];
+                document.getElementById('auditBody').innerHTML = logsData.length === 0 ? '<tr><td colspan="4" style="text-align:center;padding:2rem;color:#94A3B8;">لا توجد سجلات</td></tr>' : logsData.map(l => `<tr><td>${l.username || '-'}</td><td>${l.action}</td><td>${l.details || '-'}</td><td>${new Date(l.createdAt).toLocaleString('ar-SA')}</td></tr>`).join('');
+            } catch (err) {
+                document.getElementById('statsGrid').innerHTML = '<div class="alert-danger" style="padding:1rem;border-radius:8px;">❌ تعذر تحميل البيانات</div>';
+            }
+        }
+
+        async function loadAlerts() {
+            try {
+                const res = await fetch(`${API}/alerts`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const alerts = await res.json();
+                document.getElementById('alertsContainer').innerHTML = alerts.map(a => `<div class="alert-item alert-${a.type}">${a.type === 'danger' ? '🔴' : a.type === 'warning' ? '🟡' : '🔵'} ${a.text}</div>`).join('');
+            } catch (err) {}
+        }
+
         loadAlerts();
         loadDashboard();
+
+        // تحديث تلقائي كل 30 ثانية
+        setInterval(() => { loadAlerts(); loadDashboard(); }, 30000);
     </script>
 </body>
 </html>

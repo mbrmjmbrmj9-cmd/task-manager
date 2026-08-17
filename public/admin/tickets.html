@@ -6,64 +6,120 @@
     <title>Nivora | تذاكر الدعم</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { display: flex; min-height: 100vh; background: #0F172A; font-family: 'Cairo', sans-serif; color: white; margin: 0; }
-        .sidebar { width: 240px; background: #1E293B; padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 200; transition: right 0.3s ease; }
-        .sidebar h2 { color: #EF4444; margin-bottom: 1.5rem; font-size: 1.1rem; }
-        .sidebar a { display: block; padding: 0.6rem 0.75rem; color: #94A3B8; text-decoration: none; border-radius: 8px; margin-bottom: 0.25rem; font-size: 0.9rem; }
-        .sidebar a:hover, .sidebar a.active { background: #334155; color: white; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { display: flex; min-height: 100vh; background: #0F172A; font-family: 'Cairo', sans-serif; color: #fff; }
+        .sidebar { width: 240px; background: #1E293B; padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 200; transition: right 0.3s ease; overflow-y: auto; }
+        .sidebar .logo { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1.5rem; padding: 0 0.75rem; }
+        .sidebar .logo img { width: 34px; height: 34px; flex-shrink: 0; }
+        .sidebar .logo span { color: #EF4444; font-weight: 800; font-size: 1rem; }
+        .sidebar a { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.75rem; color: #94A3B8; text-decoration: none; border-radius: 8px; margin-bottom: 0.2rem; font-size: 0.9rem; transition: all 0.15s; }
+        .sidebar a:hover, .sidebar a.active { background: #334155; color: #fff; }
         .main { margin-right: 240px; flex: 1; padding: 2rem; }
-        h1 { margin-bottom: 1.5rem; font-size: 1.4rem; }
+        .topbar { margin-bottom: 1.25rem; }
+        .topbar h1 { font-size: 1.4rem; font-weight: 800; }
+        .filter-row { display: flex; gap: 0.5rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+        .filter-btn { padding: 0.4rem 0.85rem; border-radius: 20px; border: 1px solid #334155; background: #1E293B; color: #94A3B8; cursor: pointer; font-family: inherit; font-size: 0.8rem; transition: all 0.15s; }
+        .filter-btn.active { background: #EF4444; border-color: #EF4444; color: #fff; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 0.75rem; border-bottom: 1px solid #334155; text-align: right; font-size: 0.85rem; }
-        th { color: #94A3B8; font-weight: 600; }
-        .badge { padding: 0.2rem 0.5rem; border-radius: 6px; font-size: 0.75rem; }
-        .badge-open { background: #F59E0B; color: white; }
-        .badge-resolved { background: #22C55E; color: white; }
-        select { padding: 0.3rem; border-radius: 6px; background: #1E293B; color: white; border: 1px solid #334155; font-family: inherit; }
-        .admin-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; }
-        .admin-overlay.show { display: block; }
-        .admin-menu-btn { display: none; position: fixed; top: 12px; right: 12px; z-index: 150; background: #1E293B; color: white; border: 1px solid #334155; border-radius: 8px; padding: 0.4rem 0.6rem; cursor: pointer; font-size: 1.2rem; }
+        th { color: #94A3B8; font-weight: 600; background: #1E293B; }
+        .badge { padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.75rem; }
+        .badge-open { background: rgba(245,158,11,0.15); color: #F59E0B; }
+        .badge-resolved { background: rgba(34,197,94,0.15); color: #22C55E; }
+        .badge-closed { background: rgba(100,116,139,0.15); color: #64748B; }
+        .badge-in_progress { background: rgba(59,130,246,0.15); color: #3B82F6; }
+        select { padding: 0.3rem 0.4rem; border-radius: 6px; background: #1E293B; color: #fff; border: 1px solid #334155; font-family: inherit; font-size: 0.8rem; }
         .skeleton { background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
         @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-        @media (max-width: 1024px) { .sidebar { width: 60px; padding: 1rem 0.5rem; } .sidebar h2 { font-size: 0.8rem; text-align: center; } .sidebar a { font-size: 0; justify-content: center; padding: 0.5rem; } .main { margin-right: 60px; } }
-        @media (max-width: 768px) { body { flex-direction: column; } .sidebar { right: -260px; width: 260px; padding: 1.5rem 1rem; } .sidebar.open { right: 0; } .sidebar h2 { font-size: 1rem; } .sidebar a { font-size: 0.9rem; justify-content: flex-start; padding: 0.6rem 0.75rem; } .main { margin-right: 0; padding: 1rem; } .admin-menu-btn { display: flex; } h1 { font-size: 1.2rem; } table { font-size: 0.7rem; } th, td { padding: 0.5rem; } }
+        .admin-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; }
+        .admin-overlay.show { display: block; }
+        .admin-menu-btn { display: none; position: fixed; top: 12px; right: 12px; z-index: 150; background: #1E293B; color: #fff; border: 1px solid #334155; border-radius: 8px; padding: 0.4rem 0.6rem; cursor: pointer; font-size: 1.2rem; }
+        @media (max-width: 1024px) { .sidebar { width: 60px; padding: 1rem 0.5rem; } .sidebar .logo span, .sidebar a span { display: none; } .sidebar .logo img { margin: 0 auto; } .sidebar a { justify-content: center; } .main { margin-right: 60px; } }
+        @media (max-width: 768px) { body { flex-direction: column; } .sidebar { right: -260px; width: 260px; padding: 1.5rem 1rem; } .sidebar.open { right: 0; } .sidebar .logo span, .sidebar a span { display: inline; } .sidebar a { justify-content: flex-start; } .main { margin-right: 0; padding: 1rem; } .admin-menu-btn { display: flex; } table { font-size: 0.7rem; } th, td { padding: 0.5rem; } }
     </style>
 </head>
 <body>
     <div class="admin-overlay" id="adminOverlay" onclick="closeSidebar()"></div>
     <button class="admin-menu-btn" id="adminMenuBtn" onclick="openSidebar()">☰</button>
+
     <aside class="sidebar" id="sidebar">
-        <h2>🔐 Nivora Admin</h2>
-        <a href="dashboard.html">📊 لوحة القيادة</a>
-        <a href="organizations.html">🏢 المؤسسات</a>
-        <a href="subscriptions.html">💳 الاشتراكات</a>
-        <a href="users.html">👥 المستخدمون</a>
-        <a href="features.html">🚩 Feature Flags</a>
-        <a href="usage.html">📊 الاستخدام</a>
-        <a href="tickets.html" class="active">🎫 التذاكر</a>
-        <a href="health.html">🖥 صحة النظام</a>
-        <a href="#" onclick="logout()">🚪 خروج</a>
+        <div class="logo"><img src="../img/logo.svg" alt="Nivora"><span>Nivora Admin</span></div>
+        <a href="dashboard.html"><span>📊</span><span>لوحة القيادة</span></a>
+        <a href="organizations.html"><span>🏢</span><span>المؤسسات</span></a>
+        <a href="subscriptions.html"><span>💳</span><span>الاشتراكات</span></a>
+        <a href="users.html"><span>👥</span><span>المستخدمون</span></a>
+        <a href="features.html"><span>🚩</span><span>Feature Flags</span></a>
+        <a href="usage.html"><span>📊</span><span>الاستخدام</span></a>
+        <a href="tickets.html" class="active"><span>🎫</span><span>التذاكر</span></a>
+        <a href="health.html"><span>🖥</span><span>صحة النظام</span></a>
+        <a href="#" onclick="logout()"><span>🚪</span><span>خروج</span></a>
     </aside>
+
     <div class="main">
-        <h1>🎫 تذاكر الدعم</h1>
+        <div class="topbar"><h1>🎫 تذاكر الدعم</h1></div>
+
+        <div class="filter-row">
+            <button class="filter-btn active" onclick="filterTickets('all')">الكل</button>
+            <button class="filter-btn" onclick="filterTickets('open')">مفتوحة</button>
+            <button class="filter-btn" onclick="filterTickets('in_progress')">قيد المعالجة</button>
+            <button class="filter-btn" onclick="filterTickets('resolved')">محلولة</button>
+            <button class="filter-btn" onclick="filterTickets('closed')">مغلقة</button>
+        </div>
+
         <table>
             <thead><tr><th>المؤسسة</th><th>المستخدم</th><th>الموضوع</th><th>الأولوية</th><th>الحالة</th><th>إجراء</th></tr></thead>
             <tbody id="ticketBody"></tbody>
         </table>
     </div>
+
+    <script src="../js/components.js"></script>
     <script>
         const API = 'https://nivora-t9ov.onrender.com/api/admin';
         const token = localStorage.getItem('adminToken');
         if (!token) window.location.href = 'login.html';
+
         function logout() { localStorage.removeItem('adminToken'); window.location.href = 'login.html'; }
         function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('adminOverlay').classList.add('show'); }
         function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('adminOverlay').classList.remove('show'); }
         function updateMobileUI() { const btn = document.getElementById('adminMenuBtn'); btn.style.display = window.innerWidth <= 768 ? 'flex' : 'none'; if (window.innerWidth > 768) closeSidebar(); }
         window.addEventListener('resize', updateMobileUI); updateMobileUI();
 
+        let allTickets = [];
+        let currentFilter = 'all';
+
         function showSkeleton() { document.getElementById('ticketBody').innerHTML = Array(3).fill('<tr><td><div class="skeleton" style="height:14px;width:60%;"></div></td><td><div class="skeleton" style="height:14px;width:60%;"></div></td><td><div class="skeleton" style="height:14px;width:80%;"></div></td><td><div class="skeleton" style="height:14px;width:30px;"></div></td><td><div class="skeleton" style="height:14px;width:40px;"></div></td><td><div class="skeleton" style="height:14px;width:50px;"></div></td></tr>').join(''); }
-        async function loadTickets() { showSkeleton(); try { const res = await fetch(`${API}/tickets`,{headers:{'Authorization':`Bearer ${token}`}}); const tickets = await res.json(); document.getElementById('ticketBody').innerHTML = tickets.length === 0 ? '<tr><td colspan="6" style="text-align:center;padding:3rem;">لا توجد تذاكر</td></tr>' : tickets.map(t => `<tr><td>${t.organizationId?.name||'-'}</td><td>${t.userId?.username||'-'}</td><td>${t.subject}</td><td>${t.priority==='urgent'?'🔴':t.priority==='high'?'🟠':'🟡'}</td><td><span class="badge badge-${t.status==='open'?'open':'resolved'}">${t.status}</span></td><td><select onchange="updateTicket('${t._id}',this.value)"><option value="">تغيير...</option><option value="resolved">✅ حل</option><option value="closed">🚫 إغلاق</option></select></td></tr>`).join(''); } catch (err) { document.getElementById('ticketBody').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#EF4444;">خطأ</td></tr>'; } }
-        async function updateTicket(id,status){ if(!status) return; await fetch(`${API}/tickets/${id}`,{method:'PATCH',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({status})}); loadTickets(); }
+
+        async function loadTickets() {
+            showSkeleton();
+            try {
+                const res = await fetch(`${API}/tickets`, { headers: { 'Authorization': `Bearer ${token}` } });
+                allTickets = await res.json();
+                renderTickets();
+            } catch (err) { showError('ticketBody', 'تعذر تحميل التذاكر', loadTickets); }
+        }
+
+        function filterTickets(type) {
+            currentFilter = type;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            renderTickets();
+        }
+
+        function renderTickets() {
+            const filtered = currentFilter === 'all' ? allTickets : allTickets.filter(t => t.status === currentFilter);
+            const badgeClass = s => s === 'open' ? 'badge-open' : s === 'resolved' ? 'badge-resolved' : s === 'closed' ? 'badge-closed' : 'badge-in_progress';
+            const statusText = s => s === 'open' ? 'مفتوحة' : s === 'resolved' ? 'محلولة' : s === 'closed' ? 'مغلقة' : 'قيد المعالجة';
+            const priorityIcon = p => p === 'urgent' ? '🔴' : p === 'high' ? '🟠' : p === 'medium' ? '🟡' : '🟢';
+            document.getElementById('ticketBody').innerHTML = filtered.length === 0 ? '<tr><td colspan="6" style="text-align:center;padding:3rem;color:#94A3B8;">لا توجد تذاكر</td></tr>' : filtered.map(t => `<tr><td>${t.organizationId?.name||'-'}</td><td>${t.userId?.username||'-'}</td><td>${t.subject}</td><td>${priorityIcon(t.priority)}</td><td><span class="badge ${badgeClass(t.status)}">${statusText(t.status)}</span></td><td><select onchange="updateTicket('${t._id}',this.value)"><option value="">تغيير...</option><option value="in_progress">🔵 قيد المعالجة</option><option value="resolved">✅ حل</option><option value="closed">🚫 إغلاق</option></select></td></tr>`).join('');
+        }
+
+        async function updateTicket(id, status) {
+            if (!status) return;
+            await fetch(`${API}/tickets/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ status }) });
+            showToast('تم التحديث', 'success');
+            loadTickets();
+        }
+
         loadTickets();
     </script>
 </body>

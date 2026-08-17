@@ -6,73 +6,132 @@
     <title>Nivora | الاشتراكات</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { display: flex; min-height: 100vh; background: #0F172A; font-family: 'Cairo', sans-serif; color: white; margin: 0; }
-        .sidebar { width: 240px; background: #1E293B; padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 200; transition: right 0.3s ease; }
-        .sidebar h2 { color: #EF4444; margin-bottom: 1.5rem; font-size: 1.1rem; }
-        .sidebar a { display: block; padding: 0.6rem 0.75rem; color: #94A3B8; text-decoration: none; border-radius: 8px; margin-bottom: 0.25rem; font-size: 0.9rem; }
-        .sidebar a:hover, .sidebar a.active { background: #334155; color: white; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { display: flex; min-height: 100vh; background: #0F172A; font-family: 'Cairo', sans-serif; color: #fff; }
+        .sidebar { width: 240px; background: #1E293B; padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 200; transition: right 0.3s ease; overflow-y: auto; }
+        .sidebar .logo { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1.5rem; padding: 0 0.75rem; }
+        .sidebar .logo img { width: 34px; height: 34px; flex-shrink: 0; }
+        .sidebar .logo span { color: #EF4444; font-weight: 800; font-size: 1rem; }
+        .sidebar a { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.75rem; color: #94A3B8; text-decoration: none; border-radius: 8px; margin-bottom: 0.2rem; font-size: 0.9rem; transition: all 0.15s; }
+        .sidebar a:hover, .sidebar a.active { background: #334155; color: #fff; }
         .main { margin-right: 240px; flex: 1; padding: 2rem; }
-        h1 { margin-bottom: 1rem; font-size: 1.4rem; }
-        .add-form { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
-        .add-form input, .add-form select { padding: 0.5rem; border-radius: 6px; background: #1E293B; color: white; border: 1px solid #334155; font-family: inherit; }
-        .add-form button { padding: 0.5rem 1rem; background: #22C55E; color: white; border: none; border-radius: 6px; cursor: pointer; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem; }
+        .topbar h1 { font-size: 1.4rem; font-weight: 800; }
+        .add-form { display: flex; gap: 0.5rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+        .add-form input, .add-form select { padding: 0.5rem 0.6rem; border-radius: 8px; background: #1E293B; color: #fff; border: 1px solid #334155; font-family: inherit; font-size: 0.85rem; }
+        .add-form input:focus, .add-form select:focus { outline: none; border-color: #22C55E; }
+        .btn-add { padding: 0.5rem 1rem; background: #22C55E; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 0.85rem; font-weight: 600; transition: all 0.15s; }
+        .btn-add:hover { background: #16A34A; }
+        .filter-row { display: flex; gap: 0.5rem; margin-bottom: 1.25rem; }
+        .filter-btn { padding: 0.4rem 0.85rem; border-radius: 20px; border: 1px solid #334155; background: #1E293B; color: #94A3B8; cursor: pointer; font-family: inherit; font-size: 0.8rem; transition: all 0.15s; }
+        .filter-btn.active { background: #EF4444; border-color: #EF4444; color: #fff; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 0.75rem; border-bottom: 1px solid #334155; text-align: right; font-size: 0.85rem; }
-        th { color: #94A3B8; font-weight: 600; }
-        .badge { padding: 0.2rem 0.5rem; border-radius: 6px; font-size: 0.75rem; }
-        .badge-active { background: #22C55E; color: white; }
-        .badge-canceled { background: #EF4444; color: white; }
-        .admin-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; }
-        .admin-overlay.show { display: block; }
-        .admin-menu-btn { display: none; position: fixed; top: 12px; right: 12px; z-index: 150; background: #1E293B; color: white; border: 1px solid #334155; border-radius: 8px; padding: 0.4rem 0.6rem; cursor: pointer; font-size: 1.2rem; }
+        th { color: #94A3B8; font-weight: 600; background: #1E293B; }
+        .badge { padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.75rem; }
+        .badge-active { background: rgba(34,197,94,0.15); color: #22C55E; }
+        .badge-canceled { background: rgba(239,68,68,0.15); color: #EF4444; }
+        .badge-expired { background: rgba(245,158,11,0.15); color: #F59E0B; }
+        .btn-cancel { padding: 0.3rem 0.6rem; border-radius: 6px; border: none; cursor: pointer; font-family: inherit; font-size: 0.75rem; background: rgba(239,68,68,0.15); color: #EF4444; transition: all 0.15s; }
+        .btn-cancel:hover { background: #EF4444; color: #fff; }
         .skeleton { background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
         @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-        @media (max-width: 1024px) { .sidebar { width: 60px; padding: 1rem 0.5rem; } .sidebar h2 { font-size: 0.8rem; text-align: center; } .sidebar a { font-size: 0; justify-content: center; padding: 0.5rem; } .main { margin-right: 60px; } }
-        @media (max-width: 768px) { body { flex-direction: column; } .sidebar { right: -260px; width: 260px; padding: 1.5rem 1rem; } .sidebar.open { right: 0; } .sidebar h2 { font-size: 1rem; } .sidebar a { font-size: 0.9rem; justify-content: flex-start; padding: 0.6rem 0.75rem; } .main { margin-right: 0; padding: 1rem; } .admin-menu-btn { display: flex; } h1 { font-size: 1.2rem; } table { font-size: 0.7rem; } th, td { padding: 0.5rem; } .add-form { flex-direction: column; } }
+        .admin-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; }
+        .admin-overlay.show { display: block; }
+        .admin-menu-btn { display: none; position: fixed; top: 12px; right: 12px; z-index: 150; background: #1E293B; color: #fff; border: 1px solid #334155; border-radius: 8px; padding: 0.4rem 0.6rem; cursor: pointer; font-size: 1.2rem; }
+        @media (max-width: 1024px) { .sidebar { width: 60px; padding: 1rem 0.5rem; } .sidebar .logo span, .sidebar a span { display: none; } .sidebar .logo img { margin: 0 auto; } .sidebar a { justify-content: center; } .main { margin-right: 60px; } }
+        @media (max-width: 768px) { body { flex-direction: column; } .sidebar { right: -260px; width: 260px; padding: 1.5rem 1rem; } .sidebar.open { right: 0; } .sidebar .logo span, .sidebar a span { display: inline; } .sidebar a { justify-content: flex-start; } .main { margin-right: 0; padding: 1rem; } .admin-menu-btn { display: flex; } .add-form { flex-direction: column; } table { font-size: 0.7rem; } th, td { padding: 0.5rem; } }
     </style>
 </head>
 <body>
     <div class="admin-overlay" id="adminOverlay" onclick="closeSidebar()"></div>
     <button class="admin-menu-btn" id="adminMenuBtn" onclick="openSidebar()">☰</button>
+
     <aside class="sidebar" id="sidebar">
-        <h2>🔐 Nivora Admin</h2>
-        <a href="dashboard.html">📊 لوحة القيادة</a>
-        <a href="organizations.html">🏢 المؤسسات</a>
-        <a href="subscriptions.html" class="active">💳 الاشتراكات</a>
-        <a href="users.html">👥 المستخدمون</a>
-        <a href="features.html">🚩 Feature Flags</a>
-        <a href="usage.html">📊 الاستخدام</a>
-        <a href="tickets.html">🎫 التذاكر</a>
-        <a href="health.html">🖥 صحة النظام</a>
-        <a href="#" onclick="logout()">🚪 خروج</a>
+        <div class="logo"><img src="../img/logo.svg" alt="Nivora"><span>Nivora Admin</span></div>
+        <a href="dashboard.html"><span>📊</span><span>لوحة القيادة</span></a>
+        <a href="organizations.html"><span>🏢</span><span>المؤسسات</span></a>
+        <a href="subscriptions.html" class="active"><span>💳</span><span>الاشتراكات</span></a>
+        <a href="users.html"><span>👥</span><span>المستخدمون</span></a>
+        <a href="features.html"><span>🚩</span><span>Feature Flags</span></a>
+        <a href="usage.html"><span>📊</span><span>الاستخدام</span></a>
+        <a href="tickets.html"><span>🎫</span><span>التذاكر</span></a>
+        <a href="health.html"><span>🖥</span><span>صحة النظام</span></a>
+        <a href="#" onclick="logout()"><span>🚪</span><span>خروج</span></a>
     </aside>
+
     <div class="main">
-        <h1>💳 الاشتراكات</h1>
+        <div class="topbar"><h1>💳 الاشتراكات</h1></div>
+
         <div class="add-form">
             <input type="text" id="orgId" placeholder="معرف المؤسسة">
             <select id="plan"><option value="free">Free</option><option value="pro">Pro</option><option value="business">Business</option></select>
             <input type="number" id="amount" placeholder="المبلغ $">
-            <button onclick="createSubscription()">➕ إضافة</button>
+            <button class="btn-add" onclick="createSubscription()">+ إضافة</button>
         </div>
+
+        <div class="filter-row">
+            <button class="filter-btn active" onclick="filterSubs('all')">الكل</button>
+            <button class="filter-btn" onclick="filterSubs('active')">نشطة</button>
+            <button class="filter-btn" onclick="filterSubs('canceled')">ملغية</button>
+        </div>
+
         <table>
             <thead><tr><th>المؤسسة</th><th>الخطة</th><th>المبلغ</th><th>الحالة</th><th>التاريخ</th><th></th></tr></thead>
             <tbody id="subBody"></tbody>
         </table>
     </div>
+
+    <script src="../js/components.js"></script>
     <script>
         const API = 'https://nivora-t9ov.onrender.com/api';
         const token = localStorage.getItem('adminToken');
         if (!token) window.location.href = 'login.html';
+
         function logout() { localStorage.removeItem('adminToken'); window.location.href = 'login.html'; }
         function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('adminOverlay').classList.add('show'); }
         function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('adminOverlay').classList.remove('show'); }
         function updateMobileUI() { const btn = document.getElementById('adminMenuBtn'); btn.style.display = window.innerWidth <= 768 ? 'flex' : 'none'; if (window.innerWidth > 768) closeSidebar(); }
         window.addEventListener('resize', updateMobileUI); updateMobileUI();
 
+        let allSubs = [];
+        let currentFilter = 'all';
+
         function showSkeleton() { document.getElementById('subBody').innerHTML = Array(3).fill('<tr><td><div class="skeleton" style="height:14px;width:60%;"></div></td><td><div class="skeleton" style="height:14px;width:40px;"></div></td><td><div class="skeleton" style="height:14px;width:40px;"></div></td><td><div class="skeleton" style="height:14px;width:40px;"></div></td><td><div class="skeleton" style="height:14px;width:60px;"></div></td><td><div class="skeleton" style="height:14px;width:40px;"></div></td></tr>').join(''); }
-        async function loadSubs() { showSkeleton(); try { const res = await fetch(`${API}/subscriptions`, { headers: { 'Authorization': `Bearer ${token}` } }); const subs = await res.json(); document.getElementById('subBody').innerHTML = subs.length === 0 ? '<tr><td colspan="6" style="text-align:center;padding:3rem;">لا توجد اشتراكات</td></tr>' : subs.map(s => `<tr><td>${s.organizationId?.name||'-'}</td><td>${s.plan}</td><td>$${s.amount}</td><td><span class="badge badge-${s.status==='active'?'active':'canceled'}">${s.status}</span></td><td>${new Date(s.createdAt).toLocaleDateString('ar-SA')}</td><td><button onclick="cancelSub('${s._id}')" style="background:#EF4444;color:white;border:none;padding:0.3rem 0.75rem;border-radius:6px;cursor:pointer;">إلغاء</button></td></tr>`).join(''); } catch (err) { document.getElementById('subBody').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#EF4444;">خطأ في تحميل البيانات</td></tr>'; } }
-        async function createSubscription() { const orgId=document.getElementById('orgId').value, plan=document.getElementById('plan').value, amount=document.getElementById('amount').value; await fetch(`${API}/subscriptions`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({organizationId:orgId,plan,amount:Number(amount)})}); loadSubs(); }
-        async function cancelSub(id){ await fetch(`${API}/subscriptions/${id}/cancel`,{method:'PATCH',headers:{'Authorization':`Bearer ${token}`}}); loadSubs(); }
+
+        async function loadSubs() {
+            showSkeleton();
+            try {
+                const res = await fetch(`${API}/subscriptions`, { headers: { 'Authorization': `Bearer ${token}` } });
+                allSubs = await res.json();
+                renderSubs();
+            } catch (err) { showError('subBody', 'تعذر تحميل الاشتراكات', loadSubs); }
+        }
+
+        function filterSubs(type) {
+            currentFilter = type;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            renderSubs();
+        }
+
+        function renderSubs() {
+            const filtered = currentFilter === 'all' ? allSubs : allSubs.filter(s => s.status === currentFilter);
+            document.getElementById('subBody').innerHTML = filtered.length === 0 ? '<tr><td colspan="6" style="text-align:center;padding:3rem;color:#94A3B8;">لا توجد اشتراكات</td></tr>' : filtered.map(s => `<tr><td>${s.organizationId?.name||'-'}</td><td>${s.plan}</td><td>$${s.amount}</td><td><span class="badge badge-${s.status}">${s.status}</span></td><td>${new Date(s.createdAt).toLocaleDateString('ar-SA')}</td><td>${s.status === 'active' ? `<button class="btn-cancel" onclick="cancelSub('${s._id}')">إلغاء</button>` : '-'}</td></tr>`).join('');
+        }
+
+        async function createSubscription() {
+            const orgId = document.getElementById('orgId').value.trim();
+            const plan = document.getElementById('plan').value;
+            const amount = document.getElementById('amount').value;
+            if (!orgId || !amount) { showToast('املأ جميع الحقول', 'warning'); return; }
+            await fetch(`${API}/subscriptions`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ organizationId: orgId, plan, amount: Number(amount) }) });
+            showToast('تم إنشاء الاشتراك', 'success');
+            loadSubs();
+        }
+
+        function cancelSub(id) { confirmDialog({ title: 'إلغاء الاشتراك', message: 'هل تريد إلغاء هذا الاشتراك؟', confirmText: 'إلغاء', danger: true, onConfirm: async () => { await fetch(`${API}/subscriptions/${id}/cancel`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` } }); showToast('تم الإلغاء', 'success'); loadSubs(); } }); }
+
         loadSubs();
     </script>
 </body>

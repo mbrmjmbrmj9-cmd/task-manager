@@ -6,56 +6,73 @@
     <title>Nivora | Feature Flags</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { display: flex; min-height: 100vh; background: #0F172A; font-family: 'Cairo', sans-serif; color: white; margin: 0; }
-        .sidebar { width: 240px; background: #1E293B; padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 200; transition: right 0.3s ease; }
-        .sidebar h2 { color: #EF4444; margin-bottom: 1.5rem; font-size: 1.1rem; }
-        .sidebar a { display: block; padding: 0.6rem 0.75rem; color: #94A3B8; text-decoration: none; border-radius: 8px; margin-bottom: 0.25rem; font-size: 0.9rem; }
-        .sidebar a:hover, .sidebar a.active { background: #334155; color: white; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { display: flex; min-height: 100vh; background: #0F172A; font-family: 'Cairo', sans-serif; color: #fff; }
+        .sidebar { width: 240px; background: #1E293B; padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 200; transition: right 0.3s ease; overflow-y: auto; }
+        .sidebar .logo { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1.5rem; padding: 0 0.75rem; }
+        .sidebar .logo img { width: 34px; height: 34px; flex-shrink: 0; }
+        .sidebar .logo span { color: #EF4444; font-weight: 800; font-size: 1rem; }
+        .sidebar a { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.75rem; color: #94A3B8; text-decoration: none; border-radius: 8px; margin-bottom: 0.2rem; font-size: 0.9rem; transition: all 0.15s; }
+        .sidebar a:hover, .sidebar a.active { background: #334155; color: #fff; }
         .main { margin-right: 240px; flex: 1; padding: 2rem; }
-        h1 { margin-bottom: 1rem; font-size: 1.4rem; }
+        .topbar { margin-bottom: 1.25rem; }
+        .topbar h1 { font-size: 1.4rem; font-weight: 800; }
         .add-form { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
-        .add-form input { padding: 0.5rem; border-radius: 6px; background: #1E293B; color: white; border: 1px solid #334155; font-family: inherit; flex: 1; min-width: 120px; }
-        .add-form button { padding: 0.5rem 1rem; background: #22C55E; color: white; border: none; border-radius: 6px; cursor: pointer; }
-        .flag-row { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem; background: #1E293B; border-radius: 8px; margin-bottom: 0.5rem; }
-        .flag-row .name { font-weight: 600; }
-        .flag-row .desc { color: #94A3B8; font-size: 0.8rem; }
-        .toggle { width: 50px; height: 26px; background: #334155; border-radius: 13px; cursor: pointer; position: relative; transition: background 0.3s; }
+        .add-form input { padding: 0.5rem 0.6rem; border-radius: 8px; background: #1E293B; color: #fff; border: 1px solid #334155; font-family: inherit; flex: 1; min-width: 120px; font-size: 0.85rem; }
+        .add-form input:focus { outline: none; border-color: #22C55E; }
+        .btn-add { padding: 0.5rem 1rem; background: #22C55E; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 0.85rem; font-weight: 600; transition: all 0.15s; }
+        .btn-add:hover { background: #16A34A; }
+        .flag-row { display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1rem; background: #1E293B; border-radius: 10px; margin-bottom: 0.5rem; border: 1px solid #334155; }
+        .flag-row .name { font-weight: 600; font-size: 0.9rem; }
+        .flag-row .desc { color: #94A3B8; font-size: 0.78rem; margin-top: 0.15rem; }
+        .toggle { width: 50px; height: 26px; background: #334155; border-radius: 13px; cursor: pointer; position: relative; transition: all 0.3s; flex-shrink: 0; }
         .toggle.on { background: #22C55E; }
-        .toggle::after { content: ''; position: absolute; top: 3px; right: 3px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: right 0.3s; }
+        .toggle::after { content: ''; position: absolute; top: 3px; right: 3px; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: right 0.3s; }
         .toggle.on::after { right: 27px; }
-        .admin-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; }
-        .admin-overlay.show { display: block; }
-        .admin-menu-btn { display: none; position: fixed; top: 12px; right: 12px; z-index: 150; background: #1E293B; color: white; border: 1px solid #334155; border-radius: 8px; padding: 0.4rem 0.6rem; cursor: pointer; font-size: 1.2rem; }
         .skeleton { background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
         @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-        @media (max-width: 1024px) { .sidebar { width: 60px; padding: 1rem 0.5rem; } .sidebar h2 { font-size: 0.8rem; text-align: center; } .sidebar a { font-size: 0; justify-content: center; padding: 0.5rem; } .main { margin-right: 60px; } }
-        @media (max-width: 768px) { body { flex-direction: column; } .sidebar { right: -260px; width: 260px; padding: 1.5rem 1rem; } .sidebar.open { right: 0; } .sidebar h2 { font-size: 1rem; } .sidebar a { font-size: 0.9rem; justify-content: flex-start; padding: 0.6rem 0.75rem; } .main { margin-right: 0; padding: 1rem; } .admin-menu-btn { display: flex; } h1 { font-size: 1.2rem; } .add-form { flex-direction: column; } }
+        .admin-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; }
+        .admin-overlay.show { display: block; }
+        .admin-menu-btn { display: none; position: fixed; top: 12px; right: 12px; z-index: 150; background: #1E293B; color: #fff; border: 1px solid #334155; border-radius: 8px; padding: 0.4rem 0.6rem; cursor: pointer; font-size: 1.2rem; }
+        @media (max-width: 1024px) { .sidebar { width: 60px; padding: 1rem 0.5rem; } .sidebar .logo span, .sidebar a span { display: none; } .sidebar .logo img { margin: 0 auto; } .sidebar a { justify-content: center; } .main { margin-right: 60px; } }
+        @media (max-width: 768px) { body { flex-direction: column; } .sidebar { right: -260px; width: 260px; padding: 1.5rem 1rem; } .sidebar.open { right: 0; } .sidebar .logo span, .sidebar a span { display: inline; } .sidebar a { justify-content: flex-start; } .main { margin-right: 0; padding: 1rem; } .admin-menu-btn { display: flex; } .add-form { flex-direction: column; } }
     </style>
 </head>
 <body>
     <div class="admin-overlay" id="adminOverlay" onclick="closeSidebar()"></div>
     <button class="admin-menu-btn" id="adminMenuBtn" onclick="openSidebar()">☰</button>
+
     <aside class="sidebar" id="sidebar">
-        <h2>🔐 Nivora Admin</h2>
-        <a href="dashboard.html">📊 لوحة القيادة</a>
-        <a href="organizations.html">🏢 المؤسسات</a>
-        <a href="subscriptions.html">💳 الاشتراكات</a>
-        <a href="users.html">👥 المستخدمون</a>
-        <a href="features.html" class="active">🚩 Feature Flags</a>
-        <a href="usage.html">📊 الاستخدام</a>
-        <a href="tickets.html">🎫 التذاكر</a>
-        <a href="health.html">🖥 صحة النظام</a>
-        <a href="#" onclick="logout()">🚪 خروج</a>
+        <div class="logo"><img src="../img/logo.svg" alt="Nivora"><span>Nivora Admin</span></div>
+        <a href="dashboard.html"><span>📊</span><span>لوحة القيادة</span></a>
+        <a href="organizations.html"><span>🏢</span><span>المؤسسات</span></a>
+        <a href="subscriptions.html"><span>💳</span><span>الاشتراكات</span></a>
+        <a href="users.html"><span>👥</span><span>المستخدمون</span></a>
+        <a href="features.html" class="active"><span>🚩</span><span>Feature Flags</span></a>
+        <a href="usage.html"><span>📊</span><span>الاستخدام</span></a>
+        <a href="tickets.html"><span>🎫</span><span>التذاكر</span></a>
+        <a href="health.html"><span>🖥</span><span>صحة النظام</span></a>
+        <a href="#" onclick="logout()"><span>🚪</span><span>خروج</span></a>
     </aside>
+
     <div class="main">
-        <h1>🚩 Feature Flags</h1>
-        <div class="add-form"><input type="text" id="flagName" placeholder="اسم الميزة"><input type="text" id="flagDesc" placeholder="الوصف"><button onclick="addFlag()">➕ إضافة</button></div>
+        <div class="topbar"><h1>🚩 Feature Flags</h1></div>
+
+        <div class="add-form">
+            <input type="text" id="flagName" placeholder="اسم الميزة">
+            <input type="text" id="flagDesc" placeholder="الوصف">
+            <button class="btn-add" onclick="addFlag()">+ إضافة</button>
+        </div>
+
         <div id="flagsList"></div>
     </div>
+
+    <script src="../js/components.js"></script>
     <script>
         const API = 'https://nivora-t9ov.onrender.com/api/admin';
         const token = localStorage.getItem('adminToken');
         if (!token) window.location.href = 'login.html';
+
         function logout() { localStorage.removeItem('adminToken'); window.location.href = 'login.html'; }
         function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('adminOverlay').classList.add('show'); }
         function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('adminOverlay').classList.remove('show'); }
@@ -63,9 +80,33 @@
         window.addEventListener('resize', updateMobileUI); updateMobileUI();
 
         function showSkeleton() { document.getElementById('flagsList').innerHTML = Array(3).fill('<div class="flag-row"><div><div class="skeleton" style="height:14px;width:120px;margin-bottom:4px;"></div><div class="skeleton" style="height:10px;width:200px;"></div></div><div class="skeleton" style="width:50px;height:26px;border-radius:13px;"></div></div>').join(''); }
-        async function loadFlags() { showSkeleton(); try { const res = await fetch(`${API}/feature-flags`,{headers:{'Authorization':`Bearer ${token}`}}); const flags = await res.json(); document.getElementById('flagsList').innerHTML = flags.length === 0 ? '<p style="text-align:center;color:#94A3B8;padding:2rem;">لا توجد ميزات</p>' : flags.map(f => `<div class="flag-row"><div><div class="name">${f.name}</div><div class="desc">${f.description||''}</div></div><div class="toggle ${f.enabled?'on':''}" onclick="toggleFlag('${f.name}',${!f.enabled})"></div></div>`).join(''); } catch (err) { document.getElementById('flagsList').innerHTML = '<p style="text-align:center;color:#EF4444;">خطأ</p>'; } }
-        async function addFlag() { const name=document.getElementById('flagName').value.trim(), desc=document.getElementById('flagDesc').value.trim(); if(!name) return; await fetch(`${API}/feature-flags`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({name,enabled:false,description:desc})}); document.getElementById('flagName').value=''; document.getElementById('flagDesc').value=''; loadFlags(); }
-        async function toggleFlag(name,enabled){ await fetch(`${API}/feature-flags`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({name,enabled})}); loadFlags(); }
+
+        async function loadFlags() {
+            showSkeleton();
+            try {
+                const res = await fetch(`${API}/feature-flags`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const flags = await res.json();
+                document.getElementById('flagsList').innerHTML = flags.length === 0 ? '<p style="text-align:center;color:#94A3B8;padding:2rem;">لا توجد ميزات</p>' : flags.map(f => `<div class="flag-row"><div><div class="name">${f.name}</div>${f.description ? `<div class="desc">${f.description}</div>` : ''}</div><div class="toggle ${f.enabled?'on':''}" onclick="toggleFlag('${f.name}',${!f.enabled})"></div></div>`).join('');
+            } catch (err) { showError('flagsList', 'تعذر تحميل الميزات', loadFlags); }
+        }
+
+        async function addFlag() {
+            const name = document.getElementById('flagName').value.trim();
+            const desc = document.getElementById('flagDesc').value.trim();
+            if (!name) { showToast('الاسم مطلوب', 'warning'); return; }
+            await fetch(`${API}/feature-flags`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ name, enabled: false, description: desc }) });
+            document.getElementById('flagName').value = '';
+            document.getElementById('flagDesc').value = '';
+            showToast('تمت الإضافة', 'success');
+            loadFlags();
+        }
+
+        async function toggleFlag(name, enabled) {
+            await fetch(`${API}/feature-flags`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ name, enabled }) });
+            showToast(enabled ? 'تم التفعيل' : 'تم التعطيل', 'success');
+            loadFlags();
+        }
+
         loadFlags();
     </script>
 </body>
