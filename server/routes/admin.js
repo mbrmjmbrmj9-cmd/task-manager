@@ -214,20 +214,39 @@ router.get('/advanced-stats', async (req, res) => {
     }
 });
 
-// ========== Audit Logs مع Pagination ==========
+// ========== Audit Logs مع Pagination + فلترة ==========
 router.get('/audit-logs', async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 50;
         const skip = (page - 1) * limit;
 
+        const filter = {};
+
+        if (req.query.username) {
+            filter.username = { $regex: req.query.username, $options: 'i' };
+        }
+
+        if (req.query.action) {
+            filter.action = req.query.action;
+        }
+
+        if (req.query.from || req.query.to) {
+            filter.createdAt = {};
+            if (req.query.from) filter.createdAt.$gte = new Date(req.query.from);
+            if (req.query.to) filter.createdAt.$lte = new Date(req.query.to);
+        }
+
         const [logs, total] = await Promise.all([
-            AuditLog.find().sort({ createdAt: -1 }).skip(skip).limit(limit),
-            AuditLog.countDocuments()
+            AuditLog.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+            AuditLog.countDocuments(filter)
         ]);
+
+        const actions = await AuditLog.distinct('action');
 
         res.json({
             data: logs,
+            actions,
             pagination: { page, limit, total, totalPages: Math.ceil(total / limit) }
         });
     } catch (err) {
