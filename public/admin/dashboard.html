@@ -81,14 +81,14 @@
         <div id="alertsContainer" style="margin-bottom:1rem;"></div>
 
         <div class="stats" id="statsGrid"></div>
-
-        <h2 class="section-title" style="margin-top:1.5rem;">📋 آخر النشاطات</h2>
-        <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem;flex-wrap:wrap;">
+<div style="display:flex;gap:0.5rem;margin-bottom:0.75rem;flex-wrap:wrap;">
     <input type="text" id="auditSearch" placeholder="🔍 بحث باسم المستخدم..." style="flex:1;min-width:150px;height:34px;border-radius:8px;border:1px solid #334155;background:#1E293B;color:#fff;padding:0 0.75rem;font-family:inherit;font-size:0.8rem;" oninput="loadAuditLogs()">
     <select id="auditAction" style="height:34px;border-radius:8px;border:1px solid #334155;background:#1E293B;color:#fff;padding:0 0.5rem;font-family:inherit;font-size:0.8rem;" onchange="loadAuditLogs()">
         <option value="">كل الإجراءات</option>
     </select>
 </div>
+        <h2 class="section-title" style="margin-top:1.5rem;">📋 آخر النشاطات</h2>
+        
         <table>
             <thead><tr><th>المستخدم</th><th>الإجراء</th><th>التفاصيل</th><th>الوقت</th></tr></thead>
             <tbody id="auditBody"></tbody>
