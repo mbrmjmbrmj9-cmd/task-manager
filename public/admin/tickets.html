@@ -29,8 +29,32 @@
         .badge-closed { background: rgba(100,116,139,0.15); color: #64748B; }
         .badge-in_progress { background: rgba(59,130,246,0.15); color: #3B82F6; }
         select { padding: 0.3rem 0.4rem; border-radius: 6px; background: #1E293B; color: #fff; border: 1px solid #334155; font-family: inherit; font-size: 0.8rem; }
+        .btn-view { padding: 0.3rem 0.6rem; border-radius: 6px; border: none; cursor: pointer; font-family: inherit; font-size: 0.75rem; background: rgba(59,130,246,0.15); color: #3B82F6; }
+        .btn-view:hover { background: #3B82F6; color: #fff; }
         .skeleton { background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
         @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300; align-items: center; justify-content: center; padding: 1rem; }
+        .modal-overlay.show { display: flex; }
+        .modal { background: #1E293B; border-radius: 16px; width: 100%; max-width: 600px; max-height: 85vh; overflow-y: auto; border: 1px solid #334155; }
+        .modal-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 1.25rem 1.5rem; border-bottom: 1px solid #334155; }
+        .modal-header h3 { font-size: 1rem; font-weight: 700; flex: 1; }
+        .modal-close { background: #334155; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; color: #94A3B8; font-size: 1rem; }
+        .modal-body { padding: 1.25rem 1.5rem; }
+        .ticket-info { margin-bottom: 1.25rem; }
+        .info-row { display: flex; justify-content: space-between; padding: 0.4rem 0; font-size: 0.85rem; border-bottom: 1px solid #1E293B; }
+        .info-label { color: #94A3B8; }
+        .original-msg { background: #0F172A; padding: 0.85rem; border-radius: 8px; font-size: 0.85rem; margin-bottom: 1.25rem; }
+        .replies-list { max-height: 250px; overflow-y: auto; margin-bottom: 1rem; }
+        .reply-item { padding: 0.6rem 0.85rem; border-radius: 8px; margin-bottom: 0.4rem; font-size: 0.82rem; }
+        .reply-admin { background: rgba(59,130,246,0.1); border-right: 3px solid #3B82F6; }
+        .reply-user { background: rgba(34,197,94,0.1); border-right: 3px solid #22C55E; }
+        .reply-meta { font-size: 0.7rem; color: #94A3B8; margin-top: 0.2rem; }
+        .reply-input-row { display: flex; gap: 0.5rem; }
+        .reply-input-row input { flex: 1; height: 40px; border-radius: 8px; border: 1px solid #334155; background: #0F172A; color: #fff; padding: 0 0.75rem; font-family: inherit; font-size: 0.85rem; }
+        .btn-reply { padding: 0 1rem; height: 40px; border-radius: 8px; border: none; background: #3B82F6; color: #fff; cursor: pointer; font-family: inherit; font-weight: 600; font-size: 0.85rem; }
+
         .admin-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; }
         .admin-overlay.show { display: block; }
         .admin-menu-btn { display: none; position: fixed; top: 12px; right: 12px; z-index: 150; background: #1E293B; color: #fff; border: 1px solid #334155; border-radius: 8px; padding: 0.4rem 0.6rem; cursor: pointer; font-size: 1.2rem; }
@@ -72,6 +96,17 @@
         </table>
     </div>
 
+    <!-- Modal تفاصيل التذكرة -->
+    <div class="modal-overlay" id="ticketModal" onclick="if(event.target===this)closeTicketModal()">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modalTicketSubject"></h3>
+                <button class="modal-close" onclick="closeTicketModal()">✕</button>
+            </div>
+            <div class="modal-body" id="modalTicketBody"></div>
+        </div>
+    </div>
+
     <script src="../js/components.js"></script>
     <script>
         const API = 'https://nivora-t9ov.onrender.com/api/admin';
@@ -81,11 +116,13 @@
         function logout() { localStorage.removeItem('adminToken'); window.location.href = 'login.html'; }
         function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('adminOverlay').classList.add('show'); }
         function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('adminOverlay').classList.remove('show'); }
+        function closeTicketModal() { document.getElementById('ticketModal').classList.remove('show'); }
         function updateMobileUI() { const btn = document.getElementById('adminMenuBtn'); btn.style.display = window.innerWidth <= 768 ? 'flex' : 'none'; if (window.innerWidth > 768) closeSidebar(); }
         window.addEventListener('resize', updateMobileUI); updateMobileUI();
 
         let allTickets = [];
         let currentFilter = 'all';
+        let currentTicketId = null;
 
         function showSkeleton() { document.getElementById('ticketBody').innerHTML = Array(3).fill('<tr><td><div class="skeleton" style="height:14px;width:60%;"></div></td><td><div class="skeleton" style="height:14px;width:60%;"></div></td><td><div class="skeleton" style="height:14px;width:80%;"></div></td><td><div class="skeleton" style="height:14px;width:30px;"></div></td><td><div class="skeleton" style="height:14px;width:40px;"></div></td><td><div class="skeleton" style="height:14px;width:50px;"></div></td></tr>').join(''); }
 
@@ -93,7 +130,8 @@
             showSkeleton();
             try {
                 const res = await fetch(`${API}/tickets`, { headers: { 'Authorization': `Bearer ${token}` } });
-                allTickets = await res.json();
+                const response = await res.json();
+                allTickets = response.data || response;
                 renderTickets();
             } catch (err) { showError('ticketBody', 'تعذر تحميل التذاكر', loadTickets); }
         }
@@ -110,7 +148,51 @@
             const badgeClass = s => s === 'open' ? 'badge-open' : s === 'resolved' ? 'badge-resolved' : s === 'closed' ? 'badge-closed' : 'badge-in_progress';
             const statusText = s => s === 'open' ? 'مفتوحة' : s === 'resolved' ? 'محلولة' : s === 'closed' ? 'مغلقة' : 'قيد المعالجة';
             const priorityIcon = p => p === 'urgent' ? '🔴' : p === 'high' ? '🟠' : p === 'medium' ? '🟡' : '🟢';
-            document.getElementById('ticketBody').innerHTML = filtered.length === 0 ? '<tr><td colspan="6" style="text-align:center;padding:3rem;color:#94A3B8;">لا توجد تذاكر</td></tr>' : filtered.map(t => `<tr><td>${t.organizationId?.name||'-'}</td><td>${t.userId?.username||'-'}</td><td>${t.subject}</td><td>${priorityIcon(t.priority)}</td><td><span class="badge ${badgeClass(t.status)}">${statusText(t.status)}</span></td><td><select onchange="updateTicket('${t._id}',this.value)"><option value="">تغيير...</option><option value="in_progress">🔵 قيد المعالجة</option><option value="resolved">✅ حل</option><option value="closed">🚫 إغلاق</option></select></td></tr>`).join('');
+            document.getElementById('ticketBody').innerHTML = filtered.length === 0 ? '<tr><td colspan="6" style="text-align:center;padding:3rem;color:#94A3B8;">لا توجد تذاكر</td></tr>' : filtered.map(t => `<tr><td>${t.organizationId?.name||'-'}</td><td>${t.userId?.username||'-'}</td><td>${t.subject}</td><td>${priorityIcon(t.priority)}</td><td><span class="badge ${badgeClass(t.status)}">${statusText(t.status)}</span></td><td><button class="btn-view" onclick="openTicket('${t._id}')">👁️</button> <select onchange="updateTicket('${t._id}',this.value)"><option value="">تغيير...</option><option value="in_progress">🔵 قيد المعالجة</option><option value="resolved">✅ حل</option><option value="closed">🚫 إغلاق</option></select></td></tr>`).join('');
+        }
+
+        async function openTicket(id) {
+            currentTicketId = id;
+            try {
+                const res = await fetch(`${API}/tickets/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const t = await res.json();
+
+                document.getElementById('modalTicketSubject').textContent = t.subject;
+
+                const priorityText = t.priority === 'urgent' ? 'حرجة' : t.priority === 'high' ? 'عالية' : t.priority === 'medium' ? 'متوسطة' : 'منخفضة';
+                const replies = t.replies || [];
+
+                document.getElementById('modalTicketBody').innerHTML = `
+                    <div class="ticket-info">
+                        <div class="info-row"><span class="info-label">المؤسسة:</span><span>${t.organizationId?.name || '-'}</span></div>
+                        <div class="info-row"><span class="info-label">المستخدم:</span><span>${t.userId?.username || '-'}</span></div>
+                        <div class="info-row"><span class="info-label">الأولوية:</span><span>${priorityText}</span></div>
+                        <div class="info-row"><span class="info-label">الحالة:</span><span>${t.status === 'open' ? 'مفتوحة' : t.status === 'in_progress' ? 'قيد المعالجة' : t.status === 'resolved' ? 'محلولة' : 'مغلقة'}</span></div>
+                        <div class="info-row"><span class="info-label">التاريخ:</span><span>${new Date(t.createdAt).toLocaleString('ar-SA')}</span></div>
+                    </div>
+                    <div class="original-msg"><strong>الرسالة الأصلية:</strong><br>${t.message}</div>
+                    <h4 style="font-size:0.9rem;margin-bottom:0.75rem;">💬 المحادثة (${replies.length})</h4>
+                    <div class="replies-list">
+                        ${replies.length === 0 ? '<p style="color:#94A3B8;text-align:center;">لا توجد ردود بعد</p>' : replies.map(r => `<div class="reply-item ${r.isAdmin ? 'reply-admin' : 'reply-user'}"><strong>${r.username}</strong>: ${r.text}<div class="reply-meta">${new Date(r.createdAt).toLocaleString('ar-SA')}</div></div>`).join('')}
+                    </div>
+                    <div class="reply-input-row">
+                        <input type="text" id="replyInput" placeholder="اكتب ردًا...">
+                        <button class="btn-reply" onclick="sendReply()">إرسال</button>
+                    </div>
+                `;
+
+                document.getElementById('ticketModal').classList.add('show');
+            } catch (err) { showToast('تعذر تحميل التذكرة', 'error'); }
+        }
+
+        async function sendReply() {
+            const input = document.getElementById('replyInput');
+            const text = input.value.trim();
+            if (!text || !currentTicketId) return;
+            await fetch(`${API}/tickets/${currentTicketId}/reply`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ text }) });
+            showToast('تم إرسال الرد', 'success');
+            openTicket(currentTicketId);
+            loadTickets();
         }
 
         async function updateTicket(id, status) {

@@ -342,4 +342,45 @@ router.patch('/tickets/:id', async (req, res) => {
     }
 });
 
+// ========== الرد على تذكرة ==========
+router.post('/tickets/:id/reply', async (req, res) => {
+    try {
+        const { text } = req.body;
+        if (!text || !text.trim()) return res.status(400).json({ error: 'الرد مطلوب' });
+
+        const ticket = await Ticket.findById(req.params.id);
+        if (!ticket) return res.status(404).json({ error: 'التذكرة غير موجودة' });
+
+        ticket.replies.push({
+            userId: req.user.id,
+            username: 'المدير',
+            text: text.trim(),
+            isAdmin: true
+        });
+        ticket.updatedAt = new Date();
+
+        await ticket.save();
+        logAdmin('reply_ticket', `رد على تذكرة: ${ticket.subject}`, req);
+
+        res.json(ticket);
+    } catch (err) {
+        handleError(res, err, 'خطأ في الرد على التذكرة');
+    }
+});
+
+// ========== جلب تذكرة واحدة مع الردود ==========
+router.get('/tickets/:id', async (req, res) => {
+    try {
+        const ticket = await Ticket.findById(req.params.id)
+            .populate('organizationId', 'name')
+            .populate('userId', 'username email')
+            .populate('replies.userId', 'username avatar');
+
+        if (!ticket) return res.status(404).json({ error: 'التذكرة غير موجودة' });
+
+        res.json(ticket);
+    } catch (err) {
+        handleError(res, err, 'خطأ في جلب التذكرة');
+    }
+});
 module.exports = router;
