@@ -225,11 +225,10 @@ async function requireMembership(req, res, next) {
 async function requireTenantAccess(req, res, next) {
     try {
         const requestedWsId = req.params.workspaceId || 
-                              req.params.id || 
                               req.body.workspaceId || 
                               req.query.workspaceId;
 
-        // إذا لا يوجد سياق Workspace - السماح (المصادقة تكفي)
+        // إذا لا يوجد workspaceId - السماح (المصادقة تكفي)
         if (!requestedWsId) {
             return next();
         }
