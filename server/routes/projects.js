@@ -7,7 +7,7 @@ const { authenticate, requireProjectOwnership, requireTenantAccess, AUTH_ERRORS 
 const router = express.Router();
 
 // ✅ جلب جميع المشاريع (+ Tenant Access)
-router.get('/', authenticate, requireTenantAccess, async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
     try {
         const filter = { userId: req.user.id };
         if (req.query.workspaceId) filter.workspaceId = req.query.workspaceId;
@@ -32,7 +32,7 @@ router.get('/', authenticate, requireTenantAccess, async (req, res) => {
 });
 
 // ✅ جلب مشروع واحد (+ Tenant Access)
-router.get('/:id', authenticate, requireTenantAccess, async (req, res) => {
+router.get('/:id', authenticate, async (req, res) => {
     try {
         const project = await Project.findOne({ _id: req.params.id, userId: req.user.id });
         if (!project) return res.status(404).json({ error: 'مشروع غير موجود' });

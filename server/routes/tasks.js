@@ -33,7 +33,7 @@ async function processMentions(text, taskId, projectId, fromUserId, fromUsername
 }
 
 // ✅ جلب جميع المهام (مع فلترة + Tenant Access)
-router.get('/', authenticate, requireTenantAccess, async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
     try {
         const filter = { userId: req.user.id };
         
@@ -61,7 +61,7 @@ router.get('/', authenticate, requireTenantAccess, async (req, res) => {
 });
 
 // ✅ جلب مهمة واحدة (+ Tenant Access)
-router.get('/:id', authenticate, requireValidObjectId('id'), requireTenantAccess, async (req, res) => {
+router.get('/:id', authenticate, requireValidObjectId('id'), async (req, res) => {
     try {
         const task = await Task.findOne({ _id: req.params.id, userId: req.user.id });
         if (!task) return res.status(404).json({ error: 'مهمة غير موجودة' });
