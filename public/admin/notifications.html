@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nivora | الاستخدام</title>
+    <title>Nivora | الإشعارات</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -15,16 +15,19 @@
         .sidebar a { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.75rem; color: #94A3B8; text-decoration: none; border-radius: 8px; margin-bottom: 0.2rem; font-size: 0.9rem; transition: all 0.15s; }
         .sidebar a:hover, .sidebar a.active { background: #334155; color: #fff; }
         .main { margin-right: 240px; flex: 1; padding: 2rem; }
-        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem; }
         .topbar h1 { font-size: 1.4rem; font-weight: 800; }
-        .toolbar select { height: 38px; border-radius: 8px; border: 1px solid #334155; background: #1E293B; color: #fff; padding: 0 0.5rem; font-family: inherit; font-size: 0.85rem; }
-        .usage-card { background: #1E293B; border-radius: 12px; padding: 1.5rem; border: 1px solid #334155; margin-bottom: 1rem; }
-        .usage-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; }
-        .metric-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
-        .metric-label { min-width: 80px; font-size: 0.85rem; color: #94A3B8; }
-        .metric-value { font-size: 0.85rem; font-weight: 700; min-width: 50px; text-align: left; }
-        .bar { height: 8px; border-radius: 4px; background: #334155; flex: 1; overflow: hidden; }
-        .bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+        .btn-delete-all { background: rgba(239,68,68,0.15); color: #EF4444; border: none; border-radius: 8px; padding: 0.5rem 1rem; cursor: pointer; font-family: inherit; font-size: 0.8rem; font-weight: 600; transition: all 0.15s; }
+        .btn-delete-all:hover { background: #EF4444; color: #fff; }
+        .notif-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1rem; background: #1E293B; border: 1px solid #334155; border-radius: 10px; margin-bottom: 0.5rem; }
+        .notif-item.read { opacity: 0.5; }
+        .notif-icon { font-size: 1.5rem; flex-shrink: 0; }
+        .notif-content { flex: 1; }
+        .notif-text { font-size: 0.9rem; }
+        .notif-time { color: #64748B; font-size: 0.75rem; margin-top: 0.2rem; }
+        .btn-delete { background: none; border: none; color: #EF4444; cursor: pointer; font-size: 0.9rem; padding: 0.25rem; }
+        .btn-delete:hover { color: #fff; }
+        .btn-mark { background: none; border: none; color: #3B82F6; cursor: pointer; font-size: 0.8rem; padding: 0.25rem 0.5rem; font-family: inherit; }
         .empty-state { text-align: center; padding: 3rem; color: #94A3B8; }
         .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
         .admin-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; }
@@ -45,7 +48,7 @@
         <a href="subscriptions.html"><span>💳</span><span>الاشتراكات</span></a>
         <a href="users.html"><span>👥</span><span>المستخدمون</span></a>
         <a href="features.html"><span>🚩</span><span>Feature Flags</span></a>
-        <a href="usage.html" class="active"><span>📊</span><span>الاستخدام</span></a>
+        <a href="usage.html"><span>📊</span><span>الاستخدام</span></a>
         <a href="tickets.html"><span>🎫</span><span>التذاكر</span></a>
         <a href="health.html"><span>🖥</span><span>صحة النظام</span></a>
         <a href="notifications.html" class="active"><span>🔔</span><span>الإشعارات</span></a>
@@ -54,18 +57,15 @@
 
     <div class="main">
         <div class="topbar">
-            <h1>📊 استخدام المؤسسات</h1>
-            <div class="toolbar">
-                <select id="orgSelect" onchange="loadUsage()"><option value="">اختر مؤسسة...</option></select>
-            </div>
+            <h1>🔔 الإشعارات</h1>
+            <button class="btn-delete-all" onclick="deleteAllNotifications()">🗑️ حذف الكل</button>
         </div>
 
-        <div id="usageContent"></div>
+        <div id="notifArchive"></div>
     </div>
 
     <script src="../js/components.js"></script>
     <script>
-        const API = 'https://nivora-t9ov.onrender.com/api/admin';
         const token = localStorage.getItem('adminToken');
         if (!token) window.location.href = 'login.html';
 
@@ -75,36 +75,37 @@
         function updateMobileUI() { const btn = document.getElementById('adminMenuBtn'); btn.style.display = window.innerWidth <= 768 ? 'flex' : 'none'; if (window.innerWidth > 768) closeSidebar(); }
         window.addEventListener('resize', updateMobileUI); updateMobileUI();
 
-        async function loadOrganizations() {
-            try {
-                const res = await fetch(`${API}/organizations`, { headers: { 'Authorization': `Bearer ${token}` } });
-                const orgs = await res.json();
-                const sel = document.getElementById('orgSelect');
-                sel.innerHTML = '<option value="">اختر مؤسسة...</option>' + orgs.map(o => `<option value="${o._id}">${o.name}</option>`).join('');
-                const params = new URLSearchParams(window.location.search);
-                const orgId = params.get('orgId');
-                if (orgId) { sel.value = orgId; loadUsage(); }
-            } catch (err) {}
-        }
+        let notifications = JSON.parse(localStorage.getItem('adminNotifications') || '[]');
+        let notifRead = JSON.parse(localStorage.getItem('adminNotificationsRead') || '[]');
 
-        async function loadUsage() {
-            const orgId = document.getElementById('orgSelect').value;
-            const container = document.getElementById('usageContent');
-            if (!orgId) {
-                container.innerHTML = '<div class="empty-state"><div class="icon">📊</div><p>اختر مؤسسة لعرض استخدامها</p></div>';
+        function renderArchive() {
+            const container = document.getElementById('notifArchive');
+            if (notifications.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="icon">🔔</div><h3>لا توجد إشعارات</h3><p>ستظهر هنا جميع الإشعارات المحفوظة</p></div>';
                 return;
             }
-            try {
-                const [orgRes, usageRes] = await Promise.all([
-                    fetch(`${API}/organizations`, { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json()),
-                    fetch(`${API}/usage/${orgId}`, { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json())
-                ]);
-                const org = orgRes.find(o => o._id === orgId);
-                container.innerHTML = `<div class="usage-card"><h3>${org?.name || 'مؤسسة'}</h3>${usageRes.length > 0 ? usageRes.map(u => `<div class="metric-row"><span class="metric-label">${u.metric}</span><div class="bar"><div class="bar-fill" style="width:${Math.min(u.value, 100)}%;background:#3B82F6;"></div></div><span class="metric-value">${u.value}</span></div>`).join('') : '<p style="color:#94A3B8;">لا توجد بيانات استخدام</p>'}</div>`;
-            } catch (err) { showError('usageContent', 'تعذر تحميل البيانات', loadUsage); }
+            container.innerHTML = notifications.map(n => `<div class="notif-item ${notifRead.includes(n.id) ? 'read' : ''}"><span class="notif-icon">${n.icon}</span><div class="notif-content"><div class="notif-text">${n.text}</div><div class="notif-time">${n.time}</div></div><button class="btn-mark" onclick="toggleRead('${n.id}')">${notifRead.includes(n.id) ? '✓ مقروء' : 'تحديد كمقروء'}</button><button class="btn-delete" onclick="deleteNotification('${n.id}')">✕</button></div>`).join('');
         }
 
-        loadOrganizations();
+        function toggleRead(id) {
+            if (notifRead.includes(id)) {
+                notifRead = notifRead.filter(n => n !== id);
+            } else {
+                notifRead.push(id);
+            }
+            localStorage.setItem('adminNotificationsRead', JSON.stringify(notifRead));
+            renderArchive();
+        }
+
+        function deleteNotification(id) {
+            confirmDialog({ title: 'حذف الإشعار', message: 'حذف هذا الإشعار نهائيًا؟', confirmText: 'حذف', danger: true, onConfirm: () => { notifications = notifications.filter(n => n.id !== id); notifRead = notifRead.filter(n => n !== id); localStorage.setItem('adminNotifications', JSON.stringify(notifications)); localStorage.setItem('adminNotificationsRead', JSON.stringify(notifRead)); renderArchive(); showToast('تم الحذف', 'success'); } });
+        }
+
+        function deleteAllNotifications() {
+            confirmDialog({ title: 'حذف كل الإشعارات', message: 'حذف جميع الإشعارات نهائيًا؟', confirmText: 'حذف الكل', danger: true, onConfirm: () => { notifications = []; notifRead = []; localStorage.setItem('adminNotifications', '[]'); localStorage.setItem('adminNotificationsRead', '[]'); renderArchive(); showToast('تم حذف الكل', 'success'); } });
+        }
+
+        renderArchive();
     </script>
 </body>
 </html>

@@ -63,12 +63,29 @@
         <a href="usage.html"><span>📊</span><span>الاستخدام</span></a>
         <a href="tickets.html"><span>🎫</span><span>التذاكر</span></a>
         <a href="health.html"><span>🖥</span><span>صحة النظام</span></a>
+        <a href="notifications.html" class="active"><span>🔔</span><span>الإشعارات</span></a>
         <a href="#" onclick="logout()"><span>🚪</span><span>خروج</span></a>
     </aside>
 
     <div class="main">
         <div class="topbar">
             <h1>📊 لوحة القيادة</h1>
+            <div class="topbar-actions" style="position:relative;">
+    <button class="btn-refresh" onclick="toggleNotifications()" style="position:relative;">
+        🔔 <span id="notifCount" style="background:#EF4444;color:#fff;border-radius:50%;padding:0.1rem 0.4rem;font-size:0.7rem;position:absolute;top:-5px;left:-5px;display:none;">0</span>
+    </button>
+    <div id="notifDropdown" style="display:none;position:absolute;top:40px;left:0;background:#1E293B;border:1px solid #334155;border-radius:12px;width:320px;max-height:400px;overflow-y:auto;z-index:300;box-shadow:0 20px 50px rgba(0,0,0,0.5);">
+        <div style="padding:0.75rem 1rem;border-bottom:1px solid #334155;display:flex;justify-content:space-between;align-items:center;">
+            <strong style="font-size:0.9rem;">🔔 الإشعارات</strong>
+            <button onclick="markAllRead()" style="background:none;border:none;color:#3B82F6;cursor:pointer;font-size:0.75rem;font-family:inherit;">تحديد الكل كمقروء</button>
+        </div>
+        <div id="notifList"></div>
+        <div style="padding:0.5rem;border-top:1px solid #334155;text-align:center;">
+            <a href="notifications.html" style="color:#3B82F6;text-decoration:none;font-size:0.8rem;">عرض كل الإشعارات ←</a>
+        </div>
+    </div>
+    <button class="btn-refresh" onclick="loadDashboard()">🔄 تحديث</button>
+</div>
             <div class="topbar-actions">
                 <button class="btn-refresh" onclick="loadDashboard()">🔄 تحديث</button>
             </div>
@@ -140,16 +157,22 @@
         let previousAlertsCount = 0;
 
         async function loadAlerts() {
-            try {
-                const res = await fetch(`${API}/alerts`, { headers: { 'Authorization': `Bearer ${token}` } });
-                const alerts = await res.json();
-                document.getElementById('alertsContainer').innerHTML = alerts.map(a => `<div class="alert-item alert-${a.type}">${a.type === 'danger' ? '🔴' : a.type === 'warning' ? '🟡' : '🔵'} ${a.text}</div>`).join('');
-                if (alerts.length > previousAlertsCount && previousAlertsCount > 0) {
-                    showToast('⚠️ تنبيه جديد!', 'warning');
-                }
-                previousAlertsCount = alerts.length;
-            } catch (err) {}
-        }
+    try {
+        const res = await fetch(`${API}/alerts`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const alerts = await res.json();
+        
+        const icons = { danger: '🔴', warning: '🟡', info: '🔵' };
+        
+        alerts.forEach(a => {
+            const exists = notifications.some(n => n.text === a.text);
+            if (!exists) {
+                saveNotification(icons[a.type] || '🔵', a.text);
+            }
+        });
+        
+        updateNotifBadge();
+    } catch (err) {}
+}
 
         async function loadAuditLogs() {
             const search = document.getElementById('auditSearch').value.trim();
@@ -183,6 +206,53 @@
             }
         }
 
+let notifications = JSON.parse(localStorage.getItem('adminNotifications') || '[]');
+let notifRead = JSON.parse(localStorage.getItem('adminNotificationsRead') || '[]');
+
+function updateNotifBadge() {
+    const unread = notifications.filter(n => !notifRead.includes(n.id));
+    const badge = document.getElementById('notifCount');
+    badge.textContent = unread.length;
+    badge.style.display = unread.length > 0 ? 'block' : 'none';
+}
+
+function toggleNotifications() {
+    const dd = document.getElementById('notifDropdown');
+    dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+    if (dd.style.display === 'block') renderNotifList();
+}
+
+function renderNotifList() {
+    const container = document.getElementById('notifList');
+    if (notifications.length === 0) {
+        container.innerHTML = '<p style="padding:1rem;text-align:center;color:#94A3B8;font-size:0.85rem;">لا توجد إشعارات</p>';
+        return;
+    }
+    container.innerHTML = notifications.map(n => `<div style="padding:0.6rem 1rem;border-bottom:1px solid #334155;font-size:0.8rem;cursor:pointer;${notifRead.includes(n.id) ? 'opacity:0.6;' : ''}" onclick="markRead('${n.id}')">${n.icon} ${n.text}<div style="color:#64748B;font-size:0.7rem;margin-top:0.2rem;">${n.time}</div></div>`).join('');
+}
+
+function markRead(id) {
+    if (!notifRead.includes(id)) {
+        notifRead.push(id);
+        localStorage.setItem('adminNotificationsRead', JSON.stringify(notifRead));
+        updateNotifBadge();
+        renderNotifList();
+    }
+}
+
+function markAllRead() {
+    notifRead = notifications.map(n => n.id);
+    localStorage.setItem('adminNotificationsRead', JSON.stringify(notifRead));
+    updateNotifBadge();
+    renderNotifList();
+}
+
+function saveNotification(icon, text) {
+    const notif = { id: Date.now().toString(), icon, text, time: new Date().toLocaleString('ar-SA') };
+    notifications.unshift(notif);
+    localStorage.setItem('adminNotifications', JSON.stringify(notifications));
+    updateNotifBadge();
+}        
         loadAlerts();
         loadDashboard();
         loadAuditLogs();
