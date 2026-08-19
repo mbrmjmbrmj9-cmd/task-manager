@@ -168,4 +168,46 @@ io.on('connection', (socket) => {
 
 // ✅ معالج أخطاء مركزي
 app.use(errorHandler);
+
+// ✅ إرسال رسالة تواصل إلى البريد الرسمي
+const nodemailer = require('nodemailer');
+
+const contactTransporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+    auth: {
+        user: 'nivorasystem@gmail.com',
+        pass: 'vgtzpkykwjgqbnqf'
+    }
+});
+
+app.post('/api/contact', async (req, res) => {
+    const { name, phone, email, message } = req.body;
+    
+    if (!name || !phone || !email || !message) {
+        return res.status(400).json({ error: 'جميع الحقول مطلوبة' });
+    }
+    
+    try {
+        await contactTransporter.sendMail({
+            from: '"Nivora Contact" <nivorasystem@gmail.com>',
+            to: 'nivorasystem@gmail.com',
+            subject: `رسالة جديدة من ${name}`,
+            html: `
+                <h3>رسالة تواصل جديدة</h3>
+                <p><strong>الاسم:</strong> ${name}</p>
+                <p><strong>الجوال:</strong> ${phone}</p>
+                <p><strong>البريد:</strong> ${email}</p>
+                <p><strong>الرسالة:</strong></p>
+                <p>${message}</p>
+            `
+        });
+        
+        res.json({ message: 'تم الإرسال بنجاح' });
+    } catch (err) {
+        console.error('خطأ في إرسال البريد:', err);
+        res.status(500).json({ error: 'خطأ في الإرسال' });
+    }
+});
 server.listen(PORT, () => console.log(`🚀 الخادم يعمل على http://localhost:${PORT}`));
