@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nivora | تواصل معنا</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#2563EB">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+        .contact-container { max-width: 600px; width: 100%; }
+        .contact-card { background: var(--card); border-radius: var(--radius-xl); padding: 3rem 2rem; border: 1px solid var(--border); text-align: center; box-shadow: var(--shadow-lg); }
+        .contact-logo { width: 70px; height: 70px; border-radius: var(--radius-lg); background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 800; margin: 0 auto 1.5rem; }
+        .contact-card h1 { font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem; }
+        .contact-card .sub { color: var(--text-light); margin-bottom: 2rem; }
+        
+        .contact-form { text-align: right; }
+        .form-group { margin-bottom: 1.1rem; }
+        .form-group label { display: block; font-size: 0.82rem; font-weight: 700; color: var(--text-light); margin-bottom: 0.35rem; }
+        .form-group input, .form-group textarea { width: 100%; border-radius: var(--radius-sm); border: 1.5px solid var(--border); padding: 0.7rem 0.9rem; font-family: inherit; font-size: 0.9rem; background: var(--bg); color: var(--text); transition: all var(--transition); }
+        .form-group textarea { min-height: 120px; resize: vertical; }
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        
+        .btn-send { width: 100%; height: 50px; border-radius: var(--radius-sm); background: var(--primary); color: #fff; border: none; font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all var(--transition); }
+        .btn-send:hover { background: var(--primary-hover); }
+        .btn-send:disabled { opacity: 0.6; cursor: not-allowed; }
+        
+        .msg { padding: 0.7rem 1rem; border-radius: var(--radius-sm); margin-bottom: 1rem; font-size: 0.85rem; display: none; }
+        .msg.success { display: block; background: var(--success-light); color: var(--success); }
+        .msg.error { display: block; background: var(--danger-light); color: var(--danger); }
+        
+        .back-link { display: inline-block; color: var(--primary); text-decoration: none; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="contact-container">
+        <a href="index.html" class="back-link">← العودة للرئيسية</a>
+        
+        <div class="contact-card" style="margin-top:1rem;">
+            <div class="contact-logo">N</div>
+            <h1>تواصل معنا</h1>
+            <p class="sub">أرسل لنا رسالتك وسنرد عليك في أقرب وقت</p>
+            
+            <div class="contact-form">
+                <div class="msg" id="formMsg"></div>
+                
+                <div class="form-group">
+                    <label>الاسم</label>
+                    <input type="text" id="contactName" placeholder="أدخل اسمك">
+                </div>
+                
+                <div class="form-group">
+                    <label>الجوال</label>
+                    <input type="tel" id="contactPhone" placeholder="أدخل رقم الجوال">
+                </div>
+                
+                <div class="form-group">
+                    <label>البريد الإلكتروني</label>
+                    <input type="email" id="contactEmail" placeholder="أدخل بريدك الإلكتروني">
+                </div>
+                
+                <div class="form-group">
+                    <label>الرسالة</label>
+                    <textarea id="contactMessage" placeholder="اكتب رسالتك هنا..."></textarea>
+                </div>
+                
+                <button class="btn-send" id="sendBtn" onclick="sendContact()">إرسال الرسالة</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/components.js"></script>
+    <script>
+        async function sendContact() {
+            const name = document.getElementById('contactName').value.trim();
+            const phone = document.getElementById('contactPhone').value.trim();
+            const email = document.getElementById('contactEmail').value.trim();
+            const message = document.getElementById('contactMessage').value.trim();
+            const msg = document.getElementById('formMsg');
+            const btn = document.getElementById('sendBtn');
+            
+            if (!name || !phone || !email || !message) {
+                msg.className = 'msg error';
+                msg.textContent = '❌ جميع الحقول مطلوبة';
+                return;
+            }
+            
+            setButtonLoading(btn, true, 'جاري الإرسال...');
+            
+            try {
+                const res = await fetch('https://nivora-t9ov.onrender.com/api/contact', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, phone, email, message })
+                });
+                
+                if (res.ok) {
+                    msg.className = 'msg success';
+                    msg.textContent = '✅ تم إرسال رسالتك بنجاح';
+                    document.getElementById('contactName').value = '';
+                    document.getElementById('contactPhone').value = '';
+                    document.getElementById('contactEmail').value = '';
+                    document.getElementById('contactMessage').value = '';
+                } else {
+                    msg.className = 'msg error';
+                    msg.textContent = '❌ تعذر الإرسال، حاول مرة أخرى';
+                }
+            } catch (err) {
+                msg.className = 'msg error';
+                msg.textContent = '❌ خطأ في الاتصال';
+            }
+            
+            setButtonLoading(btn, false);
+        }
+    </script>
+</body>
+</html>
