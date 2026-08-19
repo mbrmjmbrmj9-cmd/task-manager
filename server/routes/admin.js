@@ -16,9 +16,9 @@ const { adminAuth } = require('../middleware/auth');
 const router = express.Router();
 
 // ✅ Secrets من متغيرات البيئة
-const JWT_SECRET = process.env.JWT_SECRET;
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const JWT_SECRET = process.env.JWT_SECRET || 'nivora_secret_2025';
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'aldyrhghryb708@gmail.com';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '123&%*abd';
 
 // ✅ دالة Logging منظمة
 function logAdmin(action, details, req) {
