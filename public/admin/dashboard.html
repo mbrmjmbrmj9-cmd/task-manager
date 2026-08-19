@@ -34,6 +34,9 @@
         .alert-danger { background: rgba(239,68,68,0.1); color: #EF4444; border-right: 3px solid #EF4444; }
         .alert-info { background: rgba(59,130,246,0.1); color: #3B82F6; border-right: 3px solid #3B82F6; }
         .section-title { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; }
+        .audit-filters { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+        .audit-filters input, .audit-filters select { flex: 1; min-width: 150px; height: 34px; border-radius: 8px; border: 1px solid #334155; background: #1E293B; color: #fff; padding: 0 0.75rem; font-family: inherit; font-size: 0.8rem; }
+        .audit-filters input:focus, .audit-filters select:focus { outline: none; border-color: #EF4444; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 0.7rem; border-bottom: 1px solid #334155; text-align: right; font-size: 0.85rem; }
         th { color: #94A3B8; font-weight: 600; }
@@ -81,14 +84,15 @@
         <div id="alertsContainer" style="margin-bottom:1rem;"></div>
 
         <div class="stats" id="statsGrid"></div>
-<div style="display:flex;gap:0.5rem;margin-bottom:0.75rem;flex-wrap:wrap;">
-    <input type="text" id="auditSearch" placeholder="🔍 بحث باسم المستخدم..." style="flex:1;min-width:150px;height:34px;border-radius:8px;border:1px solid #334155;background:#1E293B;color:#fff;padding:0 0.75rem;font-family:inherit;font-size:0.8rem;" oninput="loadAuditLogs()">
-    <select id="auditAction" style="height:34px;border-radius:8px;border:1px solid #334155;background:#1E293B;color:#fff;padding:0 0.5rem;font-family:inherit;font-size:0.8rem;" onchange="loadAuditLogs()">
-        <option value="">كل الإجراءات</option>
-    </select>
-</div>
-        <h2 class="section-title" style="margin-top:1.5rem;">📋 آخر النشاطات</h2>
-        
+
+        <div class="audit-filters">
+            <input type="text" id="auditSearch" placeholder="🔍 بحث باسم المستخدم..." oninput="loadAuditLogs()">
+            <select id="auditAction" onchange="loadAuditLogs()">
+                <option value="">كل الإجراءات</option>
+            </select>
+        </div>
+
+        <h2 class="section-title">📋 آخر النشاطات</h2>
         <table>
             <thead><tr><th>المستخدم</th><th>الإجراء</th><th>التفاصيل</th><th>الوقت</th></tr></thead>
             <tbody id="auditBody"></tbody>
@@ -110,16 +114,12 @@
 
         function showSkeleton() {
             document.getElementById('statsGrid').innerHTML = Array(6).fill('<div class="stat-card"><div class="stat-icon skeleton" style="width:44px;height:44px;"></div><div class="stat-info"><div class="skeleton" style="height:24px;width:60px;margin-bottom:6px;"></div><div class="skeleton" style="height:12px;width:40px;"></div></div></div>').join('');
-            document.getElementById('auditBody').innerHTML = Array(5).fill('<tr><td><div class="skeleton" style="height:14px;width:70%;"></div></td><td><div class="skeleton" style="height:14px;width:50px;"></div></td><td><div class="skeleton" style="height:14px;width:80%;"></div></td><td><div class="skeleton" style="height:14px;width:60px;"></div></td></tr>').join('');
         }
 
         async function loadDashboard() {
-            showSkeleton();
+            document.getElementById('statsGrid').innerHTML = Array(6).fill('<div class="stat-card"><div class="stat-icon skeleton" style="width:44px;height:44px;"></div><div class="stat-info"><div class="skeleton" style="height:24px;width:60px;margin-bottom:6px;"></div><div class="skeleton" style="height:12px;width:40px;"></div></div></div>').join('');
             try {
-                const [stats, logs] = await Promise.all([
-                    fetch(`${API}/advanced-stats`, { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json()),
-                    fetch(`${API}/audit-logs`, { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json()).then(d => d.data || d)
-                ]);
+                const stats = await fetch(`${API}/advanced-stats`, { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json());
 
                 const statsData = [
                     { icon: '🏢', color: '#3B82F6', bg: 'rgba(59,130,246,0.1)', label: 'المؤسسات', value: stats.totalOrgs },
@@ -130,59 +130,65 @@
                     { icon: '🆕', color: '#14B8A6', bg: 'rgba(20,184,166,0.1)', label: 'اشتراكات جديدة', value: stats.newSubsThisMonth }
                 ];
 
-                document.getElementById('statsGrid').innerHTML = statsData.map(s => `
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background:${s.bg};color:${s.color};">${s.icon}</div>
-                        <div class="stat-info"><div class="value" style="color:${s.color};">${s.value}</div><div class="label">${s.label}</div></div>
-                    </div>`).join('');
-
-                const logsData = Array.isArray(logs) ? logs : [];
-                document.getElementById('auditBody').innerHTML = logsData.length === 0 ? '<tr><td colspan="4" style="text-align:center;padding:2rem;color:#94A3B8;">لا توجد سجلات</td></tr>' : logsData.map(l => `<tr><td>${l.username || '-'}</td><td>${l.action}</td><td>${l.details || '-'}</td><td>${new Date(l.createdAt).toLocaleString('ar-SA')}</td></tr>`).join('');
+                document.getElementById('statsGrid').innerHTML = statsData.map(s => `<div class="stat-card"><div class="stat-icon" style="background:${s.bg};color:${s.color};">${s.icon}</div><div class="stat-info"><div class="value" style="color:${s.color};">${s.value}</div><div class="label">${s.label}</div></div></div>`).join('');
             } catch (err) {
                 document.getElementById('statsGrid').innerHTML = '<div class="alert-danger" style="padding:1rem;border-radius:8px;">❌ تعذر تحميل البيانات</div>';
             }
+            loadAuditLogs();
         }
+
+        let previousAlertsCount = 0;
 
         async function loadAlerts() {
             try {
                 const res = await fetch(`${API}/alerts`, { headers: { 'Authorization': `Bearer ${token}` } });
                 const alerts = await res.json();
                 document.getElementById('alertsContainer').innerHTML = alerts.map(a => `<div class="alert-item alert-${a.type}">${a.type === 'danger' ? '🔴' : a.type === 'warning' ? '🟡' : '🔵'} ${a.text}</div>`).join('');
+                if (alerts.length > previousAlertsCount && previousAlertsCount > 0) {
+                    showToast('⚠️ تنبيه جديد!', 'warning');
+                }
+                previousAlertsCount = alerts.length;
             } catch (err) {}
         }
 
         async function loadAuditLogs() {
-    const search = document.getElementById('auditSearch').value.trim();
-    const action = document.getElementById('auditAction').value;
-    let url = `${API}/audit-logs?limit=50`;
-    if (search) url += `&username=${encodeURIComponent(search)}`;
-    if (action) url += `&action=${encodeURIComponent(action)}`;
+            const search = document.getElementById('auditSearch').value.trim();
+            const action = document.getElementById('auditAction').value;
+            let url = `${API}/audit-logs?limit=50`;
+            if (search) url += `&username=${encodeURIComponent(search)}`;
+            if (action) url += `&action=${encodeURIComponent(action)}`;
 
-    try {
-        const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
-        const data = await res.json();
-        const logs = data.data || [];
-        const actions = data.actions || [];
+            document.getElementById('auditBody').innerHTML = Array(5).fill('<tr><td><div class="skeleton" style="height:14px;width:70%;"></div></td><td><div class="skeleton" style="height:14px;width:50px;"></div></td><td><div class="skeleton" style="height:14px;width:80%;"></div></td><td><div class="skeleton" style="height:14px;width:60px;"></div></td></tr>').join('');
 
-        // تحديث قائمة الإجراءات
-        const actionSelect = document.getElementById('auditAction');
-        if (actionSelect.options.length === 1) {
-            actions.forEach(a => {
-                const opt = document.createElement('option');
-                opt.value = a;
-                opt.textContent = a;
-                actionSelect.appendChild(opt);
-            });
+            try {
+                const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await res.json();
+                const logs = Array.isArray(data) ? data : (data.data || []);
+
+                // تحديث قائمة الإجراءات
+                const actionSelect = document.getElementById('auditAction');
+                if (actionSelect.options.length === 1 && logs.length > 0) {
+                    const uniqueActions = [...new Set(logs.map(l => l.action).filter(Boolean))];
+                    uniqueActions.forEach(a => {
+                        const opt = document.createElement('option');
+                        opt.value = a;
+                        opt.textContent = a;
+                        actionSelect.appendChild(opt);
+                    });
+                }
+
+                document.getElementById('auditBody').innerHTML = logs.length === 0 ? '<tr><td colspan="4" style="text-align:center;padding:2rem;color:#94A3B8;">لا توجد سجلات</td></tr>' : logs.map(l => `<tr><td>${l.username || '-'}</td><td>${l.action}</td><td>${l.details || '-'}</td><td>${new Date(l.createdAt).toLocaleString('ar-SA')}</td></tr>`).join('');
+            } catch (err) {
+                document.getElementById('auditBody').innerHTML = '<tr><td colspan="4" style="text-align:center;color:#EF4444;">تعذر تحميل السجلات</td></tr>';
+            }
         }
 
-        document.getElementById('auditBody').innerHTML = logs.length === 0 ? '<tr><td colspan="4" style="text-align:center;padding:2rem;color:#94A3B8;">لا توجد سجلات</td></tr>' : logs.map(l => `<tr><td>${l.username || '-'}</td><td>${l.action}</td><td>${l.details || '-'}</td><td>${new Date(l.createdAt).toLocaleString('ar-SA')}</td></tr>`).join('');
-    } catch (err) {}
-}
         loadAlerts();
         loadDashboard();
+        loadAuditLogs();
 
-        // تحديث تلقائي كل 30 ثانية
-        setInterval(() => { loadAlerts(); loadDashboard(); }, 30000);
+        // تحديث تلقائي كل 10 ثوانٍ
+        setInterval(() => { loadAlerts(); loadDashboard(); }, 10000);
     </script>
 </body>
 </html>
