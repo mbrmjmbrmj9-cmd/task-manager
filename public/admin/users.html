@@ -19,25 +19,32 @@
         .topbar h1 { font-size: 1.4rem; font-weight: 800; }
         .toolbar { display: flex; gap: 0.5rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
         .toolbar input { flex: 1; min-width: 180px; height: 38px; border-radius: 8px; border: 1px solid #334155; background: #1E293B; color: #fff; padding: 0 0.75rem; font-family: inherit; font-size: 0.85rem; }
-        .toolbar input:focus { outline: none; border-color: #EF4444; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 0.75rem; border-bottom: 1px solid #334155; text-align: right; font-size: 0.85rem; }
+        th, td { padding: 0.7rem; border-bottom: 1px solid #334155; text-align: right; font-size: 0.85rem; }
         th { color: #94A3B8; font-weight: 600; background: #1E293B; }
-        .badge { padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.75rem; }
+        .badge { padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.72rem; }
         .badge-admin { background: rgba(239,68,68,0.15); color: #EF4444; }
         .badge-user { background: rgba(59,130,246,0.15); color: #3B82F6; }
         .badge-super { background: rgba(168,85,247,0.15); color: #A855F7; }
-        .avatar-cell { width: 32px; height: 32px; border-radius: 50%; background: #334155; display: inline-flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; margin-left: 0.5rem; vertical-align: middle; overflow: hidden; }
+        .badge-active { background: rgba(34,197,94,0.15); color: #22C55E; }
+        .badge-inactive { background: rgba(100,116,139,0.15); color: #64748B; }
+        .avatar-cell { width: 30px; height: 30px; border-radius: 50%; background: #334155; display: inline-flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 700; margin-left: 0.4rem; vertical-align: middle; overflow: hidden; }
         .avatar-cell img { width: 100%; height: 100%; object-fit: cover; }
-        .btn-view { padding: 0.3rem 0.6rem; border-radius: 6px; border: none; cursor: pointer; font-family: inherit; font-size: 0.75rem; background: rgba(59,130,246,0.15); color: #3B82F6; transition: all 0.15s; }
+        .btn-sm { padding: 0.25rem 0.5rem; border-radius: 6px; border: none; cursor: pointer; font-family: inherit; font-size: 0.7rem; transition: all 0.15s; }
+        .btn-view { background: rgba(59,130,246,0.15); color: #3B82F6; }
         .btn-view:hover { background: #3B82F6; color: #fff; }
+        .btn-toggle { background: rgba(245,158,11,0.15); color: #F59E0B; }
+        .btn-toggle:hover { background: #F59E0B; color: #fff; }
+        .btn-delete { background: rgba(239,68,68,0.15); color: #EF4444; }
+        .btn-delete:hover { background: #EF4444; color: #fff; }
+        select.role-select { padding: 0.25rem; border-radius: 6px; background: #1E293B; color: #fff; border: 1px solid #334155; font-family: inherit; font-size: 0.75rem; }
         .skeleton { background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
         @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
         .admin-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; }
         .admin-overlay.show { display: block; }
         .admin-menu-btn { display: none; position: fixed; top: 12px; right: 12px; z-index: 150; background: #1E293B; color: #fff; border: 1px solid #334155; border-radius: 8px; padding: 0.4rem 0.6rem; cursor: pointer; font-size: 1.2rem; }
         @media (max-width: 1024px) { .sidebar { width: 60px; padding: 1rem 0.5rem; } .sidebar .logo span, .sidebar a span { display: none; } .sidebar .logo img { margin: 0 auto; } .sidebar a { justify-content: center; } .main { margin-right: 60px; } }
-        @media (max-width: 768px) { body { flex-direction: column; } .sidebar { right: -260px; width: 260px; padding: 1.5rem 1rem; } .sidebar.open { right: 0; } .sidebar .logo span, .sidebar a span { display: inline; } .sidebar a { justify-content: flex-start; } .main { margin-right: 0; padding: 1rem; } .admin-menu-btn { display: flex; } table { font-size: 0.7rem; } th, td { padding: 0.5rem; } }
+        @media (max-width: 768px) { body { flex-direction: column; } .sidebar { right: -260px; width: 260px; padding: 1.5rem 1rem; } .sidebar.open { right: 0; } .sidebar .logo span, .sidebar a span { display: inline; } .sidebar a { justify-content: flex-start; } .main { margin-right: 0; padding: 1rem; } .admin-menu-btn { display: flex; } table { font-size: 0.65rem; } th, td { padding: 0.4rem; } }
     </style>
 </head>
 <body>
@@ -61,7 +68,7 @@
         <div class="topbar"><h1>👥 المستخدمون</h1></div>
         <div class="toolbar"><input type="text" id="searchInput" placeholder="🔍 بحث عن مستخدم..." oninput="renderUsers()"></div>
         <table>
-            <thead><tr><th>المستخدم</th><th>البريد</th><th>الدور</th><th>تاريخ التسجيل</th><th></th></tr></thead>
+            <thead><tr><th>المستخدم</th><th>الدور</th><th>الحالة</th><th>تاريخ التسجيل</th><th>إجراءات</th></tr></thead>
             <tbody id="userBody"></tbody>
         </table>
     </div>
@@ -80,27 +87,59 @@
 
         let allUsers = [];
 
-        function showSkeleton() { document.getElementById('userBody').innerHTML = Array(5).fill('<tr><td><div class="skeleton" style="height:14px;width:70%;"></div></td><td><div class="skeleton" style="height:14px;width:80%;"></div></td><td><div class="skeleton" style="height:14px;width:50px;"></div></td><td><div class="skeleton" style="height:14px;width:60px;"></div></td><td><div class="skeleton" style="height:28px;width:30px;"></div></td></tr>').join(''); }
+        function showSkeleton() { document.getElementById('userBody').innerHTML = Array(5).fill('<tr><td><div class="skeleton" style="height:14px;width:70%;"></div></td><td><div class="skeleton" style="height:14px;width:50px;"></div></td><td><div class="skeleton" style="height:14px;width:50px;"></div></td><td><div class="skeleton" style="height:14px;width:60px;"></div></td><td><div class="skeleton" style="height:28px;width:120px;"></div></td></tr>').join(''); }
 
         async function loadUsers() {
             showSkeleton();
             try {
                 const res = await fetch(`${API}/users`, { headers: { 'Authorization': `Bearer ${token}` } });
                 const response = await res.json();
-allUsers = response.data || response;
+                allUsers = response.data || response;
                 renderUsers();
             } catch (err) { showError('userBody', 'تعذر تحميل المستخدمين', loadUsers); }
         }
 
         function renderUsers() {
             const q = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = q ? allUsers.filter(u => (u.username || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q)) : allUsers;
+            const filtered = q ? allUsers.filter(u => (u.username || '').toLowerCase().includes(q)) : allUsers;
             const roleBadge = role => role === 'super_admin' ? 'badge-super' : role === 'admin' ? 'badge-admin' : 'badge-user';
             const roleText = role => role === 'super_admin' ? 'مدير عام' : role === 'admin' ? 'مدير' : 'مستخدم';
-            document.getElementById('userBody').innerHTML = filtered.length === 0 ? '<tr><td colspan="5" style="text-align:center;padding:3rem;color:#94A3B8;">لا يوجد مستخدمون</td></tr>' : filtered.map(u => `<tr><td><span class="avatar-cell">${u.avatar ? `<img src="${u.avatar}">` : (u.username || 'م')[0]}</span>${u.username}</td><td>${u.email||'-'}</td><td><span class="badge ${roleBadge(u.role)}">${roleText(u.role)}</span></td><td>${new Date(u.createdAt).toLocaleDateString('ar-SA')}</td><td><button class="btn-view" onclick="viewUser('${u._id}')">👁️</button></td></tr>`).join('');
+            document.getElementById('userBody').innerHTML = filtered.length === 0 ? '<tr><td colspan="5" style="text-align:center;padding:3rem;color:#94A3B8;">لا يوجد مستخدمون</td></tr>' : filtered.map(u => {
+                const isActive = u.isActive !== false;
+                return `<tr>
+                    <td><span class="avatar-cell">${u.avatar ? `<img src="${u.avatar}">` : (u.username || 'م')[0]}</span>${u.username}</td>
+                    <td>${u.role === 'super_admin' ? '<span class="badge badge-super">مدير عام</span>' : `<select class="role-select" onchange="changeRole('${u._id}', this.value)"><option value="user" ${u.role==='user'?'selected':''}>مستخدم</option><option value="admin" ${u.role==='admin'?'selected':''}>مدير</option></select>`}</td>
+                    <td><span class="badge ${isActive ? 'badge-active' : 'badge-inactive'}">${isActive ? 'نشط' : 'معطل'}</span></td>
+                    <td>${new Date(u.createdAt).toLocaleDateString('ar-SA')}</td>
+                    <td>
+                        <button class="btn-sm btn-toggle" onclick="toggleActive('${u._id}')">${isActive ? 'تعطيل' : 'تفعيل'}</button>
+                        ${u.role !== 'super_admin' ? `<button class="btn-sm btn-delete" onclick="deleteUser('${u._id}')">حذف</button>` : ''}
+                    </td>
+                </tr>`;
+            }).join('');
         }
 
-        function viewUser(id) { showToast('التفاصيل الكاملة - قريبًا', 'info'); }
+        async function toggleActive(id) {
+            confirmDialog({ title: 'تغيير حالة المستخدم', message: 'هل تريد تغيير حالة هذا المستخدم؟', confirmText: 'تأكيد', danger: false, onConfirm: async () => {
+                await fetch(`${API}/users/${id}/toggle-active`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` } });
+                showToast('تم التحديث', 'success');
+                loadUsers();
+            }});
+        }
+
+        function deleteUser(id) {
+            confirmDialog({ title: 'حذف المستخدم', message: 'سيتم حذف المستخدم نهائيًا. هل أنت متأكد؟', confirmText: 'حذف نهائي', danger: true, onConfirm: async () => {
+                await fetch(`${API}/users/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                showToast('تم الحذف', 'success');
+                loadUsers();
+            }});
+        }
+
+        async function changeRole(id, role) {
+            await fetch(`${API}/users/${id}/role`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ role }) });
+            showToast('تم تغيير الدور', 'success');
+            loadUsers();
+        }
 
         loadUsers();
     </script>

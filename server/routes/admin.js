@@ -402,4 +402,51 @@ router.get('/tickets/:id', async (req, res) => {
         handleError(res, err, 'خطأ في جلب التذكرة');
     }
 });
+// ========== تعطيل/تفعيل مستخدم ==========
+router.patch('/users/:id/toggle-active', async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ error: 'المستخدم غير موجود' });
+
+        user.isActive = !user.isActive;
+        await user.save();
+
+        logAdmin('toggle_user', `${user.isActive ? 'تفعيل' : 'تعطيل'} مستخدم ${user.username}`, req);
+
+        res.json({ message: user.isActive ? 'تم تفعيل المستخدم' : 'تم تعطيل المستخدم', user });
+    } catch (err) {
+        handleError(res, err, 'خطأ في تغيير حالة المستخدم');
+    }
+});
+
+// ========== حذف مستخدم ==========
+router.delete('/users/:id', async (req, res) => {
+    try {
+        const user = await User.findByIdAndDelete(req.params.id);
+        if (!user) return res.status(404).json({ error: 'المستخدم غير موجود' });
+
+        logAdmin('delete_user', `حذف مستخدم ${user.username}`, req);
+
+        res.json({ message: 'تم حذف المستخدم' });
+    } catch (err) {
+        handleError(res, err, 'خطأ في حذف المستخدم');
+    }
+});
+
+// ========== تغيير دور مستخدم ==========
+router.patch('/users/:id/role', async (req, res) => {
+    try {
+        const { role } = req.body;
+        if (!role) return res.status(400).json({ error: 'الدور مطلوب' });
+
+        const user = await User.findByIdAndUpdate(req.params.id, { role }, { new: true });
+        if (!user) return res.status(404).json({ error: 'المستخدم غير موجود' });
+
+        logAdmin('change_role', `تغيير دور ${user.username} إلى ${role}`, req);
+
+        res.json(user);
+    } catch (err) {
+        handleError(res, err, 'خطأ في تغيير الدور');
+    }
+});
 module.exports = router;

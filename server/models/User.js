@@ -15,6 +15,7 @@ const userSchema = new mongoose.Schema({
     }],
     createdAt: { type: Date, default: Date.now },
     avatar: { type: String, default: '' },
+    isActive: { type: Boolean, default: true },
 });
 // ✅ Indexes
 userSchema.index({ email: 1 });
