@@ -4,8 +4,10 @@
     const deployedFrontend = 'task-manager-theta-beryl-91.vercel.app';
     const deployedBackend = 'https://nivora-t9ov.onrender.com';
     const native = window.Capacitor?.isNativePlatform?.() || location.protocol === 'capacitor:';
+    const onVercel = location.hostname.endsWith('.vercel.app');
     const apiOrigin = native || location.hostname === deployedFrontend ? deployedBackend : location.origin;
     const apiBase = apiOrigin + '/api';
+    const googleLoginUrl = (native || onVercel ? deployedBackend : apiOrigin) + '/api/auth/google';
     const personal = new URLSearchParams(location.search).get('scope') === 'personal';
 
     function workspaceId() {
@@ -56,7 +58,12 @@
     async function read(response) {
         if (response.status === 204) return null;
         const content = await response.json().catch(() => null);
-        if (!response.ok) throw Object.assign(new Error(content?.error || 'تعذر تنفيذ الطلب'), { status: response.status });
+        if (!response.ok) {
+            const fallback = response.status === 404 ? 'مسار الخدمة غير متاح على هذا العنوان' : 'تعذر تنفيذ الطلب';
+            const message = typeof content?.error === 'string' ? content.error : fallback;
+            throw Object.assign(new Error(message), { status: response.status });
+        }
+        if (content === null) throw new Error('تعذر قراءة استجابة الخادم');
         return content;
     }
 
@@ -99,6 +106,6 @@
         return data;
     }
 
-    window.Nivora = { apiBase, apiOrigin, api, url, page, personal, user, setWorkspace, workspaceId, read, externalUrl,
+    window.Nivora = { apiBase, apiOrigin, googleLoginUrl, api, url, page, personal, user, setWorkspace, workspaceId, read, externalUrl,
         download, uploadData, dateKey, taskDateKey };
 })();

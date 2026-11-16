@@ -1,4 +1,20 @@
 {
   "outputDirectory": "public",
-  "rewrites": [{ "source": "/", "destination": "/index.html" }]
+  "redirects": [
+    {
+      "source": "/api/auth/google",
+      "destination": "https://nivora-t9ov.onrender.com/api/auth/google",
+      "permanent": false
+    },
+    {
+      "source": "/api/auth/google/callback",
+      "destination": "https://nivora-t9ov.onrender.com/api/auth/google/callback",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/login", "destination": "/login.html" },
+    { "source": "/api/:path*", "destination": "https://nivora-t9ov.onrender.com/api/:path*" }
+  ]
 }
