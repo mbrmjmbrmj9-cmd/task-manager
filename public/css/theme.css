@@ -84,6 +84,7 @@ body[data-ui] {
     font-family: 'Cairo', system-ui, sans-serif;
     line-height: 1.65;
 }
+body[data-ui] [hidden] { display: none !important; }
 body[data-ui] :where(button, input, select, textarea) { font-family: inherit; }
 body[data-ui] :focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
 body[data-ui] :where(.btn, .workspace-button, .btn-login, .btn-join, .btn-submit, .btn-reset) {
@@ -196,6 +197,21 @@ body[data-ui="app"] .shell-rail {
 .shell-glyph { flex: 0 0 22px; inline-size: 22px; block-size: 20px; display: grid; place-items: center; color: currentColor; }
 .shell-glyph svg { inline-size: 18px; block-size: 18px; }
 .shell-footer { margin-block-start: 10px; }
+.notification-preview-item {
+    display: grid;
+    gap: 3px;
+    inline-size: 100%;
+    border: 0;
+    border-block-end: 1px solid var(--border-light);
+    background: var(--card);
+    color: var(--text);
+    padding: 10px 14px;
+    text-align: start;
+    overflow-wrap: anywhere;
+}
+.notification-preview-item[data-unread="true"], .notification-preview-item:hover { background: var(--primary-light); }
+.notification-preview-item small { color: var(--text-muted); }
+#notifList:has(> :not(.notification-preview-item)), #notifList:not(:has(> *)) { padding: 10px 14px; }
 .shell-backdrop, .shell-mobile { display: none; }
 
 body[data-ui="app"] :is(.main, main.workspace-content) {

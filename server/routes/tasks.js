@@ -5,7 +5,8 @@ const Task = require('../models/Task');
 const Project = require('../models/Project');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
-const { authenticate, taskAccess, getProject, requireWorkspace, validateId, sameId, accessError } = require('../middleware/auth');
+const taskOverview = require('../config/task-overview');
+const { authenticate, taskAccess, getProject, getProjectContext, requireWorkspace, validateId, sameId, accessError } = require('../middleware/auth');
 const { legacyDir, attachmentMultipart, uploadName, removeFile, persistUpload, removeStoredUpload, streamStoredUpload } = require('../config/storage');
 
 const router = express.Router();
@@ -78,7 +79,7 @@ async function assignment(input, workspace, previous) {
 }
 
 function tasksInProject(project, userId) {
-    if (!project.workspaceId) return { projectId: project._id, workspaceId: null, userId };
+    if (!project.workspaceId) return { projectId: project._id, workspaceId: null, userId: new Types.ObjectId(userId) };
     return { projectId: project._id, $or: [{ workspaceId: project.workspaceId }, { workspaceId: null }] };
 }
 
@@ -99,7 +100,18 @@ async function taskFilter(query, userId) {
         ] };
     }
     const projectIds = await Project.distinct('_id', { userId, workspaceId: null });
-    return { userId, workspaceId: null, projectId: { $in: [null, ...projectIds] } };
+    return { userId: new Types.ObjectId(userId), workspaceId: null, projectId: { $in: [null, ...projectIds] } };
+}
+
+const listFields = 'title status priority project projectId assignee assigneeId dueDate createdAt';
+
+function addCursor(filter, cursor) {
+    if (typeof cursor !== 'string') throw accessError(400, 'مؤشر النتائج غير صالح');
+    const match = /^(none|\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)~([0-9a-f]{24})$/.exec(cursor);
+    if (!match) throw accessError(400, 'مؤشر النتائج غير صالح');
+    const date = match[1] === 'none' ? null : dateValue(match[1]);
+    const tail = { createdAt: date, _id: { $lt: match[2] } };
+    (filter.$and ||= []).push(date ? { $or: [{ createdAt: { $lt: date } }, { createdAt: null }, tail] } : tail);
 }
 
 async function listTasks(query, userId, res, archived = false) {
@@ -107,6 +119,7 @@ async function listTasks(query, userId, res, archived = false) {
     if (query.status !== undefined && !statuses.includes(query.status)) throw accessError(400, 'حالة المهمة غير صالحة');
     if (query.priority !== undefined && !priorities.includes(query.priority)) throw accessError(400, 'أولوية المهمة غير صالحة');
     if (archived || query.status) filter.status = archived ? 'archived' : query.status;
+    else if (query.view === 'list' || query.view === 'options') filter.status = { $ne: 'archived' };
     if (query.priority) filter.priority = query.priority;
     if (query.assigneeId !== undefined) filter.assigneeId = validateId(query.assigneeId);
     if (query.assignee !== undefined) filter.assignee = stringValue(query.assignee, 'المسؤول', 254);
@@ -117,18 +130,28 @@ async function listTasks(query, userId, res, archived = false) {
     if (query.search !== undefined) {
         const search = stringValue(query.search, 'البحث', 120);
         const literal = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const searchFilter = { $or: [{ title: { $regex: literal, $options: 'i' } }, { description: { $regex: literal, $options: 'i' } }] };
-        (filter.$and ||= []).push(searchFilter);
+        const regex = { $regex: literal, $options: 'i' };
+        if (query.view === 'list') filter.title = regex;
+        else (filter.$and ||= []).push({ $or: [{ title: regex }, { description: regex }] });
     }
+    if (query.view === 'list' && query.after !== undefined) addCursor(filter, query.after);
     const tasks = Task.find(filter).sort({ createdAt: -1, _id: -1 });
+    if (query.view === 'options') tasks.select('title');
+    if (query.view === 'list') tasks.select(listFields);
     if (query.limit !== undefined) {
         const limit = typeof query.limit === 'string' ? Number(query.limit) : NaN;
         const page = query.page === undefined ? 1 : typeof query.page === 'string' ? Number(query.page) : NaN;
         if (!Number.isInteger(limit) || limit < 1 || limit > 100 || !Number.isInteger(page) || page < 1 || page > 1000) {
             throw accessError(400, 'صفحة النتائج غير صالحة');
         }
-        const result = await tasks.skip((page - 1) * limit).limit(limit + 1).lean();
-        res.set('X-Has-More', String(result.length > limit)).json(result.slice(0, limit));
+        const result = await tasks.skip(query.view === 'list' ? 0 : (page - 1) * limit).limit(limit + 1).lean();
+        const hasMore = result.length > limit;
+        const last = result[limit - 1];
+        if (query.view === 'list' && hasMore) {
+            const timestamp = last.createdAt ? new Date(last.createdAt).toISOString() : 'none';
+            res.set('X-Next-Cursor', timestamp + '~' + last._id);
+        }
+        res.set('X-Has-More', String(hasMore)).json(result.slice(0, limit));
         return;
     }
     res.json(await tasks.lean());
@@ -136,6 +159,13 @@ async function listTasks(query, userId, res, archived = false) {
 
 router.get('/', (req, res) => listTasks(req.query, req.user.id, res));
 router.get('/archived/list', (req, res) => listTasks(req.query, req.user.id, res, true));
+router.get('/overview', async (req, res) => {
+    const today = req.query.today ?? new Date().toISOString().slice(0, 10);
+    if (typeof today !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(today)) throw accessError(400, 'التاريخ غير صالح');
+    const start = dateValue(today);
+    const filter = await taskFilter(req.query, req.user.id);
+    res.json(await taskOverview(filter, req.user.id, start));
+});
 
 router.get('/stats/:projectId', async (req, res) => {
     const project = await getProject(req.params.projectId, req.user.id);
@@ -158,13 +188,14 @@ router.post('/', async (req, res) => {
     const fields = taskFields(input);
     if (!fields.title) throw accessError(400, 'عنوان المهمة مطلوب');
     validateDates(fields);
-    const project = input.projectId ? await getProject(input.projectId, req.user.id) : null;
+    const context = input.projectId ? await getProjectContext(input.projectId, req.user.id) : null;
+    const project = context?.project;
     if (project?.status === 'archived') throw accessError(409, 'استعد المشروع قبل إضافة المهام');
     if (project && input.workspaceId && !sameId(project.workspaceId, input.workspaceId)) {
         throw accessError(400, 'المشروع لا ينتمي إلى مساحة العمل المحددة');
     }
-    const workspaceId = project ? project.workspaceId : input.workspaceId;
-    const workspace = workspaceId ? (await requireWorkspace(workspaceId, req.user.id)).workspace : null;
+    const workspace = context ? context.workspace
+        : input.workspaceId ? (await requireWorkspace(input.workspaceId, req.user.id)).workspace : null;
     const task = await Task.create({
         ...fields,
         ...await assignment(input, workspace),

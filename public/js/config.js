@@ -43,16 +43,24 @@
         try { return JSON.parse(localStorage.getItem('user')) || {}; } catch { return {}; }
     }
 
-    async function api(path, { method = 'GET', data, params, workspace, admin = false, auth = true, signal } = {}) {
+    function request(path, { method = 'GET', data, params, workspace, admin = false, auth = true, signal } = {}) {
         const key = admin ? 'adminToken' : 'token';
         const token = auth && localStorage.getItem(key);
         const headers = new Headers(token ? { Authorization: 'Bearer ' + token } : undefined);
         const multipart = data instanceof FormData;
         if (data !== undefined && !multipart) headers.set('Content-Type', 'application/json');
-        const response = await fetch(url(path, params, workspace), {
+        return fetch(url(path, params, workspace), {
             method, headers, signal, body: multipart || data === undefined ? data : JSON.stringify(data)
         });
-        return read(response);
+    }
+
+    async function api(path, options) {
+        return read(await request(path, options));
+    }
+
+    async function apiPage(path, options) {
+        const response = await request(path, options);
+        return { items: await read(response), next: response.headers.get('X-Next-Cursor') };
     }
 
     async function read(response) {
@@ -106,6 +114,6 @@
         return data;
     }
 
-    window.Nivora = { apiBase, apiOrigin, googleLoginUrl, api, url, page, personal, user, setWorkspace, workspaceId, read, externalUrl,
+    window.Nivora = { apiBase, apiOrigin, googleLoginUrl, api, apiPage, url, page, personal, user, setWorkspace, workspaceId, read, externalUrl,
         download, uploadData, dateKey, taskDateKey };
 })();

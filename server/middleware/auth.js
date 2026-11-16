@@ -87,11 +87,15 @@ async function authorizeResource(resource, userId, level, workspaceId = resource
     return access.workspace;
 }
 
-async function getProject(id, userId, level = 'read') {
+async function getProjectContext(id, userId, level = 'read') {
     const project = await Project.findById(validateId(id));
     if (!project) throw accessError(404, AUTH_ERRORS.PROJECT_NOT_FOUND);
-    await authorizeResource(project, userId, level);
-    return project;
+    const workspace = await authorizeResource(project, userId, level);
+    return { project, workspace };
+}
+
+async function getProject(id, userId, level) {
+    return (await getProjectContext(id, userId, level)).project;
 }
 
 async function getTask(id, userId, level = 'read') {
@@ -135,6 +139,6 @@ async function listScope(workspaceId, userId) {
 }
 
 module.exports = {
-    authenticate, adminAuth, requireRole, requireTenantAccess, requireWorkspace, getProject, getTask,
+    authenticate, adminAuth, requireRole, requireTenantAccess, requireWorkspace, getProject, getProjectContext, getTask,
     taskAccess, projectAccess, listScope, validateId, sameId, accessError, AUTH_ERRORS
 };

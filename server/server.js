@@ -52,7 +52,7 @@ function createApp(isAllowed = allowedOrigins()) {
         crossOriginResourcePolicy: { policy: 'cross-origin' },
         referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
     }));
-    app.use(cors({ origin: (origin, done) => done(null, isAllowed(origin)), exposedHeaders: ['X-Has-More'] }));
+    app.use(cors({ origin: (origin, done) => done(null, isAllowed(origin)), exposedHeaders: ['X-Has-More', 'X-Next-Cursor'] }));
     app.use(express.json({ limit: '1mb' }));
     app.use('/api', requestLogger, limiter(15 * 60 * 1000, 800), (_req, res, next) => {
         res.set('Cache-Control', 'no-store');

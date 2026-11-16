@@ -138,12 +138,6 @@
                         <button class="opt-btn" onclick="saveField('status','blocked')">متعثرة</button>
                     </div>
                 </div>
-                <div class="detail-section">
-                    <div class="toggle-row">
-                        <label>🔄 التكرار</label>
-                        <div class="toggle-sw" id="recurToggle" onclick="toggleRecur()"></div>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -244,6 +238,16 @@
         const taskId = params.get('id');
         if (!taskId) window.location.href = 'tasks.html';
         let taskData = null;
+        let taskSave = Promise.resolve();
+        let peopleRequest;
+        let dependencyRequest;
+        let subtasksLoaded = false;
+
+        function loadTab(tab) {
+            if (!taskData) return;
+            if (tab === 'dependencies') renderDependencies().catch(error => showToast(error.message, 'error'));
+            if (tab === 'subtasks' && !subtasksLoaded) loadSubtasks().catch(error => showToast(error.message, 'error'));
+        }
 
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', () => {
@@ -252,19 +256,30 @@
                 tab.classList.add('active');
                 const target = document.getElementById('tab-' + tab.dataset.tab);
                 if (target) target.classList.add('active');
+                loadTab(tab.dataset.tab);
             });
         });
 
-        async function loadTask() {
+        async function loadTask(loadActiveTab = true) {
             try {
                 const res = await fetch(`${API_BASE}/tasks/${taskId}`, { headers: { 'Authorization': `Bearer ${token}` } });
                 taskData = await Nivora.read(res);
-                document.getElementById('taskTitle').value = taskData.title;
+                renderTask();
+                if (loadActiveTab) loadTab(document.querySelector('.tab.active')?.dataset.tab);
+            } catch (err) { showToast('تعذر تحميل المهمة', 'error'); }
+        }
+
+        function renderTask() {
+                function updateField(id, value) {
+                    const field = document.getElementById(id);
+                    if (field !== document.activeElement) field.value = value;
+                }
+                updateField('taskTitle', taskData.title);
                 document.getElementById('taskHeading').textContent = taskData.title;
-                document.getElementById('taskDescInput').value = taskData.description || '';
+                updateField('taskDescInput', taskData.description || '');
                 loadAssignees();
-                document.getElementById('dueDateInput').value = Nivora.taskDateKey(taskData.dueDate);
-                document.getElementById('startDateInput').value = Nivora.taskDateKey(taskData.startDate);
+                updateField('dueDateInput', Nivora.taskDateKey(taskData.dueDate));
+                updateField('startDateInput', Nivora.taskDateKey(taskData.startDate));
                 document.getElementById('taskStatus').innerHTML = statusBadge(taskData.status);
                 document.getElementById('taskPriority').innerHTML = priorityBadge(taskData.priority);
                 document.getElementById('taskProject').textContent = '📁 ' + (taskData.project || 'بدون مشروع');
@@ -277,37 +292,49 @@
                 renderAttachments();
                 renderComments();
                 renderFollowers();
-                renderDependencies().catch(error => showToast(error.message, 'error'));
                 renderActivity();
-
-                loadSubtasks().catch(error => showToast(error.message, 'error'));
-            } catch (err) { showToast('تعذر تحميل المهمة', 'error'); }
         }
 
-        async function changeTask(path, method, data, success) {
-            try {
-                await Nivora.api(path, { method, data });
-                if (success) showToast(success, 'success');
-                loadTask();
-                return true;
-            } catch (error) { showToast(error.message, 'error'); return false; }
+        function changeTask(path, method, data, success) {
+            taskSave = taskSave.then(async () => {
+                try {
+                    const result = await Nivora.api(path, { method, data: typeof data === 'function' ? data() : data });
+                    const saved = result.task || result;
+                    taskData = { ...saved, workspaceId: saved.workspaceId || taskData?.workspaceId || null };
+                    renderTask();
+                    if (document.querySelector('.tab.active')?.dataset.tab === 'dependencies') loadTab('dependencies');
+                    if (success) showToast(success, 'success');
+                    return true;
+                } catch (error) {
+                    showToast(error.message, 'error');
+                    renderTask();
+                    return false;
+                }
+            });
+            return taskSave;
         }
         async function saveField(field, value) {
             if (!taskData) return;
             await changeTask('/tasks/' + taskId, 'PATCH', { [field]: value }, 'تم الحفظ');
         }
+        function workspacePeople() {
+            if (!taskData?.workspaceId) return Promise.resolve([]);
+            if (!peopleRequest) peopleRequest = Nivora.api('/workspaces/' + taskData.workspaceId + '/members').catch(error => {
+                peopleRequest = null;
+                throw error;
+            });
+            return peopleRequest;
+        }
         async function loadAssignees() {
             const select = document.getElementById('assigneeInput');
-            select.replaceChildren(new Option('دون إسناد', ''));
-            if (taskData.assignee && !taskData.assigneeId) select.add(new Option(taskData.assignee, 'legacy'));
-            select.value = taskData.assigneeId || (taskData.assignee ? 'legacy' : '');
-            select.disabled = !taskData.workspaceId;
-            if (!taskData.workspaceId) return;
             try {
-                const members = await Nivora.api('/workspaces/' + taskData.workspaceId + '/members');
+                const members = await workspacePeople();
+                select.replaceChildren(new Option('دون إسناد', ''));
+                if (taskData.assignee && !taskData.assigneeId) select.add(new Option(taskData.assignee, 'legacy'));
                 for (const {userId: member} of members) if (member && member.isActive !== false) select.add(new Option(member.fullName || member.username, member._id));
                 if (taskData.assigneeId && !Array.from(select.options).some(option => option.value === taskData.assigneeId)) select.add(new Option(taskData.assignee || 'عضو سابق', taskData.assigneeId));
                 select.value = taskData.assigneeId || (taskData.assignee ? 'legacy' : '');
+                select.disabled = !taskData.workspaceId;
             } catch (error) { select.disabled = true; showToast(error.message, 'error'); }
         }
         function selectAssignee(value) { if (value !== 'legacy') saveField('assigneeId', value || null); }
@@ -354,11 +381,16 @@
         function renderFollowers() {
             const followers = taskData.followers || [];
             document.getElementById('followersList').innerHTML = followers.length === 0 ? '<div class="empty-state"><div class="empty-icon">👥</div><p>لا يوجد متابعون</p></div>' : followers.map((f, i) => `
-                <span class="follower-tag">👤 ${f}<button onclick="removeFollower(${i})">✕</button></span>`).join('');
+                <span class="follower-tag">👤 ${escapeHtml(f)}<button onclick="removeFollower(${i})">✕</button></span>`).join('');
         }
 
         async function renderDependencies() {
-            const allTasks = await Nivora.api('/tasks', { params: taskData.projectId ? { projectId: taskData.projectId } : { workspaceId: taskData.workspaceId } });
+            const scope = taskData.projectId ? { projectId: taskData.projectId } : { workspaceId: taskData.workspaceId };
+            if (!dependencyRequest) dependencyRequest = Nivora.api('/tasks', { params: { ...scope, view: 'options' } }).catch(error => {
+                dependencyRequest = null;
+                throw error;
+            });
+            const allTasks = await dependencyRequest;
             const deps = taskData.dependencies || [];
             document.getElementById('dependenciesList').innerHTML = deps.length === 0 ? '<div class="empty-state"><div class="empty-icon">🔗</div><p>لا توجد تبعيات</p></div>' : deps.map(d => {
                 const linked = allTasks.find(t => t._id === d.taskId);
@@ -369,12 +401,18 @@
 
         function renderActivity() {
             const activity = taskData.activity || [];
-            document.getElementById('activityList').innerHTML = activity.length === 0 ? '<div class="empty-state"><div class="empty-icon">📜</div><p>لا يوجد نشاط</p></div>' : activity.reverse().map(a => `
+            document.getElementById('activityList').innerHTML = activity.length === 0 ? '<div class="empty-state"><div class="empty-icon">📜</div><p>لا يوجد نشاط</p></div>' : [...activity].reverse().map(a => `
                 <div class="activity-item"><strong>${escapeHtml(a.username || 'مستخدم')}</strong> - ${escapeHtml(a.action)} - ${escapeHtml(a.details || '')}<br><small style="color:var(--text-muted);">${formatDateTime(a.createdAt)}</small></div>`).join('');
         }
 
-        async function addChecklistItem() { const input = document.getElementById('checklistInput'); const text = input.value.trim(); if (!text) return; await fetch(`${API_BASE}/tasks/${taskId}/checklist`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ text }) }); input.value = ''; showToast('تمت الإضافة', 'success'); loadTask(); }
-        async function toggleChecklistItem(itemId, done) { await fetch(`${API_BASE}/tasks/${taskId}/checklist/${itemId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ done }) }); loadTask(); }
+        async function addChecklistItem() {
+            const input = document.getElementById('checklistInput');
+            const text = input.value.trim();
+            if (text && await changeTask('/tasks/' + taskId + '/checklist', 'POST', { text }, 'تمت الإضافة')) input.value = '';
+        }
+        function toggleChecklistItem(itemId, done) {
+            return changeTask('/tasks/' + taskId + '/checklist/' + itemId, 'PATCH', { done });
+        }
         async function uploadTaskFile(file) {
             if (!file || !taskData) return;
             const status = document.getElementById('uploadStatus');
@@ -387,8 +425,15 @@
         function dropFile(event) { event.preventDefault(); event.currentTarget.classList.remove('drag-over'); uploadTaskFile(event.dataTransfer.files[0]); }
         function deleteAttachment(id) { confirmDialog({ title: 'حذف المرفق', message: 'هل تريد حذف هذا المرفق؟', confirmText: 'حذف', onConfirm: () => changeTask('/tasks/' + taskId + '/attachments/' + id, 'DELETE', undefined, 'حُذف المرفق') }); }
         async function addComment() { const input = document.getElementById('commentInput'); const text = input.value.trim(); if (text && await changeTask('/tasks/' + taskId + '/comments', 'POST', { text }, 'أُضيف التعليق')) input.value = ''; }
-        async function addFollower() { const input = document.getElementById('followerInput'); const name = input.value.trim(); if (!name) return; const followers = [...(taskData.followers || []), name]; await fetch(`${API_BASE}/tasks/${taskId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ followers }) }); input.value = ''; showToast('تمت الإضافة', 'success'); loadTask(); }
-        async function removeFollower(index) { const followers = [...taskData.followers]; followers.splice(index, 1); await fetch(`${API_BASE}/tasks/${taskId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ followers }) }); loadTask(); }
+        async function addFollower() {
+            const input = document.getElementById('followerInput');
+            const name = input.value.trim();
+            if (name && await changeTask('/tasks/' + taskId, 'PATCH', () => ({ followers: [...(taskData.followers || []), name] }), 'تمت الإضافة')) input.value = '';
+        }
+        function removeFollower(index) {
+            const follower = taskData.followers[index];
+            return changeTask('/tasks/' + taskId, 'PATCH', () => ({ followers: taskData.followers.filter(name => name !== follower) }));
+        }
         async function addDependency() { const linked = document.getElementById('depTaskSelect').value; if (linked) await changeTask('/tasks/' + taskId + '/dependencies', 'POST', { taskId: linked, type: document.getElementById('depType').value }, 'أُضيفت التبعية'); }
         function deleteDependency(id) { confirmDialog({ title: 'حذف التبعية', message: 'هل تريد حذف هذه التبعية؟', confirmText: 'حذف', onConfirm: () => changeTask('/tasks/' + taskId + '/dependencies/' + id, 'DELETE') }); }
 
@@ -397,6 +442,7 @@
         async function loadSubtasks() {
             const res = await fetch(`${API_BASE}/tasks/${taskId}/subtasks`, { headers: { 'Authorization': `Bearer ${token}` } });
             const subtasks = await Nivora.read(res);
+            subtasksLoaded = true;
             const container = document.getElementById('subtasksList');
             if (subtasks.length === 0) { container.innerHTML = '<div class="empty-state"><div class="empty-icon">📑</div><p>لا توجد مهام فرعية</p></div>'; return; }
             container.innerHTML = subtasks.map(st => `
@@ -413,24 +459,79 @@
                     <button class="btn-delete-sm" onclick="deleteSubtask('${st._id}')">🗑️</button>
                 </div>`).join('');
         }
-        async function addSubtask() { const title = document.getElementById('subtaskTitle').value.trim(); if (!title) return; const priority = document.getElementById('subtaskPriority').value; const assignee = document.getElementById('subtaskAssignee').value.trim(); const dueDate = document.getElementById('subtaskDueDate').value; const res = await fetch(`${API_BASE}/tasks/${taskId}/subtasks`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ title, priority, assignee, dueDate: dueDate || null }) }); if (res.ok) { hideAddSubtask(); showToast('تمت الإضافة', 'success'); loadSubtasks(); loadTask(); } }
-        async function toggleSubtaskStatus(subtaskId, done) { await fetch(`${API_BASE}/tasks/${subtaskId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ status: done ? 'done' : 'new' }) }); loadSubtasks(); loadTask(); }
-        function deleteSubtask(subtaskId) { confirmDialog({ title: 'حذف المهمة الفرعية', message: 'حذف هذه المهمة الفرعية؟', confirmText: 'حذف', danger: true, onConfirm: async () => { await fetch(`${API_BASE}/tasks/${taskId}/subtasks/${subtaskId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); loadSubtasks(); loadTask(); } }); }
+        let subtaskPending = false;
+        async function updateSubtask(path, method, data, onSaved) {
+            if (subtaskPending) return;
+            subtaskPending = true;
+            try {
+                await Nivora.api(path, { method, data });
+                onSaved?.();
+                await Promise.all([loadSubtasks(), loadTask(false)]);
+            } catch (error) { showToast(error.message, 'error'); }
+            finally { subtaskPending = false; }
+        }
+        function addSubtask() {
+            const title = document.getElementById('subtaskTitle').value.trim();
+            if (!title) return;
+            const priority = document.getElementById('subtaskPriority').value;
+            const assignee = document.getElementById('subtaskAssignee').value.trim();
+            const dueDate = document.getElementById('subtaskDueDate').value || null;
+            return updateSubtask('/tasks/' + taskId + '/subtasks', 'POST', { title, priority, assignee, dueDate }, () => {
+                hideAddSubtask();
+                showToast('تمت الإضافة', 'success');
+            });
+        }
+        function toggleSubtaskStatus(subtaskId, done) {
+            return updateSubtask('/tasks/' + subtaskId, 'PATCH', { status: done ? 'done' : 'new' });
+        }
+        function deleteSubtask(subtaskId) {
+            confirmDialog({ title: 'حذف المهمة الفرعية', message: 'حذف هذه المهمة الفرعية؟', confirmText: 'حذف',
+                onConfirm: () => updateSubtask('/tasks/' + taskId + '/subtasks/' + subtaskId, 'DELETE') });
+        }
 
         // @Mention Auto-complete
-        let mentionUsers = [], mentionStart = -1;
-        async function loadMentionUsers() { try { const wsId = localStorage.getItem('workspaceId'); if (!wsId) return; const res = await fetch(`${API_BASE}/workspaces/${wsId}/members`, { headers: { 'Authorization': `Bearer ${token}` } }); const members = await res.json(); mentionUsers = members.filter(m => m.userId).map(m => m.userId.username || ''); } catch (err) {} }
-        function showMentionDropdown(filter = '') { removeMentionDropdown(); const filtered = mentionUsers.filter(u => u.toLowerCase().includes(filter.toLowerCase())); if (filtered.length === 0) return; const dd = document.createElement('div'); dd.id = 'mentionDropdown'; dd.style.cssText = 'position:absolute;bottom:55px;right:0;background:var(--card);border:1px solid var(--border);border-radius:8px;max-height:150px;overflow-y:auto;z-index:20;min-width:180px;box-shadow:var(--shadow-lg);'; filtered.forEach((u, i) => { const item = document.createElement('div'); item.textContent = u; item.style.cssText = `padding:0.5rem 0.75rem;cursor:pointer;font-size:0.85rem;${i===0?'background:var(--primary-light);':''}`; item.addEventListener('click', () => { const inp = document.getElementById('commentInput'); inp.value = inp.value.substring(0, mentionStart) + '@' + u + ' '; removeMentionDropdown(); inp.focus(); }); dd.appendChild(item); }); document.getElementById('tab-comments').querySelector('.add-row').appendChild(dd); }
-        function removeMentionDropdown() { const dd = document.getElementById('mentionDropdown'); if (dd) dd.remove(); mentionStart = -1; }
+        let mentionUsers = [];
+        async function loadMentionUsers() {
+            try {
+                const members = await workspacePeople();
+                mentionUsers = members.filter(m => m.userId?.isActive !== false).map(m => m.userId?.username).filter(Boolean);
+            } catch {}
+        }
+        function showMentionDropdown(filter, start, end) {
+            removeMentionDropdown();
+            const matches = mentionUsers.filter(username => username.toLowerCase().includes(filter.toLowerCase())).slice(0, 8);
+            if (!matches.length) return;
+            const options = document.createElement('div');
+            options.id = 'mentionDropdown';
+            options.style.cssText = 'position:absolute;bottom:55px;right:0;background:var(--card);border:1px solid var(--border);border-radius:8px;max-height:150px;overflow-y:auto;z-index:20;min-width:180px;';
+            for (const username of matches) {
+                const option = document.createElement('button');
+                option.type = 'button';
+                option.className = 'btn btn-outline';
+                option.textContent = username;
+                option.addEventListener('click', () => {
+                    const input = document.getElementById('commentInput');
+                    input.setRangeText('@' + username + ' ', start, end, 'end');
+                    removeMentionDropdown();
+                    input.focus();
+                });
+                options.append(option);
+            }
+            document.getElementById('tab-comments').querySelector('.add-row').append(options);
+        }
+        function removeMentionDropdown() { document.getElementById('mentionDropdown')?.remove(); }
         document.addEventListener('DOMContentLoaded', () => {
-            loadMentionUsers();
             const commentInput = document.getElementById('commentInput');
             if (commentInput) {
+                commentInput.addEventListener('focus', loadMentionUsers);
                 commentInput.addEventListener('input', function() {
                     const pos = this.selectionStart;
                     const before = this.value.substring(0, pos);
                     const atIdx = before.lastIndexOf('@');
-                    if (atIdx >= 0) { const after = before.substring(atIdx + 1); if (!after.includes(' ')) { mentionStart = atIdx; showMentionDropdown(after); return; } }
+                    if (atIdx >= 0) {
+                        const after = before.substring(atIdx + 1);
+                        if (!/\s/.test(after)) { showMentionDropdown(after, atIdx, pos); return; }
+                    }
                     removeMentionDropdown();
                 });
             }
@@ -445,77 +546,7 @@
             if (targetTab) targetTab.classList.add('active');
             if (targetContent) targetContent.classList.add('active');
         }
-// ========== نظام الإشعارات ==========
-let notifications = [];
-
-async function loadNotifications() {
-    try {
-        const res = await fetch(`${API_BASE}/notifications?limit=100`, { headers: { 'Authorization': `Bearer ${token}` } });
-        const response = await res.json();
-        // ✅ التعامل مع paginatedResponse
-        notifications = response.data || response.notifications || response;
-        renderNotifications();
-        updateNotifBadge();
-    } catch (err) {}
-}
-
-function renderNotifications() {
-    const container = document.getElementById('notifList');
-    if (!notifications.length) {
-        container.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:2rem;">لا توجد إشعارات</p>';
-        return;
-    }
-    container.innerHTML = notifications.slice(0, 20).map(n => `
-        <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border-light);cursor:pointer;${n.isRead ? '' : 'background:var(--primary-light);'}" onclick="readNotification('${n._id}')">
-            <div style="font-size:0.85rem;font-weight:600;">${escapeHtml(n.message)}</div>
-            <div style="font-size:0.7rem;color:var(--text-muted);margin-top:0.2rem;">${timeAgo(n.createdAt)}</div>
-        </div>
-    `).join('');
-}
-
-function updateNotifBadge() {
-    const unread = notifications.filter(n => !n.isRead).length;
-    const badge = document.getElementById('notifBadge');
-    if (badge) {
-        if (unread > 0) {
-            badge.textContent = unread > 9 ? '9+' : unread;
-            badge.style.display = 'flex';
-        } else {
-            badge.style.display = 'none';
-        }
-    }
-}
-
-function toggleNotifications() {
-    const dd = document.getElementById('notifDropdown');
-    if (!dd) return;
-    const isVisible = dd.style.display === 'block';
-    dd.style.display = isVisible ? 'none' : 'block';
-    if (!isVisible) loadNotifications();
-}
-
-async function readNotification(id) {
-    await fetch(`${API_BASE}/notifications/${id}/read`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` } });
-    loadNotifications();
-}
-
-async function markAllRead() {
-    await fetch(`${API_BASE}/notifications/read-all`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` } });
-    loadNotifications();
-}
-
-// إغلاق الـ Dropdown عند النقر خارجه
-document.addEventListener('click', function(e) {
-    const dd = document.getElementById('notifDropdown');
-    const btn = document.getElementById('notifBtn');
-    if (dd && btn && !btn.contains(e.target) && !dd.contains(e.target)) {
-        dd.style.display = 'none';
-    }
-});
-
-// تحميل الإشعارات عند فتح الصفحة
-loadNotifications();
-        loadTask();
+        if (taskId && token) loadTask();
     </script>
 </body>
 </html>

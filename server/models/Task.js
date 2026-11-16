@@ -80,6 +80,9 @@ taskSchema.index({ userId: 1, projectId: 1 });
 taskSchema.index({ userId: 1, workspaceId: 1 });
 taskSchema.index({ projectId: 1, status: 1 });
 taskSchema.index({ workspaceId: 1, assigneeId: 1, status: 1, dueDate: 1 });
+taskSchema.index({ workspaceId: 1, createdAt: -1, _id: -1 });
+taskSchema.index({ userId: 1, workspaceId: 1, createdAt: -1, _id: -1 });
+taskSchema.index({ projectId: 1, createdAt: -1, _id: -1 });
 taskSchema.index({ parentTask: 1 });
 taskSchema.index({ dueDate: 1 });
 

@@ -49,6 +49,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/theme.css">
     <script src="js/theme.js" defer></script>
+    <script src="js/notifications.js" defer></script>
+    <script src="js/task-list.js" defer></script>
 </head>
 <body data-ui="app">
     <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
@@ -66,14 +68,14 @@
                 <button class="btn btn-primary" onclick="openCreateModal()">+ مهمة جديدة</button>
                 <!-- زر الإشعارات -->
 <div style="position:relative;">
-    <button class="btn btn-ghost btn-icon" onclick="toggleNotifications()" id="notifBtn" style="width:36px;height:36px;position:relative;">
+    <button class="btn btn-ghost btn-icon" id="notifBtn" style="width:36px;height:36px;position:relative;">
         🔔
         <span id="notifBadge" style="display:none;position:absolute;top:2px;left:2px;background:var(--danger);color:#fff;font-size:0.6rem;font-weight:700;width:16px;height:16px;border-radius:50%;align-items:center;justify-content:center;"></span>
     </button>
     <div id="notifDropdown" style="display:none;position:absolute;top:42px;left:0;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);min-width:320px;max-height:400px;overflow-y:auto;z-index:500;">
         <div style="padding:0.85rem 1rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
             <strong style="font-size:0.9rem;">الإشعارات</strong>
-            <button onclick="markAllRead()" style="background:none;border:none;color:var(--primary);cursor:pointer;font-size:0.75rem;font-weight:600;">تعليم الكل</button>
+            <button data-mark-all style="background:none;border:none;color:var(--primary);cursor:pointer;font-size:0.75rem;font-weight:600;">تعليم الكل</button>
         </div>
         <div id="notifList"></div>
     </div>
@@ -92,8 +94,8 @@
         </div>
 
         <div class="toolbar">
-            <input type="text" id="searchInput" placeholder="🔍 بحث عن مهمة..." oninput="debouncedRender()">
-            <select id="statusFilter" onchange="renderTasks()">
+            <input type="text" id="searchInput" placeholder="🔍 بحث عن مهمة..." maxlength="120" aria-label="بحث عن مهمة">
+            <select id="statusFilter" aria-label="تصفية المهام حسب الحالة">
                 <option value="">كل الحالات</option>
                 <option value="new">جديدة</option>
                 <option value="in-progress">قيد التنفيذ</option>
@@ -101,7 +103,7 @@
                 <option value="done">مكتملة</option>
                 <option value="blocked">متعثرة</option>
             </select>
-            <select id="priorityFilter" onchange="renderTasks()">
+            <select id="priorityFilter" aria-label="تصفية المهام حسب الأولوية">
                 <option value="">كل الأولويات</option>
                 <option value="critical">حرجة</option>
                 <option value="high">عالية</option>
@@ -116,14 +118,16 @@
                 <tbody id="taskBody"></tbody>
             </table>
         </div>
+        <p id="taskListStatus" role="status"></p>
+        <button class="btn btn-outline" id="moreTasks" type="button" hidden>عرض المزيد</button>
     </main>
 
     <div class="modal-overlay" id="createModal" onclick="if(event.target===this)closeCreateModal()">
         <div class="modal">
             <div class="modal-header"><h3>+ مهمة جديدة</h3><button class="modal-close" onclick="closeCreateModal()">✕</button></div>
             <div class="modal-body">
-                <div class="form-group"><label>العنوان *</label><input type="text" class="input" id="taskTitle" placeholder="عنوان المهمة"></div>
-                <div class="form-group"><label>الوصف</label><textarea class="textarea" id="taskDesc" placeholder="وصف المهمة"></textarea></div>
+                <div class="form-group"><label>العنوان *</label><input type="text" class="input" id="taskTitle" maxlength="200" placeholder="عنوان المهمة"></div>
+                <div class="form-group"><label>الوصف</label><textarea class="textarea" id="taskDesc" maxlength="10000" placeholder="وصف المهمة"></textarea></div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
                     <div class="form-group"><label>الأولوية</label><select class="select" id="taskPriority"><option value="medium">متوسطة</option><option value="high">عالية</option><option value="critical">حرجة</option><option value="low">منخفضة</option></select></div>
                     <div class="form-group"><label>الحالة</label><select class="select" id="taskStatus"><option value="new">جديدة</option><option value="in-progress">قيد التنفيذ</option></select></div>
@@ -153,9 +157,6 @@
         function toggleDark() { document.body.classList.toggle('dark'); const d = document.body.classList.contains('dark'); localStorage.setItem('dark', d); document.getElementById('darkBtn').textContent = d ? '☀️' : '🌙'; }
         if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
 
-        let allTasks = [];
-        const debouncedRender = debounce(() => renderTasks(), 200);
-
         document.addEventListener('DOMContentLoaded', () => {
             const avatar = document.getElementById('topAvatar');
             const username = document.getElementById('topUsername');
@@ -166,156 +167,6 @@
             }
         });
 
-        async function loadTasks() {
-            showSkeleton('taskBody', 'table', 6);
-            try {
-                const mine = new URLSearchParams(location.search).get('mine') === '1';
-                const res = await fetch(Nivora.url('/tasks', { assigneeId: mine ? Nivora.user().id || Nivora.user()._id : undefined }, true), { headers: { 'Authorization': `Bearer ${token}` } });
-                allTasks = await Nivora.read(res);
-                renderTasks();
-                loadProjectOptions();
-            } catch (err) {
-                showError('taskBody', 'تعذر تحميل المهام', loadTasks);
-            }
-        }
-
-        function renderTasks() {
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            const status = document.getElementById('statusFilter').value;
-            const priority = document.getElementById('priorityFilter').value;
-            let tasks = allTasks.filter(t => t.status !== 'archived');
-            if (search) tasks = tasks.filter(t => t.title.toLowerCase().includes(search));
-            if (status) tasks = tasks.filter(t => t.status === status);
-            if (priority) tasks = tasks.filter(t => t.priority === priority);
-            const tbody = document.getElementById('taskBody');
-            if (tasks.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">📋</div><h4>لا توجد مهام</h4><p>أنشئ مهمتك الأولى وابدأ بتنظيم أعمالك</p><button class="btn btn-primary" onclick="openCreateModal()">+ إنشاء مهمة</button></div></td></tr>`;
-                return;
-            }
-            tbody.innerHTML = tasks.map(t => {
-                const isOverdue = t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'done';
-                return `<tr>
-                    <td><a href="task.html?id=${t._id}">${escapeHtml(t.title)}</a>${isOverdue ? '<span class="overdue-badge">متأخرة</span>' : ''}</td>
-                    <td>${statusBadge(t.status)}</td>
-                    <td>${priorityBadge(t.priority)}</td>
-                    <td>${t.project || '-'}</td>
-                    <td>${escapeHtml(t.assignee || '-')}</td>
-                    <td>${t.dueDate ? formatDate(t.dueDate) : '-'}</td>
-                    <td><button class="btn-delete" onclick="deleteTask('${t._id}')">🗑️</button></td>
-                </tr>`;
-            }).join('');
-        }
-
-        async function loadProjectOptions() {
-            try {
-                const res = await fetch(Nivora.url('/projects', null, true), { headers: { 'Authorization': `Bearer ${token}` } });
-                const projects = await res.json();
-                document.getElementById('taskProject').innerHTML = '<option value="">بدون مشروع</option>' + projects.map(p => `<option value="${p._id}">${escapeHtml(p.name)}</option>`).join('');
-            } catch (err) {}
-        }
-
-        async function createTask() {
-            const title = document.getElementById('taskTitle').value.trim();
-            if (!title) { showToast('العنوان مطلوب', 'warning'); return; }
-            const btn = document.getElementById('createBtn');
-            setButtonLoading(btn, true, 'جاري الإنشاء...');
-            const body = { title, description: document.getElementById('taskDesc').value.trim(), priority: document.getElementById('taskPriority').value, status: document.getElementById('taskStatus').value, assigneeId: document.getElementById('taskAssignee').value || null, workspaceId: Nivora.workspaceId(), dueDate: document.getElementById('taskDueDate').value || null, projectId: document.getElementById('taskProject').value || null, project: document.getElementById('taskProject').options[document.getElementById('taskProject').selectedIndex]?.text || '' };
-            try {
-                const res = await fetch(`${API_BASE}/tasks`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(body) });
-                if (res.ok) { closeCreateModal(); showToast('تم إنشاء المهمة بنجاح', 'success'); loadTasks(); }
-                else { const d = await res.json(); showToast(d.error || 'خطأ', 'error'); }
-            } catch (err) { showToast('خطأ في الاتصال', 'error'); }
-            setButtonLoading(btn, false);
-        }
-
-        function deleteTask(id) {
-            confirmDialog({ title: 'أرشفة المهمة', message: 'يمكن استعادة المهمة من الأرشيف.', confirmText: 'أرشفة', danger: true, onConfirm: async () => { try { await Nivora.api('/tasks/' + id + '/archive', { method: 'PATCH' }); showToast('تمت أرشفة المهمة'); loadTasks(); } catch (error) { showToast(error.message, 'error'); } } });
-        }
-
-        async function openCreateModal() {
-            document.getElementById('createModal').classList.add('show');
-            document.getElementById('taskTitle').focus();
-            const workspace = Nivora.workspaceId();
-            if (!workspace) return;
-            try {
-                const members = await Nivora.api('/workspaces/' + workspace + '/members');
-                const select = document.getElementById('taskAssignee');
-                select.replaceChildren(new Option('دون إسناد', ''));
-                for (const {userId: member} of members) if (member?.isActive !== false && member) select.add(new Option(member.fullName || member.username, member._id));
-            } catch (error) { showToast(error.message, 'error'); }
-        }
-        function closeCreateModal() { document.getElementById('createModal').classList.remove('show'); document.getElementById('taskTitle').value = ''; document.getElementById('taskDesc').value = ''; }
-// ========== نظام الإشعارات ==========
-let notifications = [];
-
-async function loadNotifications() {
-    try {
-        const res = await fetch(`${API_BASE}/notifications?limit=100`, { headers: { 'Authorization': `Bearer ${token}` } });
-        const response = await res.json();
-        // ✅ التعامل مع paginatedResponse
-        notifications = response.data || response.notifications || response;
-        renderNotifications();
-        updateNotifBadge();
-    } catch (err) {}
-}
-
-function renderNotifications() {
-    const container = document.getElementById('notifList');
-    if (!notifications.length) {
-        container.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:2rem;">لا توجد إشعارات</p>';
-        return;
-    }
-    container.innerHTML = notifications.slice(0, 20).map(n => `
-        <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border-light);cursor:pointer;${n.isRead ? '' : 'background:var(--primary-light);'}" onclick="readNotification('${n._id}')">
-            <div style="font-size:0.85rem;font-weight:600;">${escapeHtml(n.message)}</div>
-            <div style="font-size:0.7rem;color:var(--text-muted);margin-top:0.2rem;">${timeAgo(n.createdAt)}</div>
-        </div>
-    `).join('');
-}
-
-function updateNotifBadge() {
-    const unread = notifications.filter(n => !n.isRead).length;
-    const badge = document.getElementById('notifBadge');
-    if (badge) {
-        if (unread > 0) {
-            badge.textContent = unread > 9 ? '9+' : unread;
-            badge.style.display = 'flex';
-        } else {
-            badge.style.display = 'none';
-        }
-    }
-}
-
-function toggleNotifications() {
-    const dd = document.getElementById('notifDropdown');
-    if (!dd) return;
-    const isVisible = dd.style.display === 'block';
-    dd.style.display = isVisible ? 'none' : 'block';
-    if (!isVisible) loadNotifications();
-}
-
-async function readNotification(id) {
-    await fetch(`${API_BASE}/notifications/${id}/read`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` } });
-    loadNotifications();
-}
-
-async function markAllRead() {
-    await fetch(`${API_BASE}/notifications/read-all`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` } });
-    loadNotifications();
-}
-
-// إغلاق الـ Dropdown عند النقر خارجه
-document.addEventListener('click', function(e) {
-    const dd = document.getElementById('notifDropdown');
-    const btn = document.getElementById('notifBtn');
-    if (dd && btn && !btn.contains(e.target) && !dd.contains(e.target)) {
-        dd.style.display = 'none';
-    }
-});
-
-// تحميل الإشعارات عند فتح الصفحة
-loadNotifications();
-        loadTasks();
     </script>
 </body>
 </html>

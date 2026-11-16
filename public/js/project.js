@@ -1,11 +1,11 @@
 (() => {
     'use strict';
 
-    const { api, page, download, uploadData, externalUrl, taskDateKey } = Nivora;
+    const { api, apiPage, page, download, uploadData, externalUrl, taskDateKey } = Nivora;
     const byId = id => document.getElementById(id);
     const query = new URLSearchParams(location.search);
     const projectId = query.get('id');
-    const state = { project: null, page: 1, folder: null, taskRequest: null, fileRequest: null };
+    const state = { project: null, next: null, folder: null, taskRequest: null, fileRequest: null, created: new Map() };
     const formatNumber = new Intl.NumberFormat('ar-SA');
     const projectStatuses = { active: 'مشروع نشط', completed: 'مشروع مكتمل', archived: 'مشروع مؤرشف' };
     const taskStatuses = { new: 'جديدة', ready: 'جاهزة', 'in-progress': 'قيد التنفيذ', review: 'تحت المراجعة',
@@ -53,12 +53,13 @@
         byId('chatLink').href = page('chat.html', { projectId, workspaceId: project.workspaceId });
         byId('chatLink').hidden = !project.workspaceId || project.settings?.enableChat === false;
         byId('newTask').hidden = project.status === 'archived';
-        document.title = project.name + ' | نيفورا';
+        document.title = 'Nivora | ' + project.name;
         byId('projectView').hidden = false;
     }
 
     function taskRow(task) {
         const row = element('li', '', 'workspace-row');
+        row.dataset.task = task._id;
         const title = element('a', task.title || 'مهمة بلا عنوان');
         title.href = page('task.html', { id: task._id });
         const assignee = element('div', task.assignee || 'دون إسناد');
@@ -75,20 +76,27 @@
         state.taskRequest = controller;
         const list = byId('taskList');
         const more = byId('moreTasks');
-        const nextPage = append ? state.page + 1 : 1;
+        const status = byId('taskFilter').value;
+        const after = append ? state.next : null;
         if (!append) showEmpty(list, 'جارٍ تحميل المهام…');
         more.disabled = true;
         try {
-            const tasks = await api('/tasks', { params: { projectId, status: byId('taskFilter').value,
-                limit: pageSize, page: nextPage }, signal: controller.signal });
+            const { items: tasks, next } = await apiPage('/tasks', { params: { projectId, status, view: 'list',
+                limit: pageSize, after }, signal: controller.signal });
             if (controller.signal.aborted) return;
-            state.page = nextPage;
-            const rows = tasks.filter(task => task.status !== 'archived').map(taskRow);
+            state.next = next;
+            const listed = new Set(append ? [...list.querySelectorAll('[data-task]')].map(row => row.dataset.task) : []);
+            const items = new Map();
+            if (!append) {
+                for (const task of state.created.values()) if (!status || task.status === status) items.set(task._id, task);
+            }
+            for (const task of tasks) if (!listed.has(task._id)) items.set(task._id, task);
+            const rows = [...items.values()].map(taskRow);
             if (rows.length) {
                 if (!append) list.replaceChildren();
                 list.append(...rows);
             } else if (!append) showEmpty(list, 'لا توجد مهام في هذا العرض.');
-            more.hidden = tasks.length < pageSize;
+            more.hidden = !next;
         } catch (error) {
             if (error.name === 'AbortError') return;
             if (!append) showEmpty(list, 'تعذّر تحميل المهام. اختر الحالة مرة أخرى لإعادة المحاولة.');
@@ -216,12 +224,24 @@
     window.addEventListener('hashchange', showTab);
 
     bindForm('taskForm', async input => {
-        await api('/tasks', { method: 'POST', data: { ...input, projectId } });
+        const task = await api('/tasks', { method: 'POST', data: { ...input, projectId } });
         message('pageStatus', 'أُنشئت المهمة.');
-        byId('taskFilter').value = '';
+        state.created.set(task._id, task);
+        const status = byId('taskFilter').value;
         if (location.hash !== '#tasks') location.hash = 'tasks';
-        else await loadTasks();
-        try { renderProject(await api('/projects/' + projectId)); } catch { /* The task was created. */ }
+        else if (!status || status === task.status) {
+            const list = byId('taskList');
+            list.querySelector('.empty-line')?.remove();
+            list.prepend(taskRow(task));
+        }
+        const project = state.project;
+        project.taskCount = (project.taskCount || 0) + 1;
+        if (task.status === 'in-progress') project.inProgressCount = (project.inProgressCount || 0) + 1;
+        if (task.status === 'done') project.doneCount = (project.doneCount || 0) + 1;
+        if (task.dueDate && taskDateKey(task.dueDate) < Nivora.dateKey(new Date()) && task.status !== 'done') {
+            project.overdueCount = (project.overdueCount || 0) + 1;
+        }
+        renderProject(project);
     });
 
     bindForm('folderForm', async input => {

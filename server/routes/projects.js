@@ -83,7 +83,12 @@ router.get('/', async (req, res) => {
         if (!statuses.includes(req.query.status)) throw accessError(400, 'حالة المشروع غير صالحة');
         filter.status = req.query.status;
     }
-    const projects = await Project.find(filter).sort({ createdAt: -1, _id: -1 }).lean();
+    const list = Project.find(filter).sort({ createdAt: -1, _id: -1 });
+    if (req.query.view === 'options') {
+        res.json(await list.select('name status').lean());
+        return;
+    }
+    const projects = await list.lean();
     res.json(await withStats(projects, req.user.id));
 });
 

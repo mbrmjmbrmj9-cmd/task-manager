@@ -11,10 +11,21 @@ router.get('/', authenticate, paginate, async (req, res) => {
         const filter = { userId: req.user.id };
         if (req.query.unread === 'true') filter.isRead = false;
         
+        if (req.query.view === 'preview') {
+            const items = await Notification.find(filter).select('message link createdAt isRead')
+                .sort({ createdAt: -1, _id: -1 }).limit(20).lean();
+            res.json(items);
+            return;
+        }
         await paginatedResponse(Notification, filter, req, res, { createdAt: -1 });
     } catch (err) {
         res.status(500).json({ error: 'خطأ في جلب الإشعارات' });
     }
+});
+
+router.get('/unread-count', authenticate, async (req, res) => {
+    const count = await Notification.countDocuments({ userId: req.user.id, isRead: false });
+    res.json({ count });
 });
 
 // ✅ تعليم إشعار كمقروء

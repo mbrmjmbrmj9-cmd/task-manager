@@ -134,6 +134,54 @@ beforeEach(() => {
 
 afterEach(() => jest.restoreAllMocks());
 
+test('the dashboard aggregates the authorized scope with bounded task and activity lists', async () => {
+    const aggregate = jest.spyOn(Task, 'aggregate').mockResolvedValue([{
+        statistics: [{ total: 3, done: 1, inProgress: 1, overdue: 1 }], upcoming: [], activity: []
+    }]);
+    const route = '/api/tasks/overview?today=2026-11-17&projectId=' + project.id;
+    expect((await request('GET', route, { principal: outsider })).status).toBe(403);
+    expect(aggregate).not.toHaveBeenCalled();
+    const response = await request('GET', route, { principal: owner });
+    expect(response.status).toBe(200);
+    expect(response.body.stats).toEqual({ total: 3, done: 1, inProgress: 1, overdue: 1, rate: 33 });
+    const [scope, , summary] = aggregate.mock.calls[0][0];
+    expect(scope.$match).toMatchObject({ projectId: project._id, status: { $ne: 'archived' } });
+    expect(summary.$facet.upcoming).toContainEqual({ $limit: 6 });
+    expect(summary.$facet.activity).toContainEqual({ $limit: 8 });
+});
+
+test('task lists return a stable cursor and request summary fields only', async () => {
+    const createdAt = new Date('2026-11-17T09:00:00.000Z');
+    const older = { _id: id(), title: 'أقدم', createdAt: new Date('2026-11-16T09:00:00.000Z') };
+    const first = { _id: task._id, title: task.title, createdAt };
+    const rows = query([first, older]);
+    const select = jest.spyOn(rows, 'select');
+    const find = jest.spyOn(Task, 'find').mockReturnValueOnce(rows).mockReturnValueOnce(query([older]));
+    const filter = '/api/tasks?view=list&limit=1&projectId=' + project.id;
+    const response = await request('GET', filter, { principal: owner });
+    const cursor = createdAt.toISOString() + '~' + first._id;
+    expect(response.status).toBe(200);
+    expect(response.headers).toContain('X-Next-Cursor: ' + cursor);
+    expect(response.body.map(item => item.title)).toEqual([first.title]);
+    expect(select).toHaveBeenCalledWith(expect.not.stringContaining('activity'));
+
+    const second = await request('GET', filter + '&after=' + encodeURIComponent(cursor), { principal: owner });
+    expect(second.body.map(item => item.title)).toEqual([older.title]);
+    expect(find.mock.calls[1][0]).toMatchObject({
+        status: { $ne: 'archived' },
+        $and: [{ $or: expect.arrayContaining([{ createdAt, _id: { $lt: String(first._id) } }]) }]
+    });
+});
+
+test('an unread notification count is private to the signed-in account', async () => {
+    const count = jest.spyOn(Notification, 'countDocuments').mockResolvedValue(4);
+    const route = '/api/notifications/unread-count';
+    expect((await request('GET', route)).status).toBe(401);
+    expect((await request('GET', route, { principal: owner })).body).toEqual({ count: 4 });
+    expect(count).toHaveBeenCalledTimes(1);
+    expect(count).toHaveBeenCalledWith({ userId: owner.id, isRead: false });
+});
+
 test('workspace settings enforce membership and keep the invitation code private to managers', async () => {
     jest.spyOn(Project, 'countDocuments').mockResolvedValue(1);
     const route = '/api/workspaces/' + workspace.id + '/settings';
