@@ -182,11 +182,11 @@
                 const progressColor = percent >= 80 ? 'var(--success)' : percent >= 40 ? 'var(--primary)' : 'var(--warning)';
                 return `<div class="card project-card" style="border-right-color:${safeColor(p.color || 'var(--primary)')};" onclick="openProject('${p._id}')">
                     <div class="actions">
-                        <button class="btn-icon-sm" onclick="event.stopPropagation();window.location.href='project-settings.html?id=${p._id}'" title="إعدادات">⚙️</button>
+                        <a class="btn-icon-sm" href="${Nivora.page('project-settings.html', { id: p._id })}" onclick="event.stopPropagation()" aria-label="إعدادات المشروع" title="إعدادات">⚙️</a>
                         <button class="btn-icon-sm danger" onclick="event.stopPropagation();deleteProject('${p._id}')" title="حذف">🗑️</button>
                     </div>
                     <h3><a href="${Nivora.page('project.html', { id: p._id })}">${escapeHtml(p.name)}</a></h3>
-                    ${escapeHtml(p.description ? `<p class="desc">${escapeHtml(p.description)}</p>` : '')}
+                    ${p.description ? `<p class="desc">${escapeHtml(p.description)}</p>` : ''}
                     <div class="progress"><div class="progress-bar" style="width:${percent}%;background:${progressColor};"></div></div>
                     <div class="stats">
                         <span>✅ ${p.doneCount || 0}/${p.taskCount || 0}</span>

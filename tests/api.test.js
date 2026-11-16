@@ -23,6 +23,7 @@ const Message = require('../server/models/Message');
 const Notification = require('../server/models/Notification');
 const Workflow = require('../server/models/Workflow');
 const Template = require('../server/models/Template');
+const Ticket = require('../server/models/Ticket');
 
 const server = http.createServer(createApp());
 const id = () => new Types.ObjectId();
@@ -132,6 +133,45 @@ beforeEach(() => {
 });
 
 afterEach(() => jest.restoreAllMocks());
+
+test('workspace settings enforce membership and keep the invitation code private to managers', async () => {
+    jest.spyOn(Project, 'countDocuments').mockResolvedValue(1);
+    const route = '/api/workspaces/' + workspace.id + '/settings';
+
+    const denied = await request('GET', route, { principal: outsider });
+    expect(denied.status).toBe(403);
+
+    const regular = await request('GET', route, { principal: member });
+    expect(regular.status).toBe(200);
+    expect(regular.body.role).toBe('member');
+    expect(regular.body).not.toHaveProperty('inviteCode');
+    expect(regular.body.usage).toMatchObject({ currentMembers: 2, currentProjects: 1 });
+
+    const privileged = await request('GET', route, { principal: owner });
+    expect(privileged.status).toBe(200);
+    expect(privileged.body).toMatchObject({ name: workspace.name, role: 'owner', inviteCode: workspace.inviteCode });
+});
+
+test('contact messages are validated and saved to the support inbox with an optional phone', async () => {
+    const save = jest.spyOn(Ticket, 'create').mockResolvedValue(new Ticket());
+    const body = { name: ' اسم المرسل ', email: ' sender@example.test ', message: ' تفاصيل الاستفسار ' };
+
+    const invalid = await request('POST', '/api/contact', { body: { ...body, email: 'invalid address' } });
+    expect(invalid.status).toBe(400);
+    expect(save).not.toHaveBeenCalled();
+
+    const accepted = await request('POST', '/api/contact', { body });
+    expect(accepted.status).toBe(201);
+    expect(save).toHaveBeenCalledTimes(1);
+    expect(save).toHaveBeenCalledWith({
+        subject: expect.any(String),
+        message: 'تفاصيل الاستفسار',
+        contact: { name: 'اسم المرسل', email: 'sender@example.test', phone: '' }
+    });
+
+    const inbox = await request('GET', '/api/admin/tickets');
+    expect(inbox.status).toBe(401);
+});
 afterAll(() => {
     const resolvedRoot = fs.realpathSync(os.tmpdir());
     const resolvedTemp = fs.realpathSync(temp);

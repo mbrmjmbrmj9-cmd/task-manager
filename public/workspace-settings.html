@@ -1,163 +1,70 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
     <title>Nivora | إعدادات مساحة العمل</title>
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#2563EB">
+    <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/style.css">
-    <style>
-        :root { --sidebar-w: 240px; }
-        body { min-height: 100vh; }
-        .sidebar { width: var(--sidebar-w); background: var(--card); border-left: 1px solid var(--border); padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 100; overflow-y: auto; display: flex; flex-direction: column; gap: 0.25rem; }
-        .sidebar .logo { font-size: 1.3rem; font-weight: 800; padding: 0 0.75rem; margin-bottom: 1rem; color: var(--primary); }
-        .sidebar a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border-radius: 8px; color: var(--text-light); text-decoration: none; font-weight: 500; font-size: 0.9rem; white-space: nowrap; }
-        .sidebar a:hover, .sidebar a.active { background: var(--primary-light); color: var(--primary); }
-        .sidebar a svg { width: 20px; height: 20px; flex-shrink: 0; }
-        .sidebar .label { transition: opacity 0.2s; }
-        .main { margin-right: var(--sidebar-w); padding: 1.5rem; min-height: 100vh; }
-        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; flex-wrap: wrap; gap: 0.5rem; }
-        .topbar h1 { font-size: 1.5rem; font-weight: 800; }
-        .page-desc { font-size: 0.85rem; color: var(--text-light); margin-bottom: 1.5rem; }
-        .back-link { display: inline-block; color: var(--primary); text-decoration: none; font-size: 0.9rem; margin-bottom: 1rem; }
-        .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        .card h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 1rem; }
-        .info-row { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--border-light); font-size: 0.85rem; }
-        .info-row:last-child { border-bottom: none; }
-        .info-label { color: var(--text-light); }
-        .info-value { font-weight: 600; }
-        .invite-code { background: var(--primary-light); padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); font-weight: 800; letter-spacing: 2px; font-size: 1rem; }
-        .progress-bar { height: 8px; background: var(--border); border-radius: var(--radius-full); overflow: hidden; flex: 1; }
-        .progress-fill { height: 100%; border-radius: var(--radius-full); }
-        .usage-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
-        .usage-label { min-width: 70px; font-size: 0.8rem; color: var(--text-light); }
-        .usage-value { font-size: 0.8rem; font-weight: 600; min-width: 40px; text-align: left; }
-        .danger-zone { border: 1px solid var(--danger-soft); padding: 1.25rem; border-radius: var(--radius); }
-        .danger-zone h3 { color: var(--danger); }
-        .danger-zone p { font-size: 0.82rem; color: var(--text-light); margin-bottom: 0.75rem; }
-        .msg { padding: 0.5rem; border-radius: var(--radius-sm); font-size: 0.85rem; margin-bottom: 0.75rem; display: none; }
-        .msg.success { display: block; background: var(--success-light); color: var(--success); }
-        .msg.error { display: block; background: var(--danger-light); color: var(--danger); }
-        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 99; }
-        .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); padding: 0.5rem 1rem; z-index: 90; justify-content: space-around; }
-        .bottom-nav a { display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-light); text-decoration: none; font-size: 0.65rem; font-weight: 500; }
-        .bottom-nav a.active { color: var(--primary); }
-        .bottom-nav a svg { width: 22px; height: 22px; }
-        @media (max-width: 1024px) { :root { --sidebar-w: 72px; } .sidebar { padding: 1rem 0.5rem; } .sidebar .logo { font-size: 1rem; text-align: center; } .sidebar .label, .sidebar .logo span { display: none; } .sidebar a { justify-content: center; padding: 0.5rem; } }
-        @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 0.75rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } .settings-grid { grid-template-columns: 1fr; } }
-    </style>
-<script src="js/config.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/workspace.css">
     <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/settings.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+    <script>if (!localStorage.getItem('token')) location.replace('login.html');</script>
+    <script src="js/config.js" defer></script>
     <script src="js/theme.js" defer></script>
+    <script src="js/workspace-settings.js" defer></script>
 </head>
-<body data-ui="app">
-    <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
-
-    <aside id="sidebar" class="shell-rail"></aside>
-
-    <main class="main">
-        <a href="team.html" class="back-link">← العودة للفريق</a>
-        <div class="topbar">
-            <div><h1>إعدادات مساحة العمل</h1><p class="page-desc">إدارة إعدادات فريقك</p></div>
-            <div style="display:flex;gap:0.5rem;"><button class="btn btn-ghost btn-icon" onclick="toggleDark()" id="darkBtn" style="width:36px;height:36px;">🌙</button><button class="btn btn-outline btn-sm" onclick="logout()">خروج</button></div>
-        </div>
-        <div class="settings-grid">
-            <div class="card">
-                <h3>معلومات الفريق</h3>
-                <div class="form-group"><label>اسم الفريق</label><input type="text" class="input" id="wsName" onchange="saveName()"></div>
-                <div class="info-row"><span class="info-label">رمز الدعوة</span><span class="invite-code" id="inviteCode">---</span></div>
-                <div class="info-row"><span class="info-label">الخطة</span><span class="info-value" id="planName">-</span></div>
-                <p class="msg" id="nameMsg"></p>
-            </div>
-            <div class="card">
-                <h3>حدود الاستخدام</h3>
-                <div id="usageContent"><p style="color:var(--text-muted);">جارٍ التحميل...</p></div>
-            </div>
-            <div class="card">
-                <h3>نقل الملكية</h3>
-                <p style="font-size:0.82rem;color:var(--text-light);margin-bottom:1rem;">نقل ملكية الفريق لعضو آخر.</p>
-                <div class="form-group"><label>المالك الجديد</label><select class="select" id="newOwnerSelect"><option value="">اختر عضواً...</option></select></div>
-                <button class="btn btn-primary btn-block" id="transferBtn" onclick="transferOwnership()">نقل الملكية</button>
-                <p class="msg" id="transferMsg"></p>
-            </div>
-            <div class="card">
-                <div class="danger-zone">
-                    <h3>أرشفة الفريق</h3>
-                    <p>سيتم حذف كل البيانات نهائياً. لا يمكن التراجع.</p>
-                    <button class="btn btn-danger btn-block" onclick="deleteWorkspace()">حذف نهائي</button>
+<body class="workspace-shell" data-ui="app">
+    <main class="workspace-content">
+        <nav class="breadcrumb" aria-label="مسار الصفحة">
+            <a href="settings.html">الإعدادات</a>
+            <a href="teams.html">فرق العمل</a>
+        </nav>
+        <header class="topbar"><div><h1>إعدادات مساحة العمل</h1><p class="page-desc" id="workspaceName" hidden></p></div></header>
+        <p id="workspaceStatus" class="workspace-status" role="status">جارٍ تحميل مساحة العمل…</p>
+        <button id="reloadWorkspace" class="workspace-button" type="button" hidden>إعادة المحاولة</button>
+        <div id="workspacePanels" class="settings-layout" hidden>
+            <section class="workspace-panel settings-panel" aria-labelledby="workspaceInfo">
+                <h2 id="workspaceInfo">معلومات مساحة العمل</h2>
+                <form id="workspaceForm" class="settings-form" method="post">
+                    <label class="workspace-label">اسم الفريق
+                        <input class="workspace-input" id="wsName" name="name" maxlength="120" required readonly>
+                    </label>
+                    <div><button id="saveWorkspace" class="workspace-button primary" type="submit" hidden>حفظ الاسم</button></div>
+                </form>
+                <div id="inviteSettings" class="settings-action-row" hidden>
+                    <bdi id="inviteCode"></bdi>
+                    <button id="rotateInvite" class="workspace-button" type="button">تغيير رمز الدعوة</button>
                 </div>
-            </div>
+            </section>
+            <section class="workspace-panel settings-panel" aria-labelledby="usageHeading">
+                <h2 id="usageHeading">الخطة وحدود الاستخدام</h2>
+                <dl class="settings-details">
+                    <div><dt>الخطة</dt><dd id="planName"></dd></div>
+                    <div><dt>الأعضاء</dt><dd id="memberUsage"></dd></div>
+                    <div><dt>المشاريع</dt><dd id="projectUsage"></dd></div>
+                </dl>
+                <a class="workspace-button" href="plans.html">عرض الخطط</a>
+            </section>
+            <section id="ownershipPanel" class="workspace-panel settings-panel" aria-labelledby="ownerHeading" hidden>
+                <h2 id="ownerHeading">نقل الملكية</h2>
+                <form id="transferForm" class="settings-form" method="post">
+                    <label class="workspace-label">المالك الجديد
+                        <select class="workspace-input" id="newOwner" required></select>
+                    </label>
+                    <div><button id="transferOwnership" class="workspace-button" type="submit">نقل الملكية</button></div>
+                </form>
+                <p id="membersStatus" role="status"></p>
+            </section>
+            <section id="archivePanel" class="workspace-panel settings-panel" aria-labelledby="archiveHeading" hidden>
+                <h2 id="archiveHeading">أرشفة الفريق</h2>
+                <p>تخفي الأرشفة مساحة العمل من الفرق النشطة. يمكن للمالك استعادتها من صفحة فرق العمل.</p>
+                <div class="settings-action-row"><button class="workspace-button" id="archiveWorkspace" type="button">أرشفة مساحة العمل</button></div>
+            </section>
         </div>
     </main>
-
-    <script src="js/components.js"></script>
-    <script>
-        function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
-        function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
-        const API = Nivora.apiBase;
-        const token = localStorage.getItem('token');
-        if (!token) window.location.href = 'login.html';
-        function logout() { localStorage.clear(); window.location.href = 'login.html'; }
-        function toggleDark() { document.body.classList.toggle('dark'); const d = document.body.classList.contains('dark'); localStorage.setItem('dark', d); document.getElementById('darkBtn').textContent = d ? '☀️' : '🌙'; }
-        if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
-        const wsId = localStorage.getItem('workspaceId');
-        if (!wsId) window.location.href = 'workspace.html';
-
-        async function loadSettings() {
-            try {
-                const [mRes, uRes, wRes] = await Promise.all([
-                    fetch(`${API}/workspaces/${wsId}/members`, { headers: { 'Authorization': `Bearer ${token}` } }),
-                    fetch(`${API}/workspaces/${wsId}/usage`, { headers: { 'Authorization': `Bearer ${token}` } }),
-                    fetch(`${API}/workspaces`, { headers: { 'Authorization': `Bearer ${token}` } })
-                ]);
-                const members = await mRes.json();
-                const usage = await uRes.json();
-                const wss = await wRes.json();
-                const ws = wss.find(w => w._id === wsId);
-                if (ws) document.getElementById('wsName').value = ws.name || '';
-                document.getElementById('inviteCode').textContent = localStorage.getItem('inviteCode') || '---';
-                document.getElementById('planName').textContent = usage.plan || 'free';
-                document.getElementById('usageContent').innerHTML = `
-                    <div class="usage-row"><span class="usage-label">الأعضاء</span><div class="progress-bar"><div class="progress-fill" style="width:${(usage.currentMembers/usage.maxMembers)*100}%;background:var(--primary);"></div></div><span class="usage-value">${usage.currentMembers}/${usage.maxMembers}</span></div>
-                    <div class="usage-row"><span class="usage-label">المشاريع</span><div class="progress-bar"><div class="progress-fill" style="width:${(usage.currentProjects/usage.maxProjects)*100}%;background:var(--success);"></div></div><span class="usage-value">${usage.currentProjects}/${usage.maxProjects}</span></div>`;
-                const user = JSON.parse(localStorage.getItem('user') || '{}');
-                document.getElementById('newOwnerSelect').innerHTML = '<option value="">اختر عضواً...</option>' + members.filter(m => (m.userId?._id || m.userId) !== user.id).map(m => `<option value="${m.userId?._id || m.userId}">${escapeHtml(m.userId?.fullName || m.userId?.username || 'مستخدم')}</option>`).join('');
-            } catch (err) { showToast('تعذر التحميل', 'error'); }
-        }
-
-        async function saveName() {
-            const name = document.getElementById('wsName').value.trim();
-            if (!name) return;
-            const res = await fetch(`${API}/workspaces/${wsId}/settings`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ name }) });
-            const msg = document.getElementById('nameMsg');
-            if (res.ok) { msg.className = 'msg success'; msg.textContent = 'تم الحفظ'; }
-            else { msg.className = 'msg error'; msg.textContent = 'خطأ'; }
-            setTimeout(() => msg.className = 'msg', 3000);
-        }
-
-        function transferOwnership() {
-            const newOwnerId = document.getElementById('newOwnerSelect').value;
-            if (!newOwnerId) { showToast('اختر عضواً', 'warning'); return; }
-            confirmDialog({ title: 'نقل الملكية', message: 'نقل ملكية الفريق؟ ستصبح مديراً.', confirmText: 'نقل', danger: true, onConfirm: async () => {
-                const btn = document.getElementById('transferBtn'); setButtonLoading(btn, true);
-                const res = await fetch(`${API}/workspaces/${wsId}/transfer-ownership`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ newOwnerId }) });
-                setButtonLoading(btn, false);
-                if (res.ok) { showToast('تم النقل', 'success'); setTimeout(() => location.reload(), 1500); }
-                else { const d = await res.json(); showToast(d.error, 'error'); }
-            } });
-        }
-
-        function deleteWorkspace() {
-            confirmDialog({ title: 'أرشفة مساحة العمل', message: 'ستختفي مساحة العمل من الفرق النشطة ويمكن للمالك استعادتها.', confirmText: 'أرشفة', danger: true, onConfirm: async () => {
-                await Nivora.api('/workspaces/' + wsId, { method: 'DELETE' });
-                localStorage.removeItem('workspaceId'); localStorage.removeItem('inviteCode');
-                window.location.href = 'workspace.html';
-            } });
-        }
-
-        loadSettings();
-    </script>
 </body>
 </html>

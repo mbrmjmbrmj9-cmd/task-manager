@@ -9,10 +9,9 @@ const mongoose = require('mongoose');
 const connectDB = require('./config/database');
 const attachGoogle = require('./config/google');
 const configureRealtime = require('./config/realtime');
-const { mailAvailable, sendMail } = require('./config/mail');
 const { avatarDir, durable, streamStoredUpload } = require('./config/storage');
 const { requestLogger, errorHandler } = require('./middleware/logger');
-const { accessError } = require('./middleware/auth');
+const submitContact = require('./routes/contact');
 
 const publicDir = path.join(__dirname, '..', 'public');
 const port = Number(process.env.PORT || 3000);
@@ -81,20 +80,7 @@ function createApp(isAllowed = allowedOrigins()) {
     }
     app.use('/api/chat', require('./routes/chat').router);
 
-    app.post('/api/contact', limiter(15 * 60 * 1000, 5), async (req, res) => {
-        if (!mailAvailable() || !process.env.CONTACT_EMAIL) {
-            throw accessError(503, 'خدمة التواصل غير متاحة حاليًا');
-        }
-        const { name, phone, email, message } = req.body || {};
-        if ([name, phone, email, message].some(value => typeof value !== 'string' || !value.trim())
-            || name.length > 120 || phone.length > 40 || email.length > 254 || message.length > 5000
-            || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            throw accessError(400, 'تحقق من بيانات التواصل');
-        }
-        await sendMail({ to: process.env.CONTACT_EMAIL, replyTo: email, subject: 'رسالة جديدة من نموذج نيفورا',
-            text: [name, phone, email, '', message].join('\n') });
-        res.json({ message: 'تم الإرسال بنجاح' });
-    });
+    app.post('/api/contact', limiter(15 * 60 * 1000, 5), submitContact);
 
     app.use('/api', (_req, res) => res.status(404).json({ error: 'المسار غير موجود' }));
     if (durable) {

@@ -39,6 +39,8 @@
         .btn-auth:disabled { opacity: 0.6; cursor: not-allowed; }
         .switch-text { text-align: center; margin-top: 1.5rem; color: var(--text-light); font-size: 0.88rem; }
         .switch-text a { color: var(--primary); font-weight: 700; text-decoration: none; }
+        .auth-support { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 12px; margin-top: 12px; }
+        .auth-support a { display: flex; align-items: center; min-height: 44px; color: var(--text-light); font-size: .8rem; }
         .error-msg { background: var(--danger-light); color: var(--danger); padding: 0.75rem 1rem; border-radius: var(--radius-sm); margin-bottom: 1rem; font-size: 0.85rem; display: none; border-right: 3px solid var(--danger); }
         .success-msg { background: var(--success-light); color: var(--success); padding: 0.75rem 1rem; border-radius: var(--radius-sm); margin-bottom: 1rem; font-size: 0.85rem; display: none; border-right: 3px solid var(--success); }
         .hidden { display: none !important; }
@@ -137,6 +139,11 @@
                 <p class="switch-text"><a href="#" id="showLoginFromForgot">العودة لتسجيل الدخول</a></p>
             </div>
         </div>
+        <nav class="auth-support" aria-label="الخصوصية والدعم">
+            <a href="privacy.html">سياسة الخصوصية</a>
+            <a href="terms.html">شروط الاستخدام</a>
+            <a href="contact.html">تواصل معنا</a>
+        </nav>
     </div>
 
     <script src="js/components.js"></script>

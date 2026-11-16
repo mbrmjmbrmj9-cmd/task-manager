@@ -152,7 +152,7 @@
                         ${t.usage ? `<div class="meta"><span>📁 ${t.usage.currentProjects || 0}/${t.usage.maxProjects || 5}</span></div>` : ''}
                         <div class="footer-actions">${showingArchived
                             ? `<button class="btn btn-outline" onclick="restoreTeam('${t._id}')">استعادة</button>`
-                            : `<button class="btn btn-primary" onclick="switchTeam('${t._id}', '${t.inviteCode || ''}')">دخول</button>${t.role === 'owner' ? `<button class="btn btn-outline btn-sm" onclick="deleteTeam('${t._id}')">أرشفة</button>` : ''}`}</div>
+                            : `<button class="btn btn-primary" onclick="switchTeam('${t._id}', '${t.inviteCode || ''}')">دخول</button><a class="btn btn-outline btn-sm" href="workspace-settings.html?id=${encodeURIComponent(t._id)}">إعدادات</a>${t.role === 'owner' ? `<button class="btn btn-outline btn-sm" onclick="deleteTeam('${t._id}')">أرشفة</button>` : ''}`}</div>
                     </div>`;
                 }).join('');
             } catch (err) { if (sequence === loadSequence) showError('teamsList', err.message, loadTeams); }

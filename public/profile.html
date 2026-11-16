@@ -55,12 +55,12 @@
     <aside id="sidebar" class="shell-rail"></aside>
 
     <main class="main">
-        <a href="dashboard.html" class="back-link">← العودة للرئيسية</a>
+        <a href="settings.html" class="back-link">← الإعدادات</a>
         <h1 class="page-title">الملف الشخصي</h1>
         <div class="profile-grid">
             <div class="card avatar-section">
                 <h3>الصورة الشخصية</h3>
-                <img id="avatarLarge" class="avatar-large" src="" onclick="openLightbox(this.src)">
+                <img id="avatarLarge" class="avatar-large" alt="الصورة الشخصية" role="button" tabindex="0" onclick="openLightbox(this.src)" onkeydown="if (event.key === 'Enter') openLightbox(this.src)">
                 <p style="font-size:0.8rem;color:var(--text-muted);">اضغط للتكبير</p>
                 <div class="avatar-actions">
                     <input type="file" id="avatarInput" style="display:none;" accept="image/*" onchange="uploadAvatar()">
@@ -68,21 +68,26 @@
                     <button class="btn btn-outline btn-sm" onclick="removeAvatar()">🗑️ إزالة</button>
                 </div>
             </div>
-            <div class="card">
+            <div class="card" id="account">
                 <h3>تعديل البيانات</h3>
-                <div class="form-group"><label>الاسم الكامل</label><input type="text" class="input" id="fullName" onchange="saveProfile()"></div>
-                <div class="form-group"><label>البريد الإلكتروني</label><input type="email" class="input" id="email" onchange="saveProfile()"></div>
-                <p class="msg" id="profileMsg"></p>
+                <form id="profileForm" method="post">
+                    <div class="form-group"><label for="fullName">الاسم الكامل</label><input type="text" class="input" id="fullName" autocomplete="name" maxlength="120"></div>
+                    <div class="form-group"><label for="email">البريد الإلكتروني</label><input type="email" class="input" id="email" dir="ltr" autocomplete="email" maxlength="254"></div>
+                    <button id="saveProfileButton" class="btn btn-primary" type="submit" disabled>حفظ البيانات</button>
+                </form>
+                <p class="msg" id="profileMsg" role="status"></p>
             </div>
-            <div class="card">
+            <div class="card" id="password">
                 <h3>تغيير كلمة المرور</h3>
-                <div class="form-group"><label>الحالية</label><input type="password" class="input" id="currentPassword"></div>
-                <div class="form-group"><label>الجديدة</label><input type="password" class="input" id="newPassword"></div>
-                <div class="form-group"><label>التأكيد</label><input type="password" class="input" id="confirmPassword"></div>
-                <button class="btn btn-primary" onclick="changePassword()" style="width:100%;">تغيير</button>
-                <p class="msg" id="passwordMsg"></p>
+                <form id="passwordForm" method="post">
+                    <div class="form-group"><label for="currentPassword">الحالية</label><input type="password" class="input" id="currentPassword" autocomplete="current-password" required></div>
+                    <div class="form-group"><label for="newPassword">الجديدة</label><input type="password" class="input" id="newPassword" autocomplete="new-password" minlength="8" required></div>
+                    <div class="form-group"><label for="confirmPassword">التأكيد</label><input type="password" class="input" id="confirmPassword" autocomplete="new-password" minlength="8" required></div>
+                    <button class="btn btn-primary" type="submit">تغيير كلمة المرور</button>
+                </form>
+                <p class="msg" id="passwordMsg" role="status"></p>
             </div>
-            <div class="card">
+            <div class="card" id="security">
                 <h3>سجل الأمان</h3>
                 <div class="security-log" id="securityLog"><p style="color:var(--text-muted);text-align:center;">جارٍ التحميل...</p></div>
             </div>
@@ -97,29 +102,39 @@
         const API = Nivora.apiBase;
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'login.html';
-        let user = JSON.parse(localStorage.getItem('user') || '{}');
+        let user = Nivora.user();
+        const profileForm = document.getElementById('profileForm');
+        const passwordForm = document.getElementById('passwordForm');
+        profileForm.addEventListener('submit', event => { event.preventDefault(); void saveProfile(); });
+        passwordForm.addEventListener('submit', event => { event.preventDefault(); void changePassword(); });
 
         async function loadProfile() {
             try {
                 const res = await fetch(`${API}/auth/profile`, { headers: { 'Authorization': `Bearer ${token}` } });
                 if (res.ok) { user = await res.json(); localStorage.setItem('user', JSON.stringify(user)); }
-            } catch (err) {}
+                if (res.status === 401) { location.replace('login.html'); return; }
+                if (res.ok) document.getElementById('saveProfileButton').disabled = false;
+                else showToast('تعذر تحميل بيانات الحساب', 'error');
+            } catch (err) { showToast('تعذر تحميل بيانات الحساب', 'error'); }
             document.getElementById('fullName').value = user.fullName || '';
             document.getElementById('email').value = user.email || user.username || '';
             document.getElementById('avatarLarge').src = user.avatar || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="35" r="20" fill="%2394A3B8"/><ellipse cx="50" cy="80" rx="35" ry="25" fill="%2394A3B8"/></svg>';
-            loadSecurityLog();
         }
 
         async function saveProfile() {
             const fullName = document.getElementById('fullName').value.trim();
             const email = document.getElementById('email').value.trim();
             const msg = document.getElementById('profileMsg');
+            const button = profileForm.querySelector('button');
+            if (button.disabled) return;
+            button.disabled = true;
             try {
                 const res = await fetch(`${API}/auth/profile`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ fullName, email }) });
                 if (res.ok) { msg.className = 'msg success'; msg.textContent = 'تم الحفظ'; user.fullName = fullName; user.email = email; localStorage.setItem('user', JSON.stringify(user)); }
                 else { const d = await res.json(); msg.className = 'msg error'; msg.textContent = d.error || 'خطأ'; }
                 setTimeout(() => msg.className = 'msg', 3000);
-            } catch (err) { showToast('خطأ', 'error'); }
+            } catch (err) { showToast('خطأ في الاتصال', 'error'); }
+            finally { button.disabled = false; }
         }
 
         async function changePassword() {
@@ -130,12 +145,16 @@
             if (!current || !newP || !confirm) { msg.className = 'msg error'; msg.textContent = 'جميع الحقول مطلوبة'; return; }
             if (newP !== confirm) { msg.className = 'msg error'; msg.textContent = 'غير متطابقتين'; return; }
             if (newP.length < 8) { msg.className = 'msg error'; msg.textContent = '8 أحرف على الأقل'; return; }
+            const button = passwordForm.querySelector('button');
+            if (button.disabled) return;
+            button.disabled = true;
             try {
                 const res = await fetch(`${API}/auth/change-password`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ currentPassword: current, newPassword: newP }) });
                 if (res.ok) { msg.className = 'msg success'; msg.textContent = 'تم تغيير كلمة المرور. سجّل الدخول مجددًا.'; localStorage.removeItem('token'); setTimeout(() => location.href = 'login.html', 1000); document.getElementById('currentPassword').value = ''; document.getElementById('newPassword').value = ''; document.getElementById('confirmPassword').value = ''; }
                 else { const d = await res.json(); msg.className = 'msg error'; msg.textContent = d.error || 'خطأ'; }
                 setTimeout(() => msg.className = 'msg', 3000);
             } catch (err) { showToast('خطأ في الاتصال', 'error'); }
+            finally { button.disabled = false; }
         }
 
         async function uploadAvatar() {
@@ -170,7 +189,10 @@
             } catch (err) { document.getElementById('securityLog').innerHTML = '<p style="color:var(--text-muted);">تعذر التحميل</p>'; }
         }
 
-        loadProfile();
+        if (token) {
+            void loadProfile();
+            void loadSecurityLog();
+        }
     </script>
 </body>
 </html>

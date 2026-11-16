@@ -13,17 +13,13 @@ const ticketSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     subject: { type: String, required: true },
     message: { type: String, required: true },
+    contact: {
+        type: new mongoose.Schema({ name: String, phone: String, email: String }, { _id: false }),
+        default: undefined
+    },
     priority: { type: String, default: 'medium', enum: ['low', 'medium', 'high', 'urgent'] },
     status: { type: String, default: 'open', enum: ['open', 'in_progress', 'resolved', 'closed'] },
-    replies: [replySchema],
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: { type: Date, default: Date.now }
-});
-
-// تحديث updatedAt عند أي تعديل
-ticketSchema.pre('save', function(next) {
-    this.updatedAt = new Date();
-    next();
-});
+    replies: [replySchema]
+}, { timestamps: true });
 
 module.exports = mongoose.model('Ticket', ticketSchema);

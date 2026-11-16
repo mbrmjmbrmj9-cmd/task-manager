@@ -141,7 +141,7 @@
             const badgeClass = s => s === 'open' ? 'badge-open' : s === 'resolved' ? 'badge-resolved' : s === 'closed' ? 'badge-closed' : 'badge-in_progress';
             const statusText = s => s === 'open' ? 'مفتوحة' : s === 'resolved' ? 'محلولة' : s === 'closed' ? 'مغلقة' : 'قيد المعالجة';
             const priorityIcon = p => p === 'urgent' ? '🔴' : p === 'high' ? '🟠' : p === 'medium' ? '🟡' : '🟢';
-            document.getElementById('ticketBody').innerHTML = filtered.length === 0 ? '<tr><td colspan="6" style="text-align:center;padding:3rem;color:var(--text-light);">لا توجد تذاكر</td></tr>' : filtered.map(t => `<tr><td>${escapeHtml(t.organizationId?.name||'-')}</td><td>${escapeHtml(t.userId?.username||'-')}</td><td>${t.subject}</td><td>${priorityIcon(t.priority)}</td><td><span class="badge ${badgeClass(t.status)}">${statusText(t.status)}</span></td><td><button class="btn-view" onclick="openTicket('${t._id}')">👁️</button> <select onchange="updateTicket('${t._id}',this.value)"><option value="">تغيير...</option><option value="in_progress">🔵 قيد المعالجة</option><option value="resolved">✅ حل</option><option value="closed">🚫 إغلاق</option></select></td></tr>`).join('');
+            document.getElementById('ticketBody').innerHTML = filtered.length === 0 ? '<tr><td colspan="6" style="text-align:center;padding:3rem;color:var(--text-light);">لا توجد تذاكر</td></tr>' : filtered.map(t => `<tr><td>${escapeHtml(t.organizationId?.name||'-')}</td><td>${escapeHtml(t.contact?.name || t.userId?.username || '-')}</td><td>${escapeHtml(t.subject)}</td><td>${priorityIcon(t.priority)}</td><td><span class="badge ${badgeClass(t.status)}">${statusText(t.status)}</span></td><td><button class="btn-view" onclick="openTicket('${t._id}')">👁️</button> <select onchange="updateTicket('${t._id}',this.value)"><option value="">تغيير...</option><option value="in_progress">🔵 قيد المعالجة</option><option value="resolved">✅ حل</option><option value="closed">🚫 إغلاق</option></select></td></tr>`).join('');
         }
 
         async function openTicket(id) {
@@ -149,6 +149,7 @@
             try {
                 const res = await fetch(`${API}/tickets/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
                 const t = await res.json();
+                if (!res.ok) throw new Error(t.error);
 
                 document.getElementById('modalTicketSubject').textContent = t.subject;
 
@@ -158,7 +159,9 @@
                 document.getElementById('modalTicketBody').innerHTML = `
                     <div class="ticket-info">
                         <div class="info-row"><span class="info-label">المؤسسة:</span><span>${escapeHtml(t.organizationId?.name || '-')}</span></div>
-                        <div class="info-row"><span class="info-label">المستخدم:</span><span>${escapeHtml(t.userId?.username || '-')}</span></div>
+                        <div class="info-row"><span class="info-label">المستخدم:</span><span>${escapeHtml(t.contact?.name || t.userId?.username || '-')}</span></div>
+                        ${t.contact?.email ? `<div class="info-row"><span class="info-label">البريد الإلكتروني</span><a href="mailto:${encodeURIComponent(t.contact.email).replace('%40', '@')}">${escapeHtml(t.contact.email)}</a></div>` : ''}
+                        ${t.contact?.phone ? `<div class="info-row"><span class="info-label">الجوال</span><bdi>${escapeHtml(t.contact.phone)}</bdi></div>` : ''}
                         <div class="info-row"><span class="info-label">الأولوية:</span><span>${priorityText}</span></div>
                         <div class="info-row"><span class="info-label">الحالة:</span><span>${t.status === 'open' ? 'مفتوحة' : t.status === 'in_progress' ? 'قيد المعالجة' : t.status === 'resolved' ? 'محلولة' : 'مغلقة'}</span></div>
                         <div class="info-row"><span class="info-label">التاريخ:</span><span>${new Date(t.createdAt).toLocaleString('ar-SA')}</span></div>
@@ -169,8 +172,8 @@
                         ${replies.length === 0 ? '<p style="color:var(--text-light);text-align:center;">لا توجد ردود بعد</p>' : replies.map(r => `<div class="reply-item ${r.isAdmin ? 'reply-admin' : 'reply-user'}"><strong>${escapeHtml(r.username)}</strong>: ${escapeHtml(r.text)}<div class="reply-meta">${new Date(r.createdAt).toLocaleString('ar-SA')}</div></div>`).join('')}
                     </div>
                     <div class="reply-input-row">
-                        <input type="text" id="replyInput" placeholder="اكتب ردًا...">
-                        <button class="btn-reply" onclick="sendReply()">إرسال</button>
+                        <input type="text" id="replyInput" aria-label="${t.contact ? 'ملاحظة داخلية' : 'الرد'}" placeholder="${t.contact ? 'اكتب ملاحظة داخلية' : 'اكتب ردًا...'}">
+                        <button class="btn-reply" onclick="sendReply()">${t.contact ? 'حفظ ملاحظة' : 'إرسال'}</button>
                     </div>
                 `;
 
@@ -182,10 +185,11 @@
             const input = document.getElementById('replyInput');
             const text = input.value.trim();
             if (!text || !currentTicketId) return;
-            await fetch(`${API}/tickets/${currentTicketId}/reply`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ text }) });
-            showToast('تم إرسال الرد', 'success');
-            openTicket(currentTicketId);
-            loadTickets();
+            try {
+                await Nivora.api('/admin/tickets/' + currentTicketId + '/reply', { method: 'POST', admin: true, data: { text } });
+                showToast('تم الحفظ', 'success');
+                openTicket(currentTicketId);
+            } catch (error) { showToast(error.message, 'error'); }
         }
 
         async function updateTicket(id, status) {

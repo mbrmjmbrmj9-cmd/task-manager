@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
+    <title>Nivora | الإعدادات</title>
+    <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/workspace.css">
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/settings.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+    <script>if (!localStorage.getItem('token')) location.replace('login.html');</script>
+    <script src="js/config.js" defer></script>
+    <script src="js/theme.js" defer></script>
+    <script src="js/settings.js" defer></script>
+</head>
+<body class="workspace-shell" data-ui="app">
+    <main class="workspace-content">
+        <header class="topbar">
+            <div><h1>الإعدادات</h1><p class="page-desc">إدارة حسابك ومظهر التطبيق ومساحات العمل.</p></div>
+        </header>
+        <div class="settings-layout">
+            <section class="workspace-panel settings-panel" aria-labelledby="accountHeading">
+                <h2 id="accountHeading">الحساب والأمان</h2>
+                <ul class="settings-list">
+                    <li><a href="profile.html#account"><strong>الملف الشخصي</strong><span>الاسم والبريد والصورة الشخصية</span></a></li>
+                    <li><a href="profile.html#password"><strong>كلمة المرور</strong><span>تغيير كلمة مرور الحساب</span></a></li>
+                    <li><a href="profile.html#security"><strong>سجل الأمان</strong><span>نشاط الدخول وتغييرات كلمة المرور</span></a></li>
+                </ul>
+            </section>
+            <section class="workspace-panel settings-panel" aria-labelledby="appearanceHeading">
+                <h2 id="appearanceHeading">المظهر</h2>
+                <fieldset class="settings-appearance">
+                    <legend>وضع الألوان</legend>
+                    <div>
+                        <label><input type="radio" name="appearance" value="light"> فاتح</label>
+                        <label><input type="radio" name="appearance" value="dark"> داكن</label>
+                    </div>
+                    <p>يُحفظ اختيارك على هذا المتصفح.</p>
+                </fieldset>
+            </section>
+            <section class="workspace-panel settings-panel" aria-labelledby="workHeading">
+                <h2 id="workHeading">مساحات العمل والمشاريع</h2>
+                <ul class="settings-list">
+                    <li><a id="workspaceSettings" href="teams.html"><strong>إعدادات مساحة العمل</strong><span id="workspaceHint">اختر مساحة عمل لإدارة إعداداتها</span></a></li>
+                    <li><a id="projectSettings" href="projects.html"><strong>إعدادات المشاريع</strong><span>افتح المشروع المطلوب لإدارة ميزاته وعرضه</span></a></li>
+                    <li><a href="plans.html"><strong>الخطط والاشتراك</strong><span>الخطط المتاحة وميزات كل خطة</span></a></li>
+                </ul>
+            </section>
+            <section class="workspace-panel settings-panel" aria-labelledby="dataHeading">
+                <h2 id="dataHeading">البيانات والدعم</h2>
+                <ul class="settings-list">
+                    <li><button id="exportBackup" type="button"><strong>تنزيل نسخة شخصية</strong><span>المشاريع والمهام الشخصية والقوالب ومسارات العمل</span></button></li>
+                    <li><a href="privacy.html"><strong>سياسة الخصوصية</strong></a></li>
+                    <li><a href="terms.html"><strong>شروط الاستخدام</strong></a></li>
+                    <li><a href="contact.html"><strong>تواصل معنا</strong></a></li>
+                </ul>
+                <p class="workspace-status" id="backupStatus" role="status" hidden></p>
+            </section>
+        </div>
+    </main>
+</body>
+</html>

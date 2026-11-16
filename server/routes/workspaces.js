@@ -138,13 +138,23 @@ router.post('/:id/invite/rotate', requireRole('owner', 'admin'), async (req, res
     res.json({ inviteCode: req.workspace.inviteCode });
 });
 
-router.get('/:id/usage', requireTenantAccess, async (req, res) => {
-    const { _id, plan, maxMembers, maxProjects, members } = req.workspace;
+async function workspaceUsage({ _id, plan, maxMembers, maxProjects, members }) {
     const currentProjects = await Project.countDocuments({ workspaceId: _id, status: { $ne: 'archived' } });
-    res.json({
+    return {
         workspaceId: _id, plan, maxMembers, maxProjects, currentMembers: members.length, currentProjects,
         membersRemaining: Math.max(0, maxMembers - members.length), projectsRemaining: Math.max(0, maxProjects - currentProjects)
-    });
+    };
+}
+
+router.get('/:id/usage', requireTenantAccess, async (req, res) => {
+    res.json(await workspaceUsage(req.workspace));
+});
+
+router.get('/:id/settings', requireTenantAccess, async (req, res) => {
+    const { name, inviteCode } = req.workspace;
+    const role = req.memberRole;
+    res.json({ name, role, inviteCode: role === 'owner' || role === 'admin' ? inviteCode : undefined,
+        usage: await workspaceUsage(req.workspace) });
 });
 
 router.patch('/:id/plan', requireRole('owner'), async (req, res) => {

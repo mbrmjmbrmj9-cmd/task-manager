@@ -1,0 +1,26 @@
+.information-content { max-inline-size: 780px; }
+.information-panel { padding: clamp(16px, 4vw, 36px); }
+.information-panel h1 {
+    margin: 0 0 8px;
+    font-size: clamp(1.6rem, 4vw, 2.1rem);
+    line-height: 1.35;
+}
+.information-panel > p, .information-panel section p, .information-panel li { color: var(--muted); }
+.information-panel p + p { margin-block-start: 10px; }
+.information-panel section {
+    margin-block-start: 22px;
+    padding-block-start: 16px;
+    border-block-start: 1px solid var(--stroke);
+}
+.information-panel h2 { margin: 0 0 6px; font-size: 1.12rem; }
+.information-panel ul { padding-inline-start: 24px; }
+.information-panel a { overflow-wrap: anywhere; }
+.information-panel section > .workspace-button { margin-block-start: 12px; }
+.information-form { display: grid; gap: 15px; margin-block-start: 22px; }
+.information-form > p:not(.workspace-status) { color: var(--muted); font-size: .9rem; }
+.information-form .workspace-status { margin: 0; }
+.information-form .workspace-input { font-size: 1rem; }
+@media (max-width: 450px) {
+    .workspace-top:has(+ .information-content) { padding-inline: 12px; }
+    .workspace-top:has(+ .information-content) nav a { white-space: nowrap; }
+}
