@@ -6,7 +6,6 @@
     <title>Nivora | تفاصيل المهمة</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#2563EB">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
         :root { --sidebar-w: 240px; }
@@ -71,34 +70,20 @@
         @media (max-width: 1024px) { :root { --sidebar-w: 72px; } .sidebar { padding: 1rem 0.5rem; } .sidebar .logo { font-size: 1rem; text-align: center; } .sidebar .label, .sidebar .logo span { display: none; } .sidebar a { justify-content: center; padding: 0.5rem; } }
         @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 0.75rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } .tabs { padding-bottom: 0.25rem; } .tab { font-size: 0.75rem; padding: 0.5rem 0.6rem; } .task-header .title-input { font-size: 1.1rem; } .task-header .meta { flex-direction: column; gap: 0.25rem; font-size: 0.75rem; } .add-row { flex-direction: column; } .add-row input, .add-row select { width: 100%; } .detail-grid { grid-template-columns: 1fr; } }
     </style>
+<script src="js/config.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/theme.css">
+    <script src="js/theme.js" defer></script>
 </head>
-<body>
+<body data-ui="app">
     <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
 
-    <aside class="sidebar" id="sidebar">
-    <div class="logo">
-        <img src="img/logo.svg" alt="Nivora" class="logo-img">
-        <span>Nivora</span>
-    </div>
-    <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="label">لوحة القيادة</span></a>
-    <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg><span class="label">المهام</span></a>
-    <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">المشاريع</span></a>
-    <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg><span class="label">Kanban</span></a>
-    <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">Gantt</span></a>
-    <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
-    <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
-    <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg><span class="label">Workflows</span></a>
-    <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">القوالب</span></a>
-    <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg><span class="label">الأرشيف</span></a>
-    <a href="chat.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="label">المحادثة</span></a>
-    <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
-    <a href="teams.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">فرق العمل</span></a>
-</aside>
+    <aside id="sidebar" class="shell-rail"></aside>
 
     <main class="main">
         <a href="tasks.html" class="back-link">← العودة للمهام</a>
         <div class="task-header">
-            <input type="text" class="title-input" id="taskTitle" value="..." onchange="saveField('title', this.value)">
+            <h1 id="taskHeading">تفاصيل المهمة</h1>
             <div class="meta">
                 <span id="taskStatus"></span>
                 <span id="taskPriority"></span>
@@ -122,11 +107,15 @@
         <div class="tab-content active" id="tab-overview">
             <div class="card">
                 <div class="detail-section">
+                    <label for="taskTitle">عنوان المهمة</label>
+                    <input type="text" class="input" id="taskTitle" maxlength="200" onchange="saveField('title', this.value)">
+                </div>
+                <div class="detail-section">
                     <label>📝 الوصف</label>
                     <textarea class="textarea" id="taskDescInput" onchange="saveField('description', this.value)" placeholder="اكتب وصفاً للمهمة..."></textarea>
                 </div>
                 <div class="detail-grid">
-                    <div class="detail-section"><label>👤 المسؤول</label><input type="text" class="input" id="assigneeInput" onchange="saveField('assignee', this.value)" placeholder="اسم المسؤول"></div>
+                    <div class="detail-section"><label for="assigneeInput">المسؤول</label><select class="input" id="assigneeInput" onchange="selectAssignee(this.value)"></select></div>
                     <div class="detail-section"><label>📅 تاريخ الاستحقاق</label><input type="date" class="input" id="dueDateInput" onchange="saveField('dueDate', this.value)"></div>
                     <div class="detail-section"><label>📅 تاريخ البداية</label><input type="date" class="input" id="startDateInput" onchange="saveField('startDate', this.value)"></div>
                 </div>
@@ -244,19 +233,11 @@
         </div>
     </main>
 
-    <nav class="bottom-nav">
-        <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>الرئيسية</a>
-        <a href="tasks.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg>مهام</a>
-        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg>Kanban</a>
-        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>فريق</a>
-        <a href="#" onclick="openSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>المزيد</a>
-    </nav>
-
     <script src="js/components.js"></script>
     <script>
         function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
         function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
-        const API_BASE = 'https://nivora-t9ov.onrender.com/api';
+        const API_BASE = Nivora.apiBase;
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'login.html';
         const params = new URLSearchParams(window.location.search);
@@ -277,64 +258,95 @@
         async function loadTask() {
             try {
                 const res = await fetch(`${API_BASE}/tasks/${taskId}`, { headers: { 'Authorization': `Bearer ${token}` } });
-                taskData = await res.json();
+                taskData = await Nivora.read(res);
                 document.getElementById('taskTitle').value = taskData.title;
+                document.getElementById('taskHeading').textContent = taskData.title;
                 document.getElementById('taskDescInput').value = taskData.description || '';
-                document.getElementById('assigneeInput').value = taskData.assignee || '';
-                document.getElementById('dueDateInput').value = taskData.dueDate ? new Date(taskData.dueDate).toISOString().split('T')[0] : '';
-                document.getElementById('startDateInput').value = taskData.startDate ? new Date(taskData.startDate).toISOString().split('T')[0] : '';
+                loadAssignees();
+                document.getElementById('dueDateInput').value = Nivora.taskDateKey(taskData.dueDate);
+                document.getElementById('startDateInput').value = Nivora.taskDateKey(taskData.startDate);
                 document.getElementById('taskStatus').innerHTML = statusBadge(taskData.status);
                 document.getElementById('taskPriority').innerHTML = priorityBadge(taskData.priority);
                 document.getElementById('taskProject').textContent = '📁 ' + (taskData.project || 'بدون مشروع');
                 document.getElementById('taskDueDate').textContent = '📅 ' + (taskData.dueDate ? formatDate(taskData.dueDate) : 'بدون تاريخ');
                 document.getElementById('taskProgress').textContent = '📊 ' + taskData.progress + '%';
-                const recurToggle = document.getElementById('recurToggle');
-                if (taskData.isRecurring) recurToggle.classList.add('on'); else recurToggle.classList.remove('on');
+
                 document.querySelectorAll('#priorityOptions .opt-btn').forEach(b => { b.classList.remove('sel'); if (b.textContent.includes(taskData.priority === 'critical' ? 'حرجة' : taskData.priority === 'high' ? 'عالية' : taskData.priority === 'medium' ? 'متوسطة' : 'منخفضة')) b.classList.add('sel'); });
                 document.querySelectorAll('#statusOptions .opt-btn').forEach(b => { b.classList.remove('sel'); const statusLabels = { 'new': 'جديدة', 'in-progress': 'قيد التنفيذ', 'review': 'مراجعة', 'done': 'مكتملة', 'blocked': 'متعثرة' }; if (b.textContent.includes(statusLabels[taskData.status] || '')) b.classList.add('sel'); });
                 renderChecklist();
                 renderAttachments();
                 renderComments();
                 renderFollowers();
-                renderDependencies();
+                renderDependencies().catch(error => showToast(error.message, 'error'));
                 renderActivity();
-                loadSubtasks();
+
+                loadSubtasks().catch(error => showToast(error.message, 'error'));
             } catch (err) { showToast('تعذر تحميل المهمة', 'error'); }
         }
 
+        async function changeTask(path, method, data, success) {
+            try {
+                await Nivora.api(path, { method, data });
+                if (success) showToast(success, 'success');
+                loadTask();
+                return true;
+            } catch (error) { showToast(error.message, 'error'); return false; }
+        }
         async function saveField(field, value) {
             if (!taskData) return;
-            await fetch(`${API_BASE}/tasks/${taskId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ [field]: value }) });
-            showToast('تم الحفظ', 'success');
-            loadTask();
+            await changeTask('/tasks/' + taskId, 'PATCH', { [field]: value }, 'تم الحفظ');
         }
-
-        async function toggleRecur() { const v = !taskData.isRecurring; await saveField('isRecurring', v); }
+        async function loadAssignees() {
+            const select = document.getElementById('assigneeInput');
+            select.replaceChildren(new Option('دون إسناد', ''));
+            if (taskData.assignee && !taskData.assigneeId) select.add(new Option(taskData.assignee, 'legacy'));
+            select.value = taskData.assigneeId || (taskData.assignee ? 'legacy' : '');
+            select.disabled = !taskData.workspaceId;
+            if (!taskData.workspaceId) return;
+            try {
+                const members = await Nivora.api('/workspaces/' + taskData.workspaceId + '/members');
+                for (const {userId: member} of members) if (member && member.isActive !== false) select.add(new Option(member.fullName || member.username, member._id));
+                if (taskData.assigneeId && !Array.from(select.options).some(option => option.value === taskData.assigneeId)) select.add(new Option(taskData.assignee || 'عضو سابق', taskData.assigneeId));
+                select.value = taskData.assigneeId || (taskData.assignee ? 'legacy' : '');
+            } catch (error) { select.disabled = true; showToast(error.message, 'error'); }
+        }
+        function selectAssignee(value) { if (value !== 'legacy') saveField('assigneeId', value || null); }
 
         function renderChecklist() {
             const items = taskData.checklist || [];
             document.getElementById('checklistItems').innerHTML = items.length === 0 ? '<div class="empty-state"><div class="empty-icon">✅</div><p>لا توجد بنود</p></div>' : items.map(item => `
                 <div class="checklist-item ${item.done ? 'done' : ''}">
                     <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleChecklistItem('${item._id}', this.checked)">
-                    <span>${item.text}</span>
+                    <span>${escapeHtml(item.text)}</span>
                 </div>`).join('');
         }
 
         function renderAttachments() {
-            const atts = taskData.attachments || [];
-            document.getElementById('attachmentsList').innerHTML = atts.length === 0 ? '<div class="empty-state"><div class="empty-icon">📎</div><p>لا توجد مرفقات</p></div>' : atts.map(a => `
-                <div class="attachment-item">
-                    <span>📎</span><a href="${a.url}" target="_blank">${a.name}</a>
-                    <button class="btn-delete-sm" style="margin-right:auto;" onclick="deleteAttachment('${a._id}')">🗑️</button>
-                </div>`).join('');
+            const list = document.getElementById('attachmentsList');
+            list.replaceChildren();
+            for (const file of taskData.attachments || []) {
+                const row = document.createElement('div'); row.className = 'attachment-item';
+                const filename = document.createElement('button'); filename.type = 'button'; filename.className = 'btn btn-outline btn-sm'; filename.textContent = file.name;
+                filename.addEventListener('click', async () => {
+                    try {
+                        const legacy = Nivora.externalUrl(file.url);
+                        if (legacy && !new URL(legacy).pathname.startsWith('/uploads/')) window.open(legacy, '_blank', 'noopener,noreferrer');
+                        else await Nivora.download('/api/tasks/' + taskId + '/attachments/' + file._id + '/download', file.name);
+                    } catch (error) { showToast(error.message, 'error'); }
+                });
+                const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'btn-delete-sm'; remove.textContent = 'حذف';
+                remove.addEventListener('click', () => deleteAttachment(file._id));
+                row.append(filename, remove); list.append(row);
+            }
+            if (!list.childElementCount) list.textContent = 'لا توجد مرفقات.';
         }
 
         function renderComments() {
             const comments = taskData.comments || [];
             document.getElementById('commentsList').innerHTML = comments.length === 0 ? '<div class="empty-state"><div class="empty-icon">💬</div><p>لا توجد تعليقات</p></div>' : comments.map(c => `
                 <div class="comment">
-                    <div class="comment-user">${c.username || 'مستخدم'}</div>
-                    <div class="comment-text">${c.text}</div>
+                    <div class="comment-user">${escapeHtml(c.username || 'مستخدم')}</div>
+                    <div class="comment-text">${escapeHtml(c.text)}</div>
                     <div class="comment-time">${formatDateTime(c.createdAt)}</div>
                 </div>`).join('');
         }
@@ -346,61 +358,54 @@
         }
 
         async function renderDependencies() {
-            const allTasks = await fetch(`${API_BASE}/tasks`, { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json());
+            const allTasks = await Nivora.api('/tasks', { params: taskData.projectId ? { projectId: taskData.projectId } : { workspaceId: taskData.workspaceId } });
             const deps = taskData.dependencies || [];
             document.getElementById('dependenciesList').innerHTML = deps.length === 0 ? '<div class="empty-state"><div class="empty-icon">🔗</div><p>لا توجد تبعيات</p></div>' : deps.map(d => {
                 const linked = allTasks.find(t => t._id === d.taskId);
-                return `<div class="attachment-item"><span>🔗</span><span>${linked ? linked.title : d.taskId}</span><span style="font-size:0.75rem;color:var(--text-light);">${d.type}</span><button class="btn-delete-sm" style="margin-right:auto;" onclick="deleteDependency('${d._id}')">🗑️</button></div>`;
+                return `<div class="attachment-item"><span>🔗</span><span>${escapeHtml(linked ? linked.title : d.taskId)}</span><span style="font-size:0.75rem;color:var(--text-light);">${d.type}</span><button class="btn-delete-sm" style="margin-right:auto;" onclick="deleteDependency('${d._id}')">🗑️</button></div>`;
             }).join('');
-            document.getElementById('depTaskSelect').innerHTML = '<option value="">اختر مهمة...</option>' + allTasks.filter(t => t._id !== taskData._id).map(t => `<option value="${t._id}">${t.title}</option>`).join('');
+            document.getElementById('depTaskSelect').innerHTML = '<option value="">اختر مهمة...</option>' + allTasks.filter(t => t._id !== taskData._id).map(t => `<option value="${t._id}">${escapeHtml(t.title)}</option>`).join('');
         }
 
         function renderActivity() {
             const activity = taskData.activity || [];
             document.getElementById('activityList').innerHTML = activity.length === 0 ? '<div class="empty-state"><div class="empty-icon">📜</div><p>لا يوجد نشاط</p></div>' : activity.reverse().map(a => `
-                <div class="activity-item"><strong>${a.username || 'مستخدم'}</strong> - ${a.action} - ${a.details || ''}<br><small style="color:var(--text-muted);">${formatDateTime(a.createdAt)}</small></div>`).join('');
+                <div class="activity-item"><strong>${escapeHtml(a.username || 'مستخدم')}</strong> - ${escapeHtml(a.action)} - ${escapeHtml(a.details || '')}<br><small style="color:var(--text-muted);">${formatDateTime(a.createdAt)}</small></div>`).join('');
         }
 
         async function addChecklistItem() { const input = document.getElementById('checklistInput'); const text = input.value.trim(); if (!text) return; await fetch(`${API_BASE}/tasks/${taskId}/checklist`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ text }) }); input.value = ''; showToast('تمت الإضافة', 'success'); loadTask(); }
         async function toggleChecklistItem(itemId, done) { await fetch(`${API_BASE}/tasks/${taskId}/checklist/${itemId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ done }) }); loadTask(); }
-        async function uploadFile() {
-            const file = document.getElementById('fileInput').files[0]; if (!file) return;
-            document.getElementById('uploadStatus').textContent = 'جاري الرفع...';
-            const fd = new FormData(); fd.append('file', file);
-            const res = await fetch(`${API_BASE}/upload`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: fd });
-            const data = await res.json();
-            if (res.ok) { await fetch(`${API_BASE}/tasks/${taskId}/attachments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(data) }); document.getElementById('uploadStatus').textContent = ''; showToast('تم رفع الملف', 'success'); loadTask(); }
+        async function uploadTaskFile(file) {
+            if (!file || !taskData) return;
+            const status = document.getElementById('uploadStatus');
+            if (status.textContent) return;
+            status.textContent = 'جارٍ الرفع…';
+            try { await changeTask('/tasks/' + taskId + '/attachments/upload', 'POST', Nivora.uploadData(file), 'رُفع الملف'); }
+            finally { status.textContent = ''; document.getElementById('fileInput').value = ''; }
         }
-        async function dropFile(e) {
-            e.preventDefault(); e.currentTarget.classList.remove('drag-over');
-            const file = e.dataTransfer.files[0]; if (!file) return;
-            document.getElementById('uploadStatus').textContent = 'جاري الرفع...';
-            const fd = new FormData(); fd.append('file', file);
-            const res = await fetch(`${API_BASE}/upload`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: fd });
-            const data = await res.json();
-            if (res.ok) { await fetch(`${API_BASE}/tasks/${taskId}/attachments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(data) }); document.getElementById('uploadStatus').textContent = ''; showToast('تم رفع الملف', 'success'); loadTask(); }
-        }
-        function deleteAttachment(attId) { confirmDialog({ title: 'حذف المرفق', message: 'حذف هذا المرفق؟', confirmText: 'حذف', danger: true, onConfirm: async () => { await fetch(`${API_BASE}/tasks/${taskId}/attachments/${attId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); showToast('تم الحذف', 'success'); loadTask(); } }); }
-        async function addComment() { const input = document.getElementById('commentInput'); const text = input.value.trim(); if (!text) return; await fetch(`${API_BASE}/tasks/${taskId}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ text }) }); input.value = ''; showToast('تمت إضافة التعليق', 'success'); loadTask(); }
+        function uploadFile() { uploadTaskFile(document.getElementById('fileInput').files[0]); }
+        function dropFile(event) { event.preventDefault(); event.currentTarget.classList.remove('drag-over'); uploadTaskFile(event.dataTransfer.files[0]); }
+        function deleteAttachment(id) { confirmDialog({ title: 'حذف المرفق', message: 'هل تريد حذف هذا المرفق؟', confirmText: 'حذف', onConfirm: () => changeTask('/tasks/' + taskId + '/attachments/' + id, 'DELETE', undefined, 'حُذف المرفق') }); }
+        async function addComment() { const input = document.getElementById('commentInput'); const text = input.value.trim(); if (text && await changeTask('/tasks/' + taskId + '/comments', 'POST', { text }, 'أُضيف التعليق')) input.value = ''; }
         async function addFollower() { const input = document.getElementById('followerInput'); const name = input.value.trim(); if (!name) return; const followers = [...(taskData.followers || []), name]; await fetch(`${API_BASE}/tasks/${taskId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ followers }) }); input.value = ''; showToast('تمت الإضافة', 'success'); loadTask(); }
         async function removeFollower(index) { const followers = [...taskData.followers]; followers.splice(index, 1); await fetch(`${API_BASE}/tasks/${taskId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ followers }) }); loadTask(); }
-        async function addDependency() { const depTaskId = document.getElementById('depTaskSelect').value; const type = document.getElementById('depType').value; if (!depTaskId) return; await fetch(`${API_BASE}/tasks/${taskId}/dependencies`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ taskId: depTaskId, type }) }); showToast('تمت الإضافة', 'success'); loadTask(); }
-        function deleteDependency(depId) { confirmDialog({ title: 'حذف التبعية', message: 'حذف هذه التبعية؟', confirmText: 'حذف', danger: true, onConfirm: async () => { await fetch(`${API_BASE}/tasks/${taskId}/dependencies/${depId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); loadTask(); } }); }
+        async function addDependency() { const linked = document.getElementById('depTaskSelect').value; if (linked) await changeTask('/tasks/' + taskId + '/dependencies', 'POST', { taskId: linked, type: document.getElementById('depType').value }, 'أُضيفت التبعية'); }
+        function deleteDependency(id) { confirmDialog({ title: 'حذف التبعية', message: 'هل تريد حذف هذه التبعية؟', confirmText: 'حذف', onConfirm: () => changeTask('/tasks/' + taskId + '/dependencies/' + id, 'DELETE') }); }
 
         function showAddSubtask() { document.getElementById('addSubtaskForm').style.display = 'block'; document.getElementById('subtaskTitle').focus(); }
         function hideAddSubtask() { document.getElementById('addSubtaskForm').style.display = 'none'; document.getElementById('subtaskTitle').value = ''; document.getElementById('subtaskAssignee').value = ''; document.getElementById('subtaskDueDate').value = ''; }
         async function loadSubtasks() {
             const res = await fetch(`${API_BASE}/tasks/${taskId}/subtasks`, { headers: { 'Authorization': `Bearer ${token}` } });
-            const subtasks = await res.json();
+            const subtasks = await Nivora.read(res);
             const container = document.getElementById('subtasksList');
             if (subtasks.length === 0) { container.innerHTML = '<div class="empty-state"><div class="empty-icon">📑</div><p>لا توجد مهام فرعية</p></div>'; return; }
             container.innerHTML = subtasks.map(st => `
                 <div class="subtask-item">
                     <input type="checkbox" ${st.status === 'done' ? 'checked' : ''} onchange="toggleSubtaskStatus('${st._id}', this.checked)" style="width:18px;height:18px;cursor:pointer;flex-shrink:0;">
                     <div style="flex:1;min-width:0;">
-                        <div style="font-weight:600;font-size:0.85rem;${st.status === 'done' ? 'text-decoration:line-through;color:var(--text-muted);' : ''}">${st.title}</div>
+                        <div style="font-weight:600;font-size:0.85rem;${safeColor(st.status === 'done' ? 'text-decoration:line-through;color:var(--text-muted);' : '')}">${escapeHtml(st.title)}</div>
                         <div style="display:flex;gap:0.75rem;font-size:0.7rem;color:var(--text-muted);margin-top:0.25rem;flex-wrap:wrap;">
-                            ${st.assignee ? `<span>👤 ${st.assignee}</span>` : ''}
+                            ${st.assignee ? `<span>👤 ${escapeHtml(st.assignee)}</span>` : ''}
                             ${st.dueDate ? `<span>📅 ${formatDate(st.dueDate)}</span>` : ''}
                             ${priorityBadge(st.priority)}
                         </div>
@@ -435,7 +440,7 @@
         if (activeTab) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            const targetTab = document.querySelector(`.tab[data-tab="${activeTab}"]`);
+            const targetTab = [...document.querySelectorAll('.tab')].find(tab => tab.dataset.tab === activeTab);
             const targetContent = document.getElementById(`tab-${activeTab}`);
             if (targetTab) targetTab.classList.add('active');
             if (targetContent) targetContent.classList.add('active');
@@ -462,7 +467,7 @@ function renderNotifications() {
     }
     container.innerHTML = notifications.slice(0, 20).map(n => `
         <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border-light);cursor:pointer;${n.isRead ? '' : 'background:var(--primary-light);'}" onclick="readNotification('${n._id}')">
-            <div style="font-size:0.85rem;font-weight:600;">${n.message}</div>
+            <div style="font-size:0.85rem;font-weight:600;">${escapeHtml(n.message)}</div>
             <div style="font-size:0.7rem;color:var(--text-muted);margin-top:0.2rem;">${timeAgo(n.createdAt)}</div>
         </div>
     `).join('');

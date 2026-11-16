@@ -1,59 +1,50 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+    <link rel="stylesheet" href="../css/style.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nivora | الإشعارات</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { display: flex; min-height: 100vh; background: #0F172A; font-family: 'Cairo', sans-serif; color: #fff; }
-        .sidebar { width: 240px; background: #1E293B; padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 200; transition: right 0.3s ease; overflow-y: auto; }
+        body { display: flex; min-height: 100vh; background: var(--bg); font-family: 'Cairo', sans-serif; color: var(--text); }
+        .sidebar { width: 240px; background: var(--card); padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 200; transition: right 0.3s ease; overflow-y: auto; }
         .sidebar .logo { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1.5rem; padding: 0 0.75rem; }
         .sidebar .logo img { width: 34px; height: 34px; flex-shrink: 0; }
         .sidebar .logo span { color: #EF4444; font-weight: 800; font-size: 1rem; }
-        .sidebar a { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.75rem; color: #94A3B8; text-decoration: none; border-radius: 8px; margin-bottom: 0.2rem; font-size: 0.9rem; transition: all 0.15s; }
-        .sidebar a:hover, .sidebar a.active { background: #334155; color: #fff; }
+        .sidebar a { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.75rem; color: var(--text-light); text-decoration: none; border-radius: 8px; margin-bottom: 0.2rem; font-size: 0.9rem; transition: all 0.15s; }
+        .sidebar a:hover, .sidebar a.active { background: var(--border); color: var(--text); }
         .main { margin-right: 240px; flex: 1; padding: 2rem; }
         .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem; }
         .topbar h1 { font-size: 1.4rem; font-weight: 800; }
         .btn-delete-all { background: rgba(239,68,68,0.15); color: #EF4444; border: none; border-radius: 8px; padding: 0.5rem 1rem; cursor: pointer; font-family: inherit; font-size: 0.8rem; font-weight: 600; transition: all 0.15s; }
-        .btn-delete-all:hover { background: #EF4444; color: #fff; }
-        .notif-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1rem; background: #1E293B; border: 1px solid #334155; border-radius: 10px; margin-bottom: 0.5rem; }
+        .btn-delete-all:hover { background: #EF4444; color: var(--text); }
+        .notif-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1rem; background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 0.5rem; }
         .notif-item.read { opacity: 0.5; }
         .notif-icon { font-size: 1.5rem; flex-shrink: 0; }
         .notif-content { flex: 1; }
         .notif-text { font-size: 0.9rem; }
-        .notif-time { color: #64748B; font-size: 0.75rem; margin-top: 0.2rem; }
+        .notif-time { color: var(--text-muted); font-size: 0.75rem; margin-top: 0.2rem; }
         .btn-delete { background: none; border: none; color: #EF4444; cursor: pointer; font-size: 0.9rem; padding: 0.25rem; }
-        .btn-delete:hover { color: #fff; }
+        .btn-delete:hover { color: var(--text); }
         .btn-mark { background: none; border: none; color: #3B82F6; cursor: pointer; font-size: 0.8rem; padding: 0.25rem 0.5rem; font-family: inherit; }
-        .empty-state { text-align: center; padding: 3rem; color: #94A3B8; }
+        .empty-state { text-align: center; padding: 3rem; color: var(--text-light); }
         .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
         .admin-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; }
         .admin-overlay.show { display: block; }
-        .admin-menu-btn { display: none; position: fixed; top: 12px; right: 12px; z-index: 150; background: #1E293B; color: #fff; border: 1px solid #334155; border-radius: 8px; padding: 0.4rem 0.6rem; cursor: pointer; font-size: 1.2rem; }
+        .admin-menu-btn { display: none; position: fixed; top: 12px; right: 12px; z-index: 150; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 0.4rem 0.6rem; cursor: pointer; font-size: 1.2rem; }
         @media (max-width: 1024px) { .sidebar { width: 60px; padding: 1rem 0.5rem; } .sidebar .logo span, .sidebar a span { display: none; } .sidebar .logo img { margin: 0 auto; } .sidebar a { justify-content: center; } .main { margin-right: 60px; } }
         @media (max-width: 768px) { body { flex-direction: column; } .sidebar { right: -260px; width: 260px; padding: 1.5rem 1rem; } .sidebar.open { right: 0; } .sidebar .logo span, .sidebar a span { display: inline; } .sidebar a { justify-content: flex-start; } .main { margin-right: 0; padding: 1rem; } .admin-menu-btn { display: flex; } }
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/theme.css">
+    <script src="../js/theme.js" defer></script>
 </head>
-<body>
+<body data-ui="app" data-area="admin">
     <div class="admin-overlay" id="adminOverlay" onclick="closeSidebar()"></div>
     <button class="admin-menu-btn" id="adminMenuBtn" onclick="openSidebar()">☰</button>
 
-    <aside class="sidebar" id="sidebar">
-        <div class="logo"><img src="../img/logo.svg" alt="Nivora"><span>Nivora Admin</span></div>
-        <a href="dashboard.html"><span>📊</span><span>لوحة القيادة</span></a>
-        <a href="organizations.html"><span>🏢</span><span>المؤسسات</span></a>
-        <a href="subscriptions.html"><span>💳</span><span>الاشتراكات</span></a>
-        <a href="users.html"><span>👥</span><span>المستخدمون</span></a>
-        <a href="features.html"><span>🚩</span><span>Feature Flags</span></a>
-        <a href="usage.html"><span>📊</span><span>الاستخدام</span></a>
-        <a href="tickets.html"><span>🎫</span><span>التذاكر</span></a>
-        <a href="health.html"><span>🖥</span><span>صحة النظام</span></a>
-        <a href="notifications.html" class="active"><span>🔔</span><span>الإشعارات</span></a>
-        <a href="#" onclick="logout()"><span>🚪</span><span>خروج</span></a>
-    </aside>
+    <aside id="sidebar" class="shell-rail"></aside>
 
     <div class="main">
         <div class="topbar">
@@ -84,7 +75,7 @@
                 container.innerHTML = '<div class="empty-state"><div class="icon">🔔</div><h3>لا توجد إشعارات</h3><p>ستظهر هنا جميع الإشعارات المحفوظة</p></div>';
                 return;
             }
-            container.innerHTML = notifications.map(n => `<div class="notif-item ${notifRead.includes(n.id) ? 'read' : ''}"><span class="notif-icon">${n.icon}</span><div class="notif-content"><div class="notif-text">${n.text}</div><div class="notif-time">${n.time}</div></div><button class="btn-mark" onclick="toggleRead('${n.id}')">${notifRead.includes(n.id) ? '✓ مقروء' : 'تحديد كمقروء'}</button><button class="btn-delete" onclick="deleteNotification('${n.id}')">✕</button></div>`).join('');
+            container.innerHTML = notifications.map(n => `<div class="notif-item ${notifRead.includes(n.id) ? 'read' : ''}"><span class="notif-icon">${escapeHtml(n.icon)}</span><div class="notif-content"><div class="notif-text">${escapeHtml(n.text)}</div><div class="notif-time">${n.time}</div></div><button class="btn-mark" onclick="toggleRead('${n.id}')">${notifRead.includes(n.id) ? '✓ مقروء' : 'تحديد كمقروء'}</button><button class="btn-delete" onclick="deleteNotification('${n.id}')">✕</button></div>`).join('');
         }
 
         function toggleRead(id) {

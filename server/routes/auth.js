@@ -1,247 +1,169 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
 const rateLimit = require('express-rate-limit');
-const crypto = require('crypto');
-const nodemailer = require('nodemailer');
+const crypto = require('node:crypto');
+const User = require('../models/User');
 const { authenticate } = require('../middleware/auth');
+const { issueSession } = require('../config/session');
+const { appOrigin } = require('../config/env');
+const { mailAvailable, sendMail } = require('../config/mail');
 
 const router = express.Router();
-const JWT_SECRET = 'nivora_secret_2025';
+const loginLimiter = rateLimit({ windowMs: 60 * 1000, limit: 5, standardHeaders: true, legacyHeaders: false,
+    message: { error: 'تم تجاوز عدد المحاولات. حاول بعد دقيقة.' } });
+const invalidLogin = 'البريد الإلكتروني أو كلمة المرور غير صحيحة';
+const resetMessage = 'إذا كان البريد مسجلاً، سيصلك رابط الاستعادة';
+const unusedPasswordHash = bcrypt.hashSync(crypto.randomBytes(32).toString('hex'), 10);
 
-// Email transporter
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
-    auth: {
-        user: 'abwjrahalkhaldy3@gmail.com',
-        pass: 'bvwhnpoforgildeo'
-    },
-    tls: {
-        ciphers: 'SSLv3',
-        rejectUnauthorized: false
-    }
-});
+function passwordValid(password) {
+    return typeof password === 'string' && password.length >= 8 && Buffer.byteLength(password) <= 72;
+}
 
-// Rate Limiter
-const loginLimiter = rateLimit({
-    windowMs: 1 * 60 * 1000,
-    max: 5,
-    message: { error: 'تم تجاوز عدد المحاولات. حاول بعد 1 دقيقة.' },
-    standardHeaders: true,
-    legacyHeaders: false
-});
+function tokenHash(token) {
+    return crypto.createHash('sha256').update(token).digest('hex');
+}
 
-// تسجيل
+function profile(user) {
+    return { _id: user._id, id: user._id, username: user.username, fullName: user.fullName || '', email: user.email || '', avatar: user.avatar || '' };
+}
+
+function securityEvent(req, action) {
+    return { action, ip: req.ip, device: (req.get('user-agent') || '').slice(0, 100), timestamp: new Date() };
+}
+
+function pushSecurityEvent(req, action) {
+    return { securityLog: { $each: [securityEvent(req, action)], $slice: -30 } };
+}
+
 router.post('/register', async (req, res) => {
-    try {
-        const { username, password, fullName } = req.body;
-        if (!username || !password) {
-            return res.status(400).json({ error: 'اسم المستخدم وكلمة المرور مطلوبان' });
-        }
-        const exists = await User.findOne({ username });
-        if (exists) {
-            return res.status(400).json({ error: 'اسم المستخدم موجود' });
-        }
-        const hashed = await bcrypt.hash(password, 10);
-        await User.create({ username, password: hashed, fullName: fullName || '' });
-        res.status(201).json({ message: 'تم التسجيل بنجاح' });
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في الخادم' });
+    const { username, password, fullName = '' } = req.body || {};
+    if (typeof username !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(username.trim())
+        || username.length > 254 || typeof fullName !== 'string' || fullName.length > 120 || !passwordValid(password)) {
+        return res.status(400).json({ error: 'أدخل بريدًا صالحًا وكلمة مرور من 8 أحرف على الأقل وبحد أقصى 72 بايت' });
     }
+    const email = username.trim().toLowerCase();
+    try {
+        await User.create({ username: email, email, fullName: fullName.trim(), password: await bcrypt.hash(password, 10) });
+    } catch (error) {
+        if (error.code === 11000) return res.status(409).json({ error: 'هذا البريد مسجل بالفعل' });
+        throw error;
+    }
+    res.status(201).json({ message: 'تم التسجيل بنجاح' });
 });
 
-// دخول
 router.post('/login', loginLimiter, async (req, res) => {
-    try {
-        const { username, password } = req.body;
-        const user = await User.findOne({ username });
-        if (!user) {
-            return res.status(400).json({ error: 'البريد الإلكتروني أو كلمة المرور غير صحيحة' });
-        }
-        const valid = await bcrypt.compare(password, user.password);
-        
-        user.securityLog.push({
-            action: valid ? 'login_success' : 'login_failed',
-            ip: req.ip,
-            device: req.headers['user-agent']?.substring(0, 100) || ''
-        });
-        await user.save();
-        
-        if (!valid) {
-            return res.status(400).json({ error: 'البريد الإلكتروني أو كلمة المرور غير صحيحة' });
-        }
-        
-        const token = jwt.sign({ id: user._id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
-        res.json({ 
-            token, 
-            user: { 
-                id: user._id, 
-                username: user.username, 
-                fullName: user.fullName || '', 
-                email: user.email || '' 
-            } 
-        });
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في الخادم' });
+    const { username, password } = req.body || {};
+    if (typeof username !== 'string' || username.length > 254 || typeof password !== 'string'
+        || Buffer.byteLength(password) > 72) {
+        return res.status(400).json({ error: invalidLogin });
     }
+    const identifier = username.trim();
+    const user = await User.findOne({ username: { $in: [identifier, identifier.toLowerCase()] } });
+    const match = await bcrypt.compare(password, user?.password?.startsWith('$2') ? user.password : unusedPasswordHash);
+    const active = Boolean(user && user.isActive !== false && user.password?.startsWith('$2') && match);
+    if (user) {
+        await User.updateOne({ _id: user._id }, { $push: pushSecurityEvent(req, active ? 'login_success' : 'login_failed') });
+    }
+    if (!active) return res.status(400).json({ error: invalidLogin });
+    res.json({ token: issueSession(user), user: profile(user) });
 });
 
-// سجل الأمان
 router.get('/security-log', authenticate, async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id);
-        res.json(user.securityLog?.slice(-20) || []);
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ' });
-    }
+    const user = await User.findById(req.user.id).select({ securityLog: { $slice: -20 } }).lean();
+    res.json(user?.securityLog || []);
 });
 
-// تغيير كلمة المرور (داخل التطبيق)
 router.post('/change-password', authenticate, async (req, res) => {
-    try {
-        const { currentPassword, newPassword } = req.body;
-        
-        if (!currentPassword || !newPassword) {
-            return res.status(400).json({ error: 'كلمة المرور الحالية والجديدة مطلوبتان' });
-        }
-        
-        if (newPassword.length < 8) {
-            return res.status(400).json({ error: 'كلمة المرور الجديدة يجب أن تكون 8 أحرف على الأقل' });
-        }
-        
-        const user = await User.findById(req.user.id);
-        if (!user) {
-            return res.status(404).json({ error: 'المستخدم غير موجود' });
-        }
-        
-        const valid = await bcrypt.compare(currentPassword, user.password);
-        if (!valid) {
-            return res.status(400).json({ error: 'كلمة المرور الحالية غير صحيحة' });
-        }
-        
-        user.password = await bcrypt.hash(newPassword, 10);
-        user.securityLog.push({
-            action: 'password_changed',
-            ip: req.ip,
-            device: req.headers['user-agent']?.substring(0, 100) || ''
-        });
-        await user.save();
-        
-        res.json({ message: 'تم تغيير كلمة المرور بنجاح' });
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في الخادم' });
+    const { currentPassword, newPassword } = req.body || {};
+    if (typeof currentPassword !== 'string' || Buffer.byteLength(currentPassword) > 72 || !passwordValid(newPassword)) {
+        return res.status(400).json({ error: 'أدخل كلمة المرور الحالية وكلمة مرور جديدة صالحة' });
     }
+    const user = await User.findById(req.user.id).select('password');
+    if (!user?.password?.startsWith('$2') || !await bcrypt.compare(currentPassword, user.password)) {
+        return res.status(400).json({ error: 'كلمة المرور الحالية غير صحيحة' });
+    }
+    const update = await User.updateOne({ _id: user._id, password: user.password, isActive: { $ne: false } }, {
+        $set: { password: await bcrypt.hash(newPassword, 10) },
+        $unset: { resetToken: '', resetTokenExpiry: '' },
+        $inc: { sessionVersion: 1 },
+        $push: pushSecurityEvent(req, 'password_changed')
+    });
+    if (!update.modifiedCount) return res.status(409).json({ error: 'تغيّرت بيانات الحساب، سجّل الدخول مجددًا' });
+    res.json({ message: 'تم تغيير كلمة المرور. سجّل الدخول بكلمة المرور الجديدة' });
 });
 
-// نسيت كلمة المرور
 router.post('/forgot-password', async (req, res) => {
-    try {
-        const { email } = req.body;
-        console.log('طلب استعادة من:', email);
-        
-        const user = await User.findOne({ username: email });
-        console.log('المستخدم:', user ? 'موجود' : 'غير موجود');
-        
-        if (!user) {
-            return res.json({ message: 'إذا كان البريد مسجلاً، سيصلك رابط الاستعادة' });
+    if (!mailAvailable()) return res.status(503).json({ error: 'خدمة الاستعادة غير متاحة حاليًا' });
+    const { email } = req.body || {};
+    if (typeof email !== 'string' || email.length > 254) return res.status(400).json({ error: 'البريد غير صالح' });
+    const identifier = email.trim();
+    const user = await User.findOne({ username: { $in: [identifier, identifier.toLowerCase()] }, isActive: { $ne: false } });
+    if (user?.password?.startsWith('$2')) {
+        const token = crypto.randomBytes(32).toString('hex');
+        const hash = tokenHash(token);
+        await User.updateOne({ _id: user._id }, { $set: { resetToken: hash, resetTokenExpiry: new Date(Date.now() + 15 * 60 * 1000) } });
+        const url = new URL('/reset-password.html', appOrigin());
+        url.searchParams.set('token', token);
+        try {
+            await sendMail({ to: user.username, subject: 'استعادة كلمة المرور — نيفورا', text: 'رابط استعادة كلمة المرور صالح لمدة 15 دقيقة:\n' + url.href });
+        } catch {
+            await User.updateOne({ _id: user._id, resetToken: hash }, { $unset: { resetToken: '', resetTokenExpiry: '' } });
+            console.warn('Password reset email could not be sent.');
         }
-        
-        const resetToken = crypto.randomBytes(32).toString('hex');
-        user.resetToken = resetToken;
-        user.resetTokenExpiry = Date.now() + 15 * 60 * 1000;
-        await user.save();
-        
-        console.log('جاري إرسال البريد...');
-        await transporter.sendMail({
-            from: '"Nivora" <bdalrqybalkhaldy183@gmail.com>',
-            to: email,
-            subject: 'استعادة كلمة المرور - Nivora',
-            html: `<div><h2>استعادة كلمة المرور</h2><a href="http://localhost:3000/reset-password.html?token=${resetToken}">إعادة تعيين كلمة المرور</a></div>`
-        });
-        console.log('تم الإرسال');
-        
-        res.json({ message: 'إذا كان البريد مسجلاً، سيصلك رابط الاستعادة' });
-    } catch (err) {
-        console.error('خطأ في forgot-password:', err);
-        res.status(500).json({ error: 'خطأ: ' + err.message });
     }
+    res.json({ message: resetMessage });
 });
 
-// إعادة تعيين
 router.post('/reset-password', async (req, res) => {
-    try {
-        const { token, password } = req.body;
-        const user = await User.findOne({
-            resetToken: token,
-            resetTokenExpiry: { $gt: Date.now() }
-        });
-        
-        if (!user) return res.status(400).json({ error: 'الرابط منتهي أو غير صالح' });
-        
-        user.password = await bcrypt.hash(password, 10);
-        user.resetToken = undefined;
-        user.resetTokenExpiry = undefined;
-        user.securityLog.push({ action: 'password_reset', ip: req.ip, device: req.headers['user-agent']?.substring(0, 100) || '' });
-        await user.save();
-        
-        res.json({ message: 'تم تغيير كلمة المرور بنجاح' });
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ' });
+    const { token, password } = req.body || {};
+    if (typeof token !== 'string' || !/^[a-f0-9]{64}$/.test(token) || !passwordValid(password)) {
+        return res.status(400).json({ error: 'الرابط أو كلمة المرور غير صالحة' });
     }
+    const update = await User.updateOne({
+        resetToken: tokenHash(token), resetTokenExpiry: { $gt: new Date() }, isActive: { $ne: false }
+    }, {
+        $set: { password: await bcrypt.hash(password, 10) },
+        $unset: { resetToken: '', resetTokenExpiry: '' },
+        $inc: { sessionVersion: 1 },
+        $push: pushSecurityEvent(req, 'password_reset')
+    });
+    if (!update.modifiedCount) return res.status(400).json({ error: 'الرابط منتهي أو غير صالح' });
+    res.json({ message: 'تم تغيير كلمة المرور بنجاح' });
 });
 
-// تحديث الصورة الرمزية
 router.patch('/avatar', authenticate, async (req, res) => {
-    try {
-        const user = await User.findByIdAndUpdate(
-            req.user.id, 
-            { avatar: req.body.avatar }, 
-            { new: true }
-        );
-        res.json({ avatar: user.avatar });
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في تحديث الصورة' });
+    const { avatar } = req.body || {};
+    if (typeof avatar !== 'string' || avatar.length > 2048
+        || (avatar && !/^https?:\/\/[^\s"'<>]+$/i.test(avatar))) {
+        return res.status(400).json({ error: 'رابط الصورة غير صالح' });
     }
+    await User.updateOne({ _id: req.user.id }, { $set: { avatar } });
+    res.json({ avatar });
 });
 
-// جلب الملف الشخصي
 router.get('/profile', authenticate, async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id).select('-password -resetToken -resetTokenExpiry -securityLog');
-        if (!user) {
-            return res.status(404).json({ error: 'المستخدم غير موجود' });
-        }
-        res.json(user);
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في جلب الملف الشخصي' });
-    }
+    const user = await User.findById(req.user.id).select('username fullName email avatar').lean();
+    if (!user) return res.status(404).json({ error: 'المستخدم غير موجود' });
+    res.json(profile(user));
 });
 
-// تحديث الملف الشخصي
 router.patch('/profile', authenticate, async (req, res) => {
-    try {
-        const allowedUpdates = ['fullName', 'email'];
-        const updates = {};
-        
-        allowedUpdates.forEach(field => {
-            if (req.body[field] !== undefined) {
-                updates[field] = req.body[field];
-            }
-        });
-        
-        const user = await User.findByIdAndUpdate(
-            req.user.id,
-            updates,
-            { new: true }
-        ).select('-password -resetToken -resetTokenExpiry -securityLog');
-        
-        res.json(user);
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في تحديث الملف الشخصي' });
+    const { fullName, email } = req.body || {};
+    const updates = {};
+    if (fullName !== undefined) {
+        if (typeof fullName !== 'string' || fullName.length > 120) return res.status(400).json({ error: 'الاسم غير صالح' });
+        updates.fullName = fullName.trim();
     }
+    if (email !== undefined) {
+        if (typeof email !== 'string' || email.length > 254 || (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) {
+            return res.status(400).json({ error: 'البريد غير صالح' });
+        }
+        updates.email = email.trim();
+    }
+    const user = await User.findByIdAndUpdate(req.user.id, { $set: updates }, { new: true })
+        .select('username fullName email avatar').lean();
+    if (!user) return res.status(404).json({ error: 'المستخدم غير موجود' });
+    res.json(profile(user));
 });
 
 module.exports = router;

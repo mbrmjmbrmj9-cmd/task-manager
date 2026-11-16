@@ -1,162 +1,173 @@
 const express = require('express');
+const { Types, connection } = require('mongoose');
 const Project = require('../models/Project');
 const Task = require('../models/Task');
-const Workspace = require('../models/Workspace');
-const { authenticate, requireProjectOwnership, requireTenantAccess, AUTH_ERRORS } = require('../middleware/auth');
+const { authenticate, projectAccess, listScope, requireWorkspace, accessError } = require('../middleware/auth');
+const { removeStoredUpload } = require('../config/storage');
 
 const router = express.Router();
+router.use(authenticate);
 
-// ✅ جلب جميع المشاريع (+ Tenant Access)
-router.get('/', authenticate, async (req, res) => {
-    try {
-        const filter = { userId: req.user.id };
-        if (req.query.workspaceId) filter.workspaceId = req.query.workspaceId;
-        if (req.query.status) filter.status = req.query.status;
-        
-        const projects = await Project.find(filter).sort({ createdAt: -1 });
-        
-        const result = await Promise.all(projects.map(async (p) => {
-            const taskFilter = { userId: req.user.id, projectId: p._id };
-            const taskCount = await Task.countDocuments(taskFilter);
-            const doneCount = await Task.countDocuments({ ...taskFilter, status: 'done' });
-            const inProgressCount = await Task.countDocuments({ ...taskFilter, status: 'in-progress' });
-            const overdueCount = await Task.countDocuments({ ...taskFilter, dueDate: { $lt: new Date() }, status: { $ne: 'done' } });
-            
-            return { ...p.toObject(), taskCount, doneCount, inProgressCount, overdueCount, completionRate: taskCount > 0 ? Math.round((doneCount / taskCount) * 100) : 0 };
-        }));
-        
-        res.json(result);
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في جلب المشاريع' });
-    }
-});
+const statuses = ['active', 'completed', 'archived'];
+const views = ['list', 'kanban', 'gantt', 'calendar', 'table'];
+const toggles = ['enableChat', 'enableFiles', 'enableGantt', 'enableCalendar', 'enableWorkflows', 'enableBudget', 'isPublic'];
 
-// ✅ جلب مشروع واحد (+ Tenant Access)
-router.get('/:id', authenticate, async (req, res) => {
-    try {
-        const project = await Project.findOne({ _id: req.params.id, userId: req.user.id });
-        if (!project) return res.status(404).json({ error: 'مشروع غير موجود' });
-        
-        const taskFilter = { userId: req.user.id, projectId: project._id };
-        const taskCount = await Task.countDocuments(taskFilter);
-        const doneCount = await Task.countDocuments({ ...taskFilter, status: 'done' });
-        const inProgressCount = await Task.countDocuments({ ...taskFilter, status: 'in-progress' });
-        const overdueCount = await Task.countDocuments({ ...taskFilter, dueDate: { $lt: new Date() }, status: { $ne: 'done' } });
-        
-        res.json({ ...project.toObject(), taskCount, doneCount, inProgressCount, overdueCount, completionRate: taskCount > 0 ? Math.round((doneCount / taskCount) * 100) : 0 });
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في جلب المشروع' });
-    }
-});
-
-// ✅ إنشاء مشروع
-router.post('/', authenticate, async (req, res) => {
-    try {
-        const { name, description, color, workspaceId } = req.body;
-        if (!name) return res.status(400).json({ error: 'الاسم مطلوب' });
-
-        if (workspaceId) {
-            const ws = await Workspace.findById(workspaceId);
-            if (!ws) return res.status(404).json({ error: AUTH_ERRORS.WORKSPACE_NOT_FOUND });
-            const isMember = ws.members.some(m => m.userId.toString() === req.user.id);
-            if (!isMember) return res.status(403).json({ error: AUTH_ERRORS.TENANT_ACCESS_DENIED });
-            const count = await Project.countDocuments({ workspaceId });
-            if (count >= ws.maxProjects) return res.status(400).json({ error: 'وصلت للحد الأقصى للمشاريع في خطتك' });
+function projectFields(input) {
+    const fields = {};
+    if (input.name !== undefined) {
+        if (typeof input.name !== 'string' || !input.name.trim() || input.name.length > 120) {
+            throw accessError(400, 'اسم المشروع مطلوب وبحد أقصى 120 حرفًا');
         }
-
-        const project = await Project.create({
-            name,
-            description: description || '',
-            color: color || '#2563EB',
-            userId: req.user.id,
-            workspaceId: workspaceId || null,
-            settings: { enableChat: true, enableFiles: true, enableGantt: true, enableCalendar: true, enableWorkflows: true, enableBudget: false, defaultView: 'kanban', isPublic: false }
-        });
-        res.status(201).json(project);
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في إنشاء المشروع' });
+        fields.name = input.name.trim();
     }
+    if (input.description !== undefined) {
+        if (typeof input.description !== 'string' || input.description.length > 3000) throw accessError(400, 'وصف المشروع غير صالح');
+        fields.description = input.description.trim();
+    }
+    if (input.color !== undefined) {
+        if (typeof input.color !== 'string' || !/^#[0-9a-f]{6}$/i.test(input.color)) throw accessError(400, 'لون المشروع غير صالح');
+        fields.color = input.color;
+    }
+    return fields;
+}
+
+function settingsFields(input) {
+    if (!input || typeof input !== 'object' || Array.isArray(input)) throw accessError(400, 'إعدادات المشروع غير صالحة');
+    const fields = {};
+    for (const key of toggles) {
+        if (input[key] === undefined) continue;
+        if (typeof input[key] !== 'boolean') throw accessError(400, 'إعداد غير صالح');
+        fields[key] = input[key];
+    }
+    if (input.defaultView !== undefined) {
+        if (!views.includes(input.defaultView)) throw accessError(400, 'العرض الافتراضي غير صالح');
+        fields.defaultView = input.defaultView;
+    }
+    return fields;
+}
+
+async function withStats(projects, userId) {
+    if (!projects.length) return [];
+    const workspaceId = projects[0].workspaceId;
+    const filter = {
+        projectId: { $in: projects.map(project => project._id) },
+        status: { $ne: 'archived' }
+    };
+    if (workspaceId) filter.$or = [{ workspaceId }, { workspaceId: null }];
+    else {
+        filter.workspaceId = null;
+        filter.userId = Types.ObjectId.createFromHexString(userId);
+    }
+    const counts = await Task.aggregate([
+        { $match: filter },
+        { $group: {
+            _id: '$projectId',
+            taskCount: { $sum: 1 },
+            doneCount: { $sum: { $cond: [{ $eq: ['$status', 'done'] }, 1, 0] } },
+            inProgressCount: { $sum: { $cond: [{ $eq: ['$status', 'in-progress'] }, 1, 0] } },
+            overdueCount: { $sum: { $cond: [{ $and: [
+                { $gt: ['$dueDate', null] }, { $lt: ['$dueDate', new Date()] }, { $ne: ['$status', 'done'] }
+            ] }, 1, 0] } }
+        } }
+    ]);
+    const byId = new Map(counts.map(({ _id, ...values }) => [String(_id), values]));
+    return projects.map(project => {
+        const stats = byId.get(String(project._id)) || { taskCount: 0, doneCount: 0, inProgressCount: 0, overdueCount: 0 };
+        return { ...project, ...stats, completionRate: stats.taskCount ? Math.round(stats.doneCount * 100 / stats.taskCount) : 0 };
+    });
+}
+
+router.get('/', async (req, res) => {
+    const filter = await listScope(req.query.workspaceId, req.user.id);
+    if (req.query.status !== undefined) {
+        if (!statuses.includes(req.query.status)) throw accessError(400, 'حالة المشروع غير صالحة');
+        filter.status = req.query.status;
+    }
+    const projects = await Project.find(filter).sort({ createdAt: -1, _id: -1 }).lean();
+    res.json(await withStats(projects, req.user.id));
 });
 
-// ✅ تحديث مشروع
-router.patch('/:id', authenticate, requireProjectOwnership, async (req, res) => {
-    try {
-        const project = req.project;
-        const allowed = ['name', 'description', 'color', 'status', 'settings'];
-        allowed.forEach(field => {
-            if (req.body[field] !== undefined) {
-                if (field === 'settings') project.settings = { ...project.settings.toObject(), ...req.body.settings };
-                else project[field] = req.body[field];
-            }
-        });
-        await project.save();
-        res.json({ message: 'تم تحديث المشروع بنجاح', project });
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في تحديث المشروع' });
-    }
+router.get('/:id', projectAccess(), async (req, res) => {
+    const [project] = await withStats([req.project.toObject()], req.user.id);
+    res.json(project);
 });
 
-// ✅ حذف مشروع
-router.delete('/:id', authenticate, requireProjectOwnership, async (req, res) => {
-    try {
-        const project = req.project;
-        await Task.deleteMany({ projectId: project._id });
-        await Project.findByIdAndDelete(project._id);
-        res.json({ message: 'تم حذف المشروع وجميع مهامه' });
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في حذف المشروع' });
+router.post('/', async (req, res) => {
+    const input = req.body || {};
+    const fields = projectFields(input);
+    if (!fields.name) throw accessError(400, 'اسم المشروع مطلوب');
+    let workspaceId = null;
+    if (input.workspaceId) {
+        const { workspace } = await requireWorkspace(input.workspaceId, req.user.id);
+        workspaceId = workspace._id;
+        const count = await Project.countDocuments({ workspaceId, status: { $ne: 'archived' } });
+        if (count >= workspace.maxProjects) throw accessError(409, 'وصلت للحد الأقصى للمشاريع في خطتك');
     }
+    const project = await Project.create({ ...fields, userId: req.user.id, workspaceId });
+    res.status(201).json(project);
 });
 
-// ✅ أرشفة مشروع
-router.patch('/:id/archive', authenticate, requireProjectOwnership, async (req, res) => {
-    try {
-        const project = req.project;
-        project.status = 'archived';
-        project.archivedAt = new Date();
-        project.archivedBy = req.user.id;
-        await project.save();
-        res.json({ message: 'تم أرشفة المشروع بنجاح', project });
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في أرشفة المشروع' });
-    }
+router.patch('/:id', projectAccess('manage'), async (req, res) => {
+    const input = req.body || {};
+    const project = req.project;
+    project.set(projectFields(input));
+    if (input.status !== undefined) setStatus(project, input.status, req.user.id);
+    if (input.settings !== undefined) project.set('settings', { ...project.settings.toObject(), ...settingsFields(input.settings) });
+    await project.save();
+    res.json({ message: 'تم تحديث المشروع بنجاح', project });
 });
 
-// ✅ استعادة مشروع
-router.patch('/:id/restore', authenticate, requireProjectOwnership, async (req, res) => {
-    try {
-        const project = req.project;
-        project.status = 'active';
-        project.archivedAt = null;
-        project.archivedBy = null;
-        await project.save();
-        res.json({ message: 'تم استعادة المشروع بنجاح', project });
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في استعادة المشروع' });
-    }
+router.delete('/:id', projectAccess('manage'), async (req, res) => {
+    const project = req.project;
+    if (project.status !== 'archived') throw accessError(409, 'أرشف المشروع قبل حذفه نهائيًا');
+    const Folder = require('../models/Folder');
+    const File = require('../models/File');
+    const Message = require('../models/Message');
+    const filter = { projectId: project._id };
+    const storageKeys = await connection.transaction(async session => {
+        const deleted = await Project.deleteOne({ _id: project._id, status: 'archived' }, { session });
+        if (!deleted.deletedCount) throw accessError(409, 'تغيّرت حالة المشروع');
+        const tasks = await Task.find(filter).select('attachments.storageKey').session(session).lean();
+        const files = await File.find(filter).select('storageKey').session(session).lean();
+        await Task.deleteMany(filter, { session });
+        await File.deleteMany(filter, { session });
+        await Folder.deleteMany(filter, { session });
+        await Message.deleteMany(filter, { session });
+        return [...files.map(file => file.storageKey), ...tasks.flatMap(task => task.attachments.map(file => file.storageKey))];
+    });
+    for (const key of new Set(storageKeys)) await removeStoredUpload(key);
+    res.json({ message: 'تم حذف المشروع وبياناته' });
 });
 
-// ✅ جلب إعدادات المشروع
-router.get('/:id/settings', authenticate, async (req, res) => {
-    try {
-        const project = await Project.findOne({ _id: req.params.id, userId: req.user.id });
-        if (!project) return res.status(404).json({ error: 'مشروع غير موجود' });
-        res.json({ projectId: project._id, projectName: project.name, settings: project.settings });
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في جلب الإعدادات' });
-    }
+function setStatus(project, status, userId) {
+    if (!statuses.includes(status)) throw accessError(400, 'حالة المشروع غير صالحة');
+    if (project.status === status) return;
+    project.status = status;
+    project.archivedAt = status === 'archived' ? new Date() : null;
+    project.archivedBy = status === 'archived' ? userId : null;
+}
+
+function updateStatus(status, message) {
+    return async (req, res) => {
+        setStatus(req.project, status, req.user.id);
+        await req.project.save();
+        res.json({ message, project: req.project });
+    };
+}
+
+router.patch('/:id/archive', projectAccess('manage'), updateStatus('archived', 'تمت أرشفة المشروع'));
+router.patch('/:id/restore', projectAccess('manage'), updateStatus('active', 'تمت استعادة المشروع'));
+
+router.get('/:id/settings', projectAccess(), (req, res) => {
+    const project = req.project;
+    res.json({ projectId: project._id, projectName: project.name, settings: project.settings });
 });
 
-// ✅ تحديث إعدادات المشروع
-router.patch('/:id/settings', authenticate, requireProjectOwnership, async (req, res) => {
-    try {
-        const project = req.project;
-        project.settings = { ...project.settings.toObject(), ...req.body };
-        await project.save();
-        res.json({ message: 'تم تحديث الإعدادات بنجاح', settings: project.settings });
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في تحديث الإعدادات' });
-    }
+router.patch('/:id/settings', projectAccess('manage'), async (req, res) => {
+    const project = req.project;
+    project.set('settings', { ...project.settings.toObject(), ...settingsFields(req.body) });
+    await project.save();
+    res.json({ message: 'تم تحديث الإعدادات بنجاح', settings: project.settings });
 });
 
 module.exports = router;

@@ -6,7 +6,6 @@
     <title>Nivora | Gantt Chart</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#2563EB">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
         :root { --sidebar-w: 240px; --gantt-header-h: 48px; --row-h: 40px; --left-w: 320px; }
@@ -74,29 +73,15 @@
         @media (max-width: 1024px) { :root { --sidebar-w: 72px; --left-w: 200px; } .sidebar { padding: 1rem 0.5rem; } .sidebar .logo { font-size: 1rem; text-align: center; } .sidebar .label, .sidebar .logo span { display: none; } .sidebar a { justify-content: center; padding: 0.5rem; } }
         @media (max-width: 768px) { :root { --sidebar-w: 0; --left-w: 140px; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 0.75rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } .gantt-left-row { font-size: 0.7rem; padding: 0 0.5rem; } .gantt-left-row .progress-text { display: none; } .toolbar { gap: 0.25rem; } .toolbar button { font-size: 0.7rem; padding: 0 0.4rem; } }
     </style>
+<script src="js/config.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/theme.css">
+    <script src="js/theme.js" defer></script>
 </head>
-<body>
+<body data-ui="app">
     <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
 
-    <aside class="sidebar" id="sidebar">
-    <div class="logo">
-        <img src="img/logo.svg" alt="Nivora" class="logo-img">
-        <span>Nivora</span>
-    </div>
-    <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="label">لوحة القيادة</span></a>
-    <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg><span class="label">المهام</span></a>
-    <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">المشاريع</span></a>
-    <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg><span class="label">Kanban</span></a>
-    <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">Gantt</span></a>
-    <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
-    <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
-    <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg><span class="label">Workflows</span></a>
-    <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">القوالب</span></a>
-    <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg><span class="label">الأرشيف</span></a>
-    <a href="chat.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="label">المحادثة</span></a>
-    <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
-    <a href="teams.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">فرق العمل</span></a>
-</aside>
+    <aside id="sidebar" class="shell-rail"></aside>
 
     <main class="main">
         <div class="topbar">
@@ -156,19 +141,11 @@
         </div>
     </main>
 
-    <nav class="bottom-nav">
-        <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>الرئيسية</a>
-        <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg>مهام</a>
-        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg>Kanban</a>
-        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>فريق</a>
-        <a href="#" onclick="openSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>المزيد</a>
-    </nav>
-
     <script src="js/components.js"></script>
     <script>
         function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
         function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
-        const API_BASE = 'https://nivora-t9ov.onrender.com/api';
+        const API_BASE = Nivora.apiBase;
         const token = localStorage.getItem('token');
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         if (!token) window.location.href = 'login.html';
@@ -183,16 +160,16 @@
             const username = document.getElementById('topUsername');
             if (username) username.textContent = user.fullName || user.username || 'مستخدم';
             if (avatar) {
-                if (user.avatar) avatar.innerHTML = `<img src="${user.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                if (user.avatar) avatar.innerHTML = `<img src="${safeImageUrl(user.avatar)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
                 else avatar.textContent = getInitials(user.fullName || user.username);
             }
         });
 
         async function loadProjects() {
-            const res = await fetch(`${API_BASE}/projects`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const res = await fetch(Nivora.url('/projects', null, true), { headers: { 'Authorization': `Bearer ${token}` } });
             allProjects = await res.json();
             const sel = document.getElementById('projectFilter');
-            sel.innerHTML = '<option value="">كل المشاريع</option>' + allProjects.map(p => `<option value="${p._id}">${p.name}</option>`).join('');
+            sel.innerHTML = '<option value="">كل المشاريع</option>' + allProjects.map(p => `<option value="${p._id}">${escapeHtml(p.name)}</option>`).join('');
             const params = new URLSearchParams(window.location.search);
             const pid = params.get('projectId');
             if (pid) { sel.value = pid; document.getElementById('projectTitle').textContent = '📁 ' + (allProjects.find(p => p._id === pid)?.name || ''); }
@@ -204,7 +181,7 @@
             document.getElementById('ganttBody').innerHTML = '';
             try {
                 const pid = document.getElementById('projectFilter').value;
-                let url = `${API_BASE}/tasks`; if (pid) url += `?projectId=${pid}`;
+                const url = Nivora.url('/tasks', { projectId: pid }, true);
                 const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
                 allTasks = await res.json();
                 if (pid) document.getElementById('projectTitle').textContent = '📁 ' + (allProjects.find(p => p._id === pid)?.name || '');
@@ -250,7 +227,7 @@
                 const progress = t.progress || 0;
                 return `<div class="gantt-left-row" onclick="window.location.href='task.html?id=${t._id}'">
                     <div class="assignee-dot">${initial}</div>
-                    <span class="task-name">${t.title}</span>
+                    <span class="task-name">${escapeHtml(t.title)}</span>
                     <span class="progress-text">${progress}%</span>
                 </div>`;
             }).join('');
@@ -267,7 +244,7 @@
                 const statusClass = `status-${t.status === 'done' ? 'done' : t.status === 'in-progress' ? 'progress' : t.status === 'review' ? 'review' : t.status === 'blocked' ? 'blocked' : 'new'}`;
                 bodyHTML += `<div class="gantt-row">`;
                 for (let i = 0; i < totalDays; i++) bodyHTML += `<div class="grid-line" style="left:${i * dayWidth}px;"></div>`;
-                bodyHTML += `<div class="task-bar ${statusClass} ${isOverdue ? 'overdue' : ''}" style="left:${left}px;width:${width}px;" onclick="window.location.href='task.html?id=${t._id}'" title="${t.title} (${progress}%)"><div class="bar-progress" style="width:${width - progressWidth}px;"></div>${width > 60 ? t.title : ''}</div></div>`;
+                bodyHTML += `<div class="task-bar ${statusClass} ${isOverdue ? 'overdue' : ''}" style="left:${left}px;width:${width}px;" onclick="window.location.href='task.html?id=${t._id}'" title="${escapeHtml(t.title)} (${progress}%)"><div class="bar-progress" style="width:${width - progressWidth}px;"></div>${escapeHtml(width > 60 ? t.title : '')}</div></div>`;
             });
             const todayLeft = Math.floor((today - minDate) / 86400000) * dayWidth;
             if (todayLeft >= 0 && todayLeft < totalDays * dayWidth) bodyHTML += `<div class="today-line" style="left:${todayLeft}px;"><div class="today-label">اليوم</div></div>`;
@@ -304,7 +281,7 @@ function renderNotifications() {
     }
     container.innerHTML = notifications.slice(0, 20).map(n => `
         <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border-light);cursor:pointer;${n.isRead ? '' : 'background:var(--primary-light);'}" onclick="readNotification('${n._id}')">
-            <div style="font-size:0.85rem;font-weight:600;">${n.message}</div>
+            <div style="font-size:0.85rem;font-weight:600;">${escapeHtml(n.message)}</div>
             <div style="font-size:0.7rem;color:var(--text-muted);margin-top:0.2rem;">${timeAgo(n.createdAt)}</div>
         </div>
     `).join('');

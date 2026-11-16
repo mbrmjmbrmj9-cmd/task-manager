@@ -6,7 +6,6 @@
     <title>Nivora | Kanban</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#2563EB">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
         :root { --sidebar-w: 240px; }
@@ -114,29 +113,15 @@
         @media (max-width: 1024px) { :root { --sidebar-w: 72px; } .sidebar { padding: 1rem 0.5rem; } .sidebar .logo { font-size: 1rem; text-align: center; } .sidebar .label, .sidebar .logo span { display: none; } .sidebar a { justify-content: center; padding: 0.5rem; } }
         @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 0.75rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } .kanban { flex-direction: column; } .column { min-width: auto; max-height: none; } .detail-grid { grid-template-columns: 1fr; } }
     </style>
+<script src="js/config.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/theme.css">
+    <script src="js/theme.js" defer></script>
 </head>
-<body>
+<body data-ui="app">
     <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
 
-    <aside class="sidebar" id="sidebar">
-    <div class="logo">
-        <img src="img/logo.svg" alt="Nivora" class="logo-img">
-        <span>Nivora</span>
-    </div>
-    <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="label">لوحة القيادة</span></a>
-    <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg><span class="label">المهام</span></a>
-    <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">المشاريع</span></a>
-    <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg><span class="label">Kanban</span></a>
-    <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">Gantt</span></a>
-    <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
-    <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
-    <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg><span class="label">Workflows</span></a>
-    <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">القوالب</span></a>
-    <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg><span class="label">الأرشيف</span></a>
-    <a href="chat.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="label">المحادثة</span></a>
-    <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
-    <a href="teams.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">فرق العمل</span></a>
-</aside>
+    <aside id="sidebar" class="shell-rail"></aside>
 
     <main class="main">
         <div class="topbar">
@@ -183,14 +168,6 @@
         <div class="kanban" id="kanbanBoard"></div>
     </main>
 
-    <nav class="bottom-nav">
-        <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>الرئيسية</a>
-        <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg>مهام</a>
-        <a href="kanban.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg>Kanban</a>
-        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>فريق</a>
-        <a href="#" onclick="openSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>المزيد</a>
-    </nav>
-
     <div class="modal-overlay" id="detailsModal" onclick="if(event.target===this)closeM('detailsModal')">
         <div class="modal">
             <div class="modal-header"><h3 id="detailsTitle"></h3><button class="modal-close" onclick="closeM('detailsModal')">✕</button></div>
@@ -215,7 +192,7 @@
     <script>
         function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
         function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
-        const API_BASE = 'https://nivora-t9ov.onrender.com/api';
+        const API_BASE = Nivora.apiBase;
         const token = localStorage.getItem('token');
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         if (!token) window.location.href = 'login.html';
@@ -240,16 +217,16 @@
             const username = document.getElementById('topUsername');
             if (username) username.textContent = user.fullName || user.username || 'مستخدم';
             if (avatar) {
-                if (user.avatar) avatar.innerHTML = `<img src="${user.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                if (user.avatar) avatar.innerHTML = `<img src="${safeImageUrl(user.avatar)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
                 else avatar.textContent = getInitials(user.fullName || user.username);
             }
         });
 
         async function loadProjects() {
-            const res = await fetch(`${API_BASE}/projects`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const res = await fetch(Nivora.url('/projects', null, true), { headers: { 'Authorization': `Bearer ${token}` } });
             allProjects = await res.json();
             const sel = document.getElementById('projectFilter');
-            sel.innerHTML = '<option value="">كل المشاريع</option>' + allProjects.map(p => `<option value="${p._id}">${p.name}</option>`).join('');
+            sel.innerHTML = '<option value="">كل المشاريع</option>' + allProjects.map(p => `<option value="${p._id}">${escapeHtml(p.name)}</option>`).join('');
             const params = new URLSearchParams(window.location.search);
             const pid = params.get('projectId');
             if (pid) { sel.value = pid; document.getElementById('projectTitle').textContent = '📁 ' + (allProjects.find(p => p._id === pid)?.name || ''); }
@@ -259,7 +236,7 @@
             showSkeleton('kanbanBoard', 'card', 5);
             try {
                 const pid = document.getElementById('projectFilter').value;
-                let url = `${API_BASE}/tasks`; if (pid) url += `?projectId=${pid}`;
+                const url = Nivora.url('/tasks', { projectId: pid }, true);
                 const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
                 allTasks = await res.json();
                 if (pid) document.getElementById('projectTitle').textContent = '📁 ' + (allProjects.find(p => p._id === pid)?.name || '');
@@ -298,7 +275,7 @@
                     <div class="card-header-left"><button class="icon-btn" onclick="event.stopPropagation();openDetails('${t._id}')">✎</button></div>
                     <div class="card-header-right"><span class="status-label">${labels[t.status]} <span class="status-dot-sm"></span></span></div>
                 </div>
-                <div class="card-title">${t.title}</div>
+                <div class="card-title">${escapeHtml(t.title)}</div>
                 ${t.dueDate ? `<div class="date-badge ${isOverdue ? 'overdue' : ''}">📅 ${formatDate(t.dueDate)}</div>` : ''}
                 <div class="card-footer">
                     <div class="card-footer-left"><div class="avatar-sm">${initial}</div><div class="drag-handle" title="اسحب للنقل"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div>
@@ -315,7 +292,7 @@
         }
 
         function dragTask(e, id) { e.dataTransfer.setData('text/plain', id); e.target.classList.add('dragging'); }
-        async function dropTask(e, s) { e.preventDefault(); e.currentTarget.classList.remove('drag-over'); const id = e.dataTransfer.getData('text/plain'); if (!id) return; await fetch(`${API_BASE}/tasks/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ status: s }) }); showToast('تم تحديث الحالة', 'success'); loadKanban(); }
+        async function dropTask(event, status) { event.preventDefault(); event.currentTarget.classList.remove('drag-over'); const id = event.dataTransfer.getData('text/plain'); if (!id) return; try { await Nivora.api('/tasks/' + id, { method: 'PATCH', data: { status } }); loadKanban(); } catch (error) { showToast(error.message, 'error'); } }
 
         function openQuickAdd(status) { quickAddStatus = status; document.getElementById('quickAddModal').classList.add('show'); document.getElementById('quickAddTitle').focus(); }
         async function submitQuickAdd() {
@@ -324,7 +301,7 @@
             const btn = document.getElementById('quickAddBtn');
             setButtonLoading(btn, true, 'جاري...');
             const pid = document.getElementById('projectFilter').value;
-            await fetch(`${API_BASE}/tasks`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ title, status: quickAddStatus, projectId: pid || null }) });
+            await fetch(`${API_BASE}/tasks`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ title, status: quickAddStatus, projectId: pid || null, workspaceId: Nivora.workspaceId() }) });
             setButtonLoading(btn, false);
             closeQuickAdd();
             showToast('تمت الإضافة', 'success');
@@ -342,10 +319,10 @@
             const attachments = t.attachments || [];
             document.getElementById('detailsTitle').textContent = '📋 ' + t.title;
             let html = `
-                <div class="detail-section"><label>✎ العنوان</label><input type="text" id="detTitle" value="${t.title}" onchange="saveField('title',this.value)"></div>
-                <div class="detail-section"><label>📝 الوصف</label><textarea id="detDesc" onchange="saveField('description',this.value)">${t.description || ''}</textarea></div>
+                <div class="detail-section"><label>✎ العنوان</label><input type="text" id="detTitle" value="${escapeHtml(t.title)}" onchange="saveField('title',this.value)"></div>
+                <div class="detail-section"><label>📝 الوصف</label><textarea id="detDesc" onchange="saveField('description',this.value)">${escapeHtml(t.description || '')}</textarea></div>
                 <div class="detail-grid">
-                    <div class="detail-section"><label>👤 المسؤول</label><input type="text" id="detAssignee" value="${t.assignee || ''}" onchange="saveField('assignee',this.value)"></div>
+                    <div class="detail-section"><label>👤 المسؤول</label><input type="text" id="detAssignee" value="${escapeHtml(t.assignee || '')}" onchange="saveField('assignee',this.value)"></div>
                     <div class="detail-section"><label>📅 تاريخ الاستحقاق</label><input type="date" id="detDueDate" value="${t.dueDate ? new Date(t.dueDate).toISOString().split('T')[0] : ''}" onchange="saveField('dueDate',this.value)"></div>
                     <div class="detail-section"><label>📅 تاريخ البداية</label><input type="date" id="detStartDate" value="${t.startDate ? new Date(t.startDate).toISOString().split('T')[0] : ''}" onchange="saveField('startDate',this.value)"></div>
                 </div>
@@ -353,8 +330,8 @@
                 <div class="detail-section"><label>● الحالة</label><div class="opt-group">${statuses.map(s => `<button class="opt-btn ${t.status === s ? 'sel' : ''}" onclick="chStat('${s}')">${icons[s]} ${labels[s]}</button>`).join('')}</div></div>
                 <div class="detail-section">
                     <label>📎 الملفات (${aCount})</label>
-                    ${attachments.length === 0 ? '<p style="color:var(--text-muted);font-size:0.85rem;">لا توجد مرفقات</p>' : ''}
-                    ${attachments.map(a => `<div class="file-item"><span>📎</span><a href="${a.url}" target="_blank" style="color:var(--primary);text-decoration:none;flex:1;">${a.name}</a><button class="btn-delete-sm" onclick="delAtt('${a._id}')">🗑️</button></div>`).join('')}
+                    ${escapeHtml(attachments.length === 0 ? '<p style="color:var(--text-muted);font-size:0.85rem;">لا توجد مرفقات</p>' : '')}
+                    ${attachments.map(a => `<div class="file-item"><span>📎</span><a href="${Nivora.page('task.html', { id: currentTaskId, tab: 'attachments' })}">${escapeHtml(a.name)}</a><button class="btn-delete-sm" onclick="delAtt('${a._id}')">🗑️</button></div>`).join('')}
                     <div style="margin-top:0.75rem;display:flex;gap:0.5rem;"><input type="file" id="fileUpload" style="display:none;" onchange="upFileDet()"><button class="btn btn-primary btn-sm" onclick="document.getElementById('fileUpload').click()">📁 رفع ملف</button></div>
                     <div class="drop-area" ondragover="event.preventDefault()" ondrop="dropFile(event)">📥 أفلت الملفات هنا</div>
                     <a href="task.html?id=${id}&tab=attachments" class="btn btn-outline btn-sm" style="width:100%;text-align:center;text-decoration:none;margin-top:0.5rem;display:block;">📋 فتح الملفات كاملة</a>
@@ -362,8 +339,8 @@
                 <div class="detail-section"><div class="toggle-row"><label>🔄 التكرار</label><div class="toggle-sw ${t.isRecurring ? 'on' : ''}" id="recurToggle" onclick="toggleRecur()"></div></div></div>
                 <div class="detail-section">
                     <label>💬 التعليقات (${cCount})</label>
-                    ${comments.length === 0 ? '<p style="color:var(--text-muted);font-size:0.85rem;">لا توجد تعليقات</p>' : ''}
-                    ${comments.map(c => `<div class="comment-item"><div class="cu">${c.username || 'مستخدم'}</div><div class="ct">${c.text}</div><div class="ctm">${formatDateTime(c.createdAt)}</div></div>`).join('')}
+                    ${escapeHtml(comments.length === 0 ? '<p style="color:var(--text-muted);font-size:0.85rem;">لا توجد تعليقات</p>' : '')}
+                    ${comments.map(c => `<div class="comment-item"><div class="cu">${escapeHtml(c.username || 'مستخدم')}</div><div class="ct">${escapeHtml(c.text)}</div><div class="ctm">${formatDateTime(c.createdAt)}</div></div>`).join('')}
                     <div class="comment-row"><input type="text" id="commentInput" placeholder="اكتب تعليقاً... @ للإشارة"><button class="btn btn-primary btn-sm" onclick="addCommentDet()">إرسال</button></div>
                     <a href="task.html?id=${id}&tab=comments" class="btn btn-outline btn-sm" style="width:100%;text-align:center;text-decoration:none;margin-top:0.5rem;display:block;">📋 فتح التعليقات كاملة</a>
                 </div>`;
@@ -373,13 +350,18 @@
             if (tab === 'files') setTimeout(() => document.querySelector('.drop-area')?.scrollIntoView({ behavior: 'smooth' }), 300);
         }
 
-        async function saveField(field, value) { if (!currentTaskId) return; await fetch(`${API_BASE}/tasks/${currentTaskId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ [field]: value }) }); await refreshTask(); renderBoard(allTasks); showToast('تم الحفظ', 'success'); }
+        async function saveField(field, value) { if (!currentTaskId) return; try { await Nivora.api('/tasks/' + currentTaskId, { method: 'PATCH', data: { [field]: value } }); await refreshTask(); } catch (error) { showToast(error.message, 'error'); } }
         async function chPri(p) { await saveField('priority', p); openDetails(currentTaskId); }
         async function chStat(s) { await saveField('status', s); openDetails(currentTaskId); }
         async function toggleRecur() { const t = allTasks.find(t => t._id === currentTaskId); if (!t) return; await saveField('isRecurring', !t.isRecurring); document.getElementById('recurToggle')?.classList.toggle('on'); }
         async function addCommentDet() { const inp = document.getElementById('commentInput'); const txt = inp.value.trim(); if (!txt || !currentTaskId) return; await fetch(`${API_BASE}/tasks/${currentTaskId}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ text: txt }) }); await refreshTask(); renderBoard(allTasks); showToast('تمت الإضافة', 'success'); openDetails(currentTaskId, 'comments'); }
-        async function upFileDet() { const file = document.getElementById('fileUpload').files[0]; if (!file || !currentTaskId) return; const fd = new FormData(); fd.append('file', file); const ur = await fetch(`${API_BASE}/upload`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: fd }); const ud = await ur.json(); if (ur.ok) { await fetch(`${API_BASE}/tasks/${currentTaskId}/attachments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(ud) }); await refreshTask(); renderBoard(allTasks); showToast('تم رفع الملف', 'success'); openDetails(currentTaskId, 'files'); } }
-        async function dropFile(e) { e.preventDefault(); const file = e.dataTransfer.files[0]; if (!file || !currentTaskId) return; const fd = new FormData(); fd.append('file', file); const ur = await fetch(`${API_BASE}/upload`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: fd }); const ud = await ur.json(); if (ur.ok) { await fetch(`${API_BASE}/tasks/${currentTaskId}/attachments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(ud) }); await refreshTask(); renderBoard(allTasks); showToast('تم رفع الملف', 'success'); openDetails(currentTaskId, 'files'); } }
+        async function uploadBoardFile(file) {
+            if (!file || !currentTaskId) return;
+            try { await Nivora.api('/tasks/' + currentTaskId + '/attachments/upload', { method: 'POST', data: Nivora.uploadData(file) }); await refreshTask(); }
+            catch (error) { showToast(error.message, 'error'); }
+        }
+        function upFileDet() { uploadBoardFile(document.getElementById('fileUpload').files[0]); }
+        function dropFile(event) { event.preventDefault(); uploadBoardFile(event.dataTransfer.files[0]); }
         function delAtt(aid) { confirmDialog({ title: 'حذف المرفق', message: 'حذف هذا المرفق؟', confirmText: 'حذف', danger: true, onConfirm: async () => { await fetch(`${API_BASE}/tasks/${currentTaskId}/attachments/${aid}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); await refreshTask(); renderBoard(allTasks); openDetails(currentTaskId, 'files'); } }); }
 // ========== نظام الإشعارات ==========
 let notifications = [];
@@ -403,7 +385,7 @@ function renderNotifications() {
     }
     container.innerHTML = notifications.slice(0, 20).map(n => `
         <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border-light);cursor:pointer;${n.isRead ? '' : 'background:var(--primary-light);'}" onclick="readNotification('${n._id}')">
-            <div style="font-size:0.85rem;font-weight:600;">${n.message}</div>
+            <div style="font-size:0.85rem;font-weight:600;">${escapeHtml(n.message)}</div>
             <div style="font-size:0.7rem;color:var(--text-muted);margin-top:0.2rem;">${timeAgo(n.createdAt)}</div>
         </div>
     `).join('');

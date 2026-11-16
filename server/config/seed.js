@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Plan = require('../models/Plan');
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://almbrmjbrmjh60_db_user:wMg3WypI25E3XpWb@taskmanager.renf2sl.mongodb.net/nivora?retryWrites=true&w=majority';
+const { databaseUri } = require('./env');
 
 const plans = [
     { 
@@ -40,7 +40,7 @@ const plans = [
 
 async function seed() {
     try {
-        await mongoose.connect(MONGO_URI);
+        await mongoose.connect(databaseUri());
         console.log('✅ متصل بقاعدة البيانات: nivora');
         
         await Plan.deleteMany({});
@@ -50,7 +50,7 @@ async function seed() {
         
         process.exit(0);
     } catch (err) {
-        console.error('❌ خطأ في بذرة البيانات:', err);
+        console.error('خطأ في تهيئة الخطط:', err.name);
         process.exit(1);
     }
 }

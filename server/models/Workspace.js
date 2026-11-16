@@ -14,7 +14,7 @@ const workspaceSchema = new mongoose.Schema({
     maxMembers: { type: Number, default: 3 },
     maxProjects: { type: Number, default: 5 },
     isActive: { type: Boolean, default: true }
-}, { timestamps: true });
+}, { timestamps: true, optimisticConcurrency: true });
 
 // ✅ Indexes النهائية
 workspaceSchema.index({ 'members.userId': 1 });

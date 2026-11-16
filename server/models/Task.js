@@ -17,6 +17,7 @@ const attachmentSchema = new mongoose.Schema({
     url: { type: String, required: true },
     type: { type: String },
     size: { type: Number },
+    storageKey: { type: String },
     uploadedAt: { type: Date, default: Date.now }
 });
 
@@ -44,9 +45,12 @@ const taskSchema = new mongoose.Schema({
     project: { type: String, default: '' },         // اسم المشروع (للتوافق مع البيانات القديمة)
     projectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Project', default: null }, // معرف المشروع
     assignee: { type: String, default: '' },
+    assigneeId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     startDate: { type: Date, default: null },
     dueDate: { type: Date, default: null },
     completedAt: { type: Date, default: null },
+    archivedAt: { type: Date, default: null },
+    archivedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     progress: { type: Number, default: 0, min: 0, max: 100 },
     estimatedHours: { type: Number, default: null },
     actualHours: { type: Number, default: null },
@@ -75,6 +79,8 @@ taskSchema.index({ userId: 1, status: 1 });
 taskSchema.index({ userId: 1, projectId: 1 });
 taskSchema.index({ userId: 1, workspaceId: 1 });
 taskSchema.index({ projectId: 1, status: 1 });
+taskSchema.index({ workspaceId: 1, assigneeId: 1, status: 1, dueDate: 1 });
+taskSchema.index({ parentTask: 1 });
 taskSchema.index({ dueDate: 1 });
 
 module.exports = mongoose.model('Task', taskSchema);

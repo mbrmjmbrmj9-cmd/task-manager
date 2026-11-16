@@ -1,190 +1,114 @@
 const express = require('express');
+const { Types } = require('mongoose');
 const File = require('../models/File');
-const Folder = require('../models/Folder');
-const { authenticate } = require('../middleware/auth');
+const { authenticate, sameId, accessError } = require('../middleware/auth');
+const { scopedProject, projectResource, resourceFilter, validateFolder, userText, countFolderItems } = require('../middleware/project-resources');
+const { attachmentMultipart, uploadName, removeFile, persistUpload, removeStoredUpload, streamStoredUpload } = require('../config/storage');
 
 const router = express.Router();
+router.use(authenticate);
 
-// ✅ جلب كل الملفات في مشروع
-router.get('/project/:projectId', authenticate, async (req, res) => {
-    try {
-        const filter = { projectId: req.params.projectId };
-        
-        // فلترة بالمجلد
-        if (req.query.folderId) {
-            filter.folderId = req.query.folderId;
-        } else if (req.query.root === 'true') {
-            filter.folderId = null; // الملفات في الجذر فقط
-        }
-        
-        // فلترة بالنوع
-        if (req.query.type) {
-            filter.type = req.query.type;
-        }
-        
-        // بحث
-        if (req.query.search) {
-            filter.name = { $regex: req.query.search, $options: 'i' };
-        }
-        
-        const files = await File.find(filter)
-            .sort({ isFavorite: -1, createdAt: -1 })
-            .populate('userId', 'username fullName');
-            
-        res.json(files);
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في جلب الملفات' });
+async function folderValue(id, project, userId) {
+    return (await validateFolder(id, project, userId))?._id || null;
+}
+
+router.get('/project/:projectId', async (req, res) => {
+    const project = await scopedProject(req.params.projectId, req.user.id);
+    const filter = resourceFilter(project, req.user.id);
+    if (req.query.folderId || req.query.root === 'true') {
+        filter.folderId = await folderValue(req.query.folderId, project, req.user.id);
     }
+    if (req.query.type) filter.type = userText(req.query.type, 'نوع الملف غير صالح', 30);
+    if (req.query.search) {
+        const text = userText(req.query.search, 'البحث غير صالح', 120);
+        filter.name = { $regex: text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
+    }
+    const result = await File.find(filter).sort({ isFavorite: -1, createdAt: -1 }).lean();
+    res.json(result);
 });
 
-// ✅ جلب ملف واحد
-router.get('/:id', authenticate, async (req, res) => {
+router.post('/project/:projectId/upload', async (req, _res, next) => {
+    req.project = await scopedProject(req.params.projectId, req.user.id);
+    req.folderId = await folderValue(req.query.folderId, req.project, req.user.id);
+    next();
+}, attachmentMultipart, async (req, res) => {
+    if (!req.file) throw accessError(400, 'اختر ملفًا');
+    let file;
     try {
-        const file = await File.findById(req.params.id)
-            .populate('userId', 'username fullName')
-            .populate('folderId', 'name color');
-            
-        if (!file) return res.status(404).json({ error: 'الملف غير موجود' });
-        
-        // زيادة عداد التحميل
-        file.downloadCount += 1;
-        await file.save();
-        
-        res.json(file);
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في جلب الملف' });
-    }
-});
-
-// ✅ رفع ملف (إنشاء سجل جديد)
-router.post('/', authenticate, async (req, res) => {
-    try {
-        const { 
-            name, originalName, url, type, mimeType, size, extension,
-            folderId, projectId, workspaceId, description, tags 
-        } = req.body;
-        
-        if (!name || !url) return res.status(400).json({ error: 'اسم الملف والرابط مطلوبان' });
-        if (!projectId) return res.status(400).json({ error: 'معرف المشروع مطلوب' });
-        
-        // إذا كان الملف داخل مجلد، نتأكد من وجوده ونحدث العداد
-        if (folderId) {
-            const folder = await Folder.findById(folderId);
-            if (!folder) return res.status(404).json({ error: 'المجلد غير موجود' });
-        }
-        
-        const file = await File.create({
-            name,
-            originalName: originalName || name,
-            url,
-            type: type || 'file',
-            mimeType: mimeType || 'application/octet-stream',
-            size: size || 0,
-            extension: extension || '',
-            folderId: folderId || null,
-            projectId,
-            workspaceId: workspaceId || null,
-            userId: req.user.id,
-            username: req.user.username,
-            description: description || '',
-            tags: tags || []
+        const id = new Types.ObjectId();
+        const { project } = req;
+        const name = uploadName(req.file.originalname, 'ملف');
+        await persistUpload(req.file, req.file.filename);
+        file = await File.create({
+            _id: id, name, originalName: name, url: '/api/files/' + id + '/download', storageKey: req.file.filename,
+            size: req.file.size, folderId: req.folderId, projectId: project._id, workspaceId: project.workspaceId,
+            userId: req.user.id, username: req.user.username
         });
-        
-        // تحديث عدد العناصر في المجلد
-        if (folderId) {
-            const fileCount = await File.countDocuments({ folderId });
-            const subFolderCount = await Folder.countDocuments({ parentFolderId: folderId });
-            await Folder.findByIdAndUpdate(folderId, { itemCount: fileCount + subFolderCount });
-        }
-        
-        res.status(201).json(file);
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في رفع الملف' });
+    } catch (error) {
+        await removeStoredUpload(req.file.filename);
+        await removeFile(req.file.path);
+        throw error;
     }
+    await countFolderItems(file.folderId, req.project, req.user.id);
+    res.status(201).json(file);
 });
 
-// ✅ تحديث ملف
-router.patch('/:id', authenticate, async (req, res) => {
-    try {
-        const file = await File.findById(req.params.id);
-        if (!file) return res.status(404).json({ error: 'الملف غير موجود' });
-        
-        // التحقق من الملكية
-        if (file.userId.toString() !== req.user.id) {
-            return res.status(403).json({ error: 'لا تملك صلاحية تعديل هذا الملف' });
-        }
-        
-        const allowed = ['name', 'description', 'tags', 'isFavorite', 'folderId', 'version'];
-        allowed.forEach(field => {
-            if (req.body[field] !== undefined) {
-                file[field] = req.body[field];
-            }
-        });
-        
-        await file.save();
-        res.json(file);
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في تحديث الملف' });
-    }
+router.get('/:id', async (req, res) => {
+    const { resource } = await projectResource(File, req.params.id, req.user.id);
+    res.json(resource);
 });
 
-// ✅ حذف ملف
-router.delete('/:id', authenticate, async (req, res) => {
-    try {
-        const file = await File.findById(req.params.id);
-        if (!file) return res.status(404).json({ error: 'الملف غير موجود' });
-        
-        // التحقق من الملكية
-        if (file.userId.toString() !== req.user.id) {
-            return res.status(403).json({ error: 'لا تملك صلاحية حذف هذا الملف' });
-        }
-        
-        const folderId = file.folderId;
-        await File.findByIdAndDelete(req.params.id);
-        
-        // تحديث عدد العناصر في المجلد
-        if (folderId) {
-            const fileCount = await File.countDocuments({ folderId });
-            const subFolderCount = await Folder.countDocuments({ parentFolderId: folderId });
-            await Folder.findByIdAndUpdate(folderId, { itemCount: fileCount + subFolderCount });
-        }
-        
-        res.json({ message: 'تم حذف الملف' });
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في حذف الملف' });
-    }
+router.get('/:id/download', async (req, res, next) => {
+    const { resource: file } = await projectResource(File, req.params.id, req.user.id);
+    if (!file.storageKey || !/^[a-f0-9-]{36}$/.test(file.storageKey)) throw accessError(404, 'الملف غير متاح للتنزيل');
+    await File.updateOne({ _id: file._id }, { $inc: { downloadCount: 1 } });
+    res.set('Cache-Control', 'private, no-store');
+    return streamStoredUpload(file.storageKey, res, next, { name: file.originalName });
 });
 
-// ✅ نقل ملف إلى مجلد آخر
-router.patch('/:id/move', authenticate, async (req, res) => {
-    try {
-        const file = await File.findById(req.params.id);
-        if (!file) return res.status(404).json({ error: 'الملف غير موجود' });
-        
-        const oldFolderId = file.folderId;
-        const newFolderId = req.body.folderId || null;
-        
-        file.folderId = newFolderId;
-        await file.save();
-        
-        // تحديث العداد في المجلد القديم
-        if (oldFolderId) {
-            const fileCount = await File.countDocuments({ folderId: oldFolderId });
-            const subFolderCount = await Folder.countDocuments({ parentFolderId: oldFolderId });
-            await Folder.findByIdAndUpdate(oldFolderId, { itemCount: fileCount + subFolderCount });
-        }
-        
-        // تحديث العداد في المجلد الجديد
-        if (newFolderId) {
-            const fileCount = await File.countDocuments({ folderId: newFolderId });
-            const subFolderCount = await Folder.countDocuments({ parentFolderId: newFolderId });
-            await Folder.findByIdAndUpdate(newFolderId, { itemCount: fileCount + subFolderCount });
-        }
-        
-        res.json(file);
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في نقل الملف' });
+router.post('/', async (req, res) => {
+    const input = req.body || {};
+    const project = await scopedProject(input.projectId, req.user.id);
+    const name = userText(input.name, 'اسم الملف غير صالح', 255, true);
+    const url = userText(input.url, 'رابط الملف غير صالح', 2048, true);
+    if (!/^https?:\/\/[^\s"'<>]+$/i.test(url) || /^\/uploads\//.test(new URL(url).pathname)) {
+        throw accessError(400, 'رابط الملف غير صالح');
     }
+    const file = await File.create({
+        name, originalName: name, url, folderId: await folderValue(input.folderId, project, req.user.id),
+        projectId: project._id, workspaceId: project.workspaceId, userId: req.user.id, username: req.user.username
+    });
+    await countFolderItems(file.folderId, project, req.user.id);
+    res.status(201).json(file);
+});
+
+async function updateFile(req, res) {
+    const { resource: file, project } = await projectResource(File, req.params.id, req.user.id, true);
+    const input = req.body || {};
+    const oldFolder = file.folderId;
+    if (input.folderId !== undefined) file.folderId = await folderValue(input.folderId, project, req.user.id);
+    if (input.name !== undefined) file.name = userText(input.name, 'اسم الملف غير صالح', 255, true);
+    if (input.description !== undefined) file.description = userText(input.description, 'الوصف غير صالح', 2000);
+    if (input.isFavorite !== undefined) {
+        if (typeof input.isFavorite !== 'boolean') throw accessError(400, 'خيار المفضلة غير صالح');
+        file.isFavorite = input.isFavorite;
+    }
+    await file.save();
+    if (!sameId(oldFolder, file.folderId)) {
+        await Promise.all([countFolderItems(oldFolder, project, req.user.id), countFolderItems(file.folderId, project, req.user.id)]);
+    }
+    res.json(file);
+}
+
+router.patch('/:id', updateFile);
+router.patch('/:id/move', updateFile);
+
+router.delete('/:id', async (req, res) => {
+    const { resource: file, project } = await projectResource(File, req.params.id, req.user.id, true);
+    await file.deleteOne();
+    await removeStoredUpload(file.storageKey);
+    await countFolderItems(file.folderId, project, req.user.id);
+    res.json({ message: 'تم حذف الملف' });
 });
 
 module.exports = router;

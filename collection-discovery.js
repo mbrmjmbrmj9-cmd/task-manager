@@ -1,16 +1,9 @@
-require('dotenv').config();
+const { databaseUri } = require('./server/config/env');
 const mongoose = require('mongoose');
-
-const MONGO_URI = process.env.MONGODB_URI;
-
-if (!MONGO_URI) {
-    console.error('❌ MONGODB_URI غير موجود في .env');
-    process.exit(1);
-}
 
 async function discoverCollections() {
     try {
-        await mongoose.connect(MONGO_URI);
+        await mongoose.connect(databaseUri());
         console.log('✅ متصل بقاعدة البيانات\n');
 
         const collections = await mongoose.connection.db.listCollections().toArray();
@@ -29,7 +22,7 @@ async function discoverCollections() {
         
         await mongoose.disconnect();
     } catch (err) {
-        console.error('❌ خطأ:', err.message);
+        console.error('❌ خطأ:', err.name);
         process.exit(1);
     }
 }

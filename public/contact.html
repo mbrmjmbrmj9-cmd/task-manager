@@ -6,7 +6,6 @@
     <title>Nivora | تواصل معنا</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#2563EB">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
         body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
@@ -33,8 +32,12 @@
         
         .back-link { display: inline-block; color: var(--primary); text-decoration: none; font-weight: 600; }
     </style>
+<script src="js/config.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/theme.css">
+    <script src="js/theme.js" defer></script>
 </head>
-<body>
+<body data-ui="flow">
     <div class="contact-container">
         <a href="index.html" class="back-link">← العودة للرئيسية</a>
         
@@ -90,7 +93,7 @@
             setButtonLoading(btn, true, 'جاري الإرسال...');
             
             try {
-                const res = await fetch('https://nivora-t9ov.onrender.com/api/contact', {
+                const res = await fetch(Nivora.apiBase + '/contact', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, phone, email, message })

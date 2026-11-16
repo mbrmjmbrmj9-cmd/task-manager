@@ -7,6 +7,8 @@ const projectSchema = new mongoose.Schema({
     color: { type: String, default: '#2563EB' },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     workspaceId: { type: mongoose.Schema.Types.ObjectId, ref: 'Workspace', default: null },
+    archivedAt: { type: Date, default: null },
+    archivedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     // ✅ إعدادات المشروع (Project Settings)
     settings: {
         enableChat: { type: Boolean, default: true },

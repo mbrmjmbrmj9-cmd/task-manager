@@ -2,6 +2,10 @@ const mongoose = require('mongoose');
 
 const templateSchema = new mongoose.Schema({
     name: { type: String, required: true },
+    description: { type: String, default: '' },
+    category: { type: String, default: 'general' },
+    icon: { type: String, default: '📋' },
+    color: { type: String, default: '#2563EB' },
     tasks: [{
         title: String,
         description: String,

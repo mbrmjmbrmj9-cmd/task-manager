@@ -1,264 +1,140 @@
-const jwt = require('jsonwebtoken');
+const { readSession } = require('../config/session');
 const Workspace = require('../models/Workspace');
+const Organization = require('../models/Organization');
 const Task = require('../models/Task');
 const Project = require('../models/Project');
+const { Types } = require('mongoose');
+const { isValidObjectId } = require('./validate');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'nivora_secret_2025';
-
-// ✅ ثوابت رسائل الخطأ الموحدة
 const AUTH_ERRORS = {
     NOT_AUTHENTICATED: 'يجب تسجيل الدخول',
-    INVALID_SESSION: 'جلسة غير صالحة',
-    NOT_AUTHORIZED: 'غير مصرح',
-    NOT_MEMBER: 'لست عضواً في مساحة العمل',
+    INVALID_SESSION: 'انتهت الجلسة أو أصبحت غير صالحة',
     INSUFFICIENT_PERMISSIONS: 'صلاحيات غير كافية',
     WORKSPACE_NOT_FOUND: 'مساحة العمل غير موجودة',
     TASK_NOT_FOUND: 'المهمة غير موجودة',
     PROJECT_NOT_FOUND: 'المشروع غير موجود',
-    ONLY_OWNER: 'فقط مالك مساحة العمل يستطيع القيام بهذا الإجراء',
-    ONLY_OWNER_ADMIN: 'فقط المالك أو المدير يستطيع القيام بهذا الإجراء',
-    NOT_TASK_OWNER: 'لا تملك صلاحية على هذه المهمة',
-    NOT_PROJECT_OWNER: 'لا تملك صلاحية على هذا المشروع',
-    ADMIN_REQUIRED: 'مطلوب تسجيل الدخول للوحة التحكم',
-    ADMIN_NOT_AUTHORIZED: 'غير مصرح للوصول للوحة التحكم',
     TENANT_ACCESS_DENIED: 'لا تملك صلاحية الوصول لهذه البيانات'
 };
 
-/**
- * المصادقة - التحقق من JWT Token
- */
-function authenticate(req, res, next) {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-    
-    if (!token) {
-        return res.status(401).json({ error: AUTH_ERRORS.NOT_AUTHENTICATED });
-    }
-    
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) {
-            return res.status(403).json({ error: AUTH_ERRORS.INVALID_SESSION });
-        }
+function authentication(audience) {
+    return async (req, res, next) => {
+        const match = /^Bearer ([^\s]+)$/i.exec(req.get('authorization') || '');
+        if (!match) return res.status(401).json({ error: AUTH_ERRORS.NOT_AUTHENTICATED });
+
+        const user = await readSession(match[1], audience);
+        if (!user) return res.status(401).json({ error: AUTH_ERRORS.INVALID_SESSION });
         req.user = user;
         next();
-    });
-}
-
-/**
- * التحقق من الصلاحيات داخل Workspace
- */
-function requireRole(...roles) {
-    return async (req, res, next) => {
-        try {
-            const wsId = req.params.workspaceId || 
-                         req.params.id || 
-                         req.body.workspaceId || 
-                         req.query.workspaceId;
-
-            if (!wsId) {
-                const ws = await Workspace.findOne({ 'members.userId': req.user.id });
-                if (!ws) {
-                    return res.status(404).json({ error: AUTH_ERRORS.WORKSPACE_NOT_FOUND });
-                }
-                
-                const member = ws.members.find(m => m.userId.toString() === req.user.id);
-                if (!member) {
-                    return res.status(403).json({ error: AUTH_ERRORS.NOT_MEMBER });
-                }
-                
-                if (!roles.includes(member.role)) {
-                    return res.status(403).json({ error: AUTH_ERRORS.INSUFFICIENT_PERMISSIONS });
-                }
-                
-                req.workspace = ws;
-                req.memberRole = member.role;
-                return next();
-            }
-
-            const ws = await Workspace.findById(wsId);
-            if (!ws) {
-                return res.status(404).json({ error: AUTH_ERRORS.WORKSPACE_NOT_FOUND });
-            }
-
-            const member = ws.members.find(m => m.userId.toString() === req.user.id);
-            if (!member) {
-                return res.status(403).json({ error: AUTH_ERRORS.NOT_MEMBER });
-            }
-
-            if (!roles.includes(member.role)) {
-                return res.status(403).json({ error: AUTH_ERRORS.INSUFFICIENT_PERMISSIONS });
-            }
-
-            req.workspace = ws;
-            req.memberRole = member.role;
-            next();
-        } catch (err) {
-            console.error('خطأ في requireRole:', err);
-            res.status(500).json({ error: 'خطأ في التحقق من الصلاحيات' });
-        }
     };
 }
 
-/**
- * التحقق من ملكية المهمة
- */
-async function requireTaskOwnership(req, res, next) {
-    try {
-        const task = await Task.findById(req.params.id);
-        if (!task) {
-            return res.status(404).json({ error: AUTH_ERRORS.TASK_NOT_FOUND });
-        }
-        
-        if (task.userId.toString() === req.user.id) {
-            req.task = task;
-            return next();
-        }
-        
-        if (task.workspaceId) {
-            const ws = await Workspace.findById(task.workspaceId);
-            if (ws) {
-                const member = ws.members.find(m => m.userId.toString() === req.user.id);
-                if (member && ['owner', 'admin'].includes(member.role)) {
-                    req.task = task;
-                    return next();
-                }
-            }
-        }
-        
-        return res.status(403).json({ error: AUTH_ERRORS.NOT_TASK_OWNER });
-    } catch (err) {
-        console.error('خطأ في requireTaskOwnership:', err);
-        res.status(500).json({ error: 'خطأ في التحقق من الملكية' });
-    }
+const authenticate = authentication('nivora-app');
+const adminAuth = authentication('nivora-admin');
+
+function accessError(status, message) {
+    return Object.assign(new Error(message), { status });
 }
 
-/**
- * التحقق من ملكية المشروع
- */
-async function requireProjectOwnership(req, res, next) {
-    try {
-        const project = await Project.findById(req.params.id);
-        if (!project) {
-            return res.status(404).json({ error: AUTH_ERRORS.PROJECT_NOT_FOUND });
-        }
-        
-        if (project.userId.toString() === req.user.id) {
-            req.project = project;
-            return next();
-        }
-        
-        if (project.workspaceId) {
-            const ws = await Workspace.findById(project.workspaceId);
-            if (ws) {
-                const member = ws.members.find(m => m.userId.toString() === req.user.id);
-                if (member && ['owner', 'admin'].includes(member.role)) {
-                    req.project = project;
-                    return next();
-                }
-            }
-        }
-        
-        return res.status(403).json({ error: AUTH_ERRORS.NOT_PROJECT_OWNER });
-    } catch (err) {
-        console.error('خطأ في requireProjectOwnership:', err);
-        res.status(500).json({ error: 'خطأ في التحقق من الملكية' });
-    }
+function sameId(first, second) {
+    return first != null && second != null && String(first) === String(second);
 }
 
-/**
- * مصادقة المدير (Super Admin)
- */
-function adminAuth(req, res, next) {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-    
-    if (!token) {
-        return res.status(401).json({ error: AUTH_ERRORS.ADMIN_REQUIRED });
+function validateId(value) {
+    if (value instanceof Types.ObjectId) return value;
+    if (!isValidObjectId(value)) throw accessError(400, 'المعرّف غير صالح');
+    return value;
+}
+
+async function requireWorkspace(id, userId) {
+    const workspace = await Workspace.findById(validateId(id));
+    if (!workspace || workspace.isActive === false) throw accessError(404, AUTH_ERRORS.WORKSPACE_NOT_FOUND);
+    const membership = workspace.members.find(member => sameId(member.userId, userId));
+    if (!membership) throw accessError(403, AUTH_ERRORS.TENANT_ACCESS_DENIED);
+
+    if (workspace.organizationId) {
+        const suspended = await Organization.exists({ _id: workspace.organizationId, status: 'suspended' });
+        if (suspended) throw accessError(403, 'هذه المؤسسة معلّقة');
     }
-    
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err || user.role !== 'super_admin') {
-            return res.status(403).json({ error: AUTH_ERRORS.ADMIN_NOT_AUTHORIZED });
-        }
-        req.user = user;
+    return { workspace, role: membership.role };
+}
+
+function requireRole(...roles) {
+    return async (req, _res, next) => {
+        const { workspace, role } = await requireWorkspace(req.params.id, req.user.id);
+        if (roles.length && !roles.includes(role)) throw accessError(403, AUTH_ERRORS.INSUFFICIENT_PERMISSIONS);
+        req.workspace = workspace;
+        req.memberRole = role;
         next();
-    });
+    };
 }
 
-/**
- * التحقق من العضوية فقط
- */
-async function requireMembership(req, res, next) {
-    try {
-        const wsId = req.params.workspaceId || 
-                     req.params.id || 
-                     req.body.workspaceId || 
-                     req.query.workspaceId;
+const requireTenantAccess = requireRole();
 
-        if (!wsId) {
-            return res.status(400).json({ error: 'معرف مساحة العمل مطلوب' });
-        }
-
-        const ws = await Workspace.findById(wsId);
-        if (!ws) {
-            return res.status(404).json({ error: AUTH_ERRORS.WORKSPACE_NOT_FOUND });
-        }
-
-        const member = ws.members.find(m => m.userId.toString() === req.user.id);
-        if (!member) {
-            return res.status(403).json({ error: AUTH_ERRORS.NOT_MEMBER });
-        }
-
-        req.workspace = ws;
-        req.memberRole = member.role;
-        next();
-    } catch (err) {
-        console.error('خطأ في requireMembership:', err);
-        res.status(500).json({ error: 'خطأ في التحقق من العضوية' });
+async function authorizeResource(resource, userId, level, workspaceId = resource.workspaceId) {
+    if (!workspaceId) {
+        if (!sameId(resource.userId, userId)) throw accessError(403, AUTH_ERRORS.TENANT_ACCESS_DENIED);
+        return null;
     }
-}
 
-/**
- * ✅ التحقق من الوصول إلى Tenant (Workspace)
- * يمنع الوصول غير المصرح لبيانات Workspaces أخرى
- */
-async function requireTenantAccess(req, res, next) {
-    try {
-        const requestedWsId = req.params.workspaceId || 
-                              req.body.workspaceId || 
-                              req.query.workspaceId;
-
-        // إذا لا يوجد workspaceId - السماح (المصادقة تكفي)
-        if (!requestedWsId) {
-            return next();
-        }
-
-        const ws = await Workspace.findById(requestedWsId);
-        if (!ws) {
-            return res.status(404).json({ error: AUTH_ERRORS.WORKSPACE_NOT_FOUND });
-        }
-
-        const isMember = ws.members.some(m => m.userId.toString() === req.user.id);
-        if (!isMember) {
-            return res.status(403).json({ error: AUTH_ERRORS.TENANT_ACCESS_DENIED });
-        }
-
-        req.workspace = ws;
-        req.memberRole = ws.members.find(m => m.userId.toString() === req.user.id)?.role;
-        next();
-    } catch (err) {
-        console.error('خطأ في requireTenantAccess:', err);
-        res.status(500).json({ error: 'خطأ في التحقق من الوصول' });
+    const access = await requireWorkspace(workspaceId, userId);
+    const manager = ['owner', 'admin'].includes(access.role);
+    const author = sameId(resource.userId, userId);
+    const assignee = sameId(resource.assigneeId, userId);
+    if (level === 'manage' && !manager && !author
+        || level === 'edit' && !manager && !author && !assignee) {
+        throw accessError(403, AUTH_ERRORS.INSUFFICIENT_PERMISSIONS);
     }
+    return access.workspace;
 }
 
-module.exports = { 
-    authenticate, 
-    requireRole, 
-    requireTaskOwnership, 
-    requireProjectOwnership, 
-    adminAuth,
-    requireMembership,
-    requireTenantAccess,
-    AUTH_ERRORS 
+async function getProject(id, userId, level = 'read') {
+    const project = await Project.findById(validateId(id));
+    if (!project) throw accessError(404, AUTH_ERRORS.PROJECT_NOT_FOUND);
+    await authorizeResource(project, userId, level);
+    return project;
+}
+
+async function getTask(id, userId, level = 'read') {
+    const task = await Task.findById(validateId(id));
+    if (!task) throw accessError(404, AUTH_ERRORS.TASK_NOT_FOUND);
+    let workspaceId = task.workspaceId;
+    if (task.projectId) {
+        const project = await Project.findById(task.projectId);
+        if (!project || (!project.workspaceId && !sameId(project.userId, userId))) {
+            throw accessError(404, AUTH_ERRORS.PROJECT_NOT_FOUND);
+        }
+        if (workspaceId && !sameId(workspaceId, project.workspaceId)) {
+            throw accessError(403, AUTH_ERRORS.TENANT_ACCESS_DENIED);
+        }
+        workspaceId = project.workspaceId;
+    }
+    const workspace = await authorizeResource(task, userId, level, workspaceId);
+    return { task, workspace };
+}
+
+function taskAccess(level = 'read') {
+    return async (req, _res, next) => {
+        const { task, workspace } = await getTask(req.params.id, req.user.id, level);
+        req.task = task;
+        req.workspace = workspace;
+        next();
+    };
+}
+
+function projectAccess(level = 'read') {
+    return async (req, _res, next) => {
+        req.project = await getProject(req.params.id, req.user.id, level);
+        next();
+    };
+}
+
+async function listScope(workspaceId, userId) {
+    if (!workspaceId) return { userId, workspaceId: null };
+    await requireWorkspace(workspaceId, userId);
+    return { workspaceId };
+}
+
+module.exports = {
+    authenticate, adminAuth, requireRole, requireTenantAccess, requireWorkspace, getProject, getTask,
+    taskAccess, projectAccess, listScope, validateId, sameId, accessError, AUTH_ERRORS
 };

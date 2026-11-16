@@ -22,7 +22,10 @@ function showToast(message, type = 'success', duration = 3000) {
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     toast.setAttribute('role', 'alert');
-    toast.innerHTML = `<span>${icons[type] || ''}</span> ${message}`;
+    const icon = document.createElement('span');
+    icon.setAttribute('aria-hidden', 'true');
+    icon.textContent = Object.hasOwn(icons, type) ? icons[type] : '';
+    toast.append(icon, document.createTextNode(' ' + String(message ?? '')));
     container.appendChild(toast);
 
     setTimeout(() => {
@@ -91,7 +94,7 @@ function showError(containerId, message = 'تعذر تحميل البيانات'
     container.innerHTML = `
         <div class="error-state">
             <div class="error-icon">⚠️</div>
-            <p>${message}</p>
+            <p>${escapeHtml(message)}</p>
             ${retryFn ? `<button class="btn btn-outline" onclick="(${retryFn})()">🔄 إعادة المحاولة</button>` : ''}
         </div>
     `;
@@ -110,11 +113,11 @@ function confirmDialog({ title = 'تأكيد العملية', message = 'هل أ
     overlay.innerHTML = `
         <div class="modal" onclick="event.stopPropagation()">
             <div class="modal-header">
-                <h3>⚠️ ${title}</h3>
+                <h3>${escapeHtml(title)}</h3>
                 <button class="modal-close" onclick="document.getElementById('confirm-dialog').remove()">✕</button>
             </div>
             <div class="modal-body">
-                <p style="color:var(--text-light);font-size:0.9rem;">${message}</p>
+                <p style="color:var(--text-light);font-size:0.9rem;">${escapeHtml(message)}</p>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-outline" onclick="document.getElementById('confirm-dialog').remove()">${cancelText}</button>
@@ -128,7 +131,8 @@ function confirmDialog({ title = 'تأكيد العملية', message = 'هل أ
 
     document.getElementById('confirm-dialog-btn').addEventListener('click', async () => {
         overlay.remove();
-        if (onConfirm) await onConfirm();
+        try { await onConfirm?.(); }
+        catch (error) { showToast(error.message || 'تعذر تنفيذ الطلب', 'error'); }
     });
 }
 
@@ -192,7 +196,7 @@ function statusBadge(status) {
         'archived': '<span class="badge badge-neutral">مؤرشفة</span>',
         'blocked': '<span class="badge badge-danger">متعثرة</span>'
     };
-    return badges[status] || `<span class="badge badge-neutral">${status}</span>`;
+    return Object.hasOwn(badges, status) ? badges[status] : '<span class="badge badge-neutral">غير محددة</span>';
 }
 
 function priorityBadge(priority) {
@@ -202,7 +206,7 @@ function priorityBadge(priority) {
         'medium': '<span class="badge badge-info">متوسطة</span>',
         'low': '<span class="badge badge-success">منخفضة</span>'
     };
-    return badges[priority] || `<span class="badge badge-neutral">${priority}</span>`;
+    return Object.hasOwn(badges, priority) ? badges[priority] : '<span class="badge badge-neutral">غير محددة</span>';
 }
 
 // ========== تنسيق ==========
@@ -266,9 +270,21 @@ function copyToClipboard(text) {
 }
 
 function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+    const entities = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+    return String(text ?? '').replace(/[&<>"']/g, character => entities[character]);
+}
+
+function safeImageUrl(value) {
+    try {
+        const url = new URL(value);
+        return ['https:', 'http:'].includes(url.protocol) && !url.username && !url.password ? escapeHtml(url.href) : '';
+    } catch {
+        return '';
+    }
+}
+
+function safeColor(value, fallback = 'var(--primary)') {
+    return typeof value === 'string' && /^#[\da-f]{6}$/i.test(value) ? value : fallback;
 }
 
 function getInitials(name) {

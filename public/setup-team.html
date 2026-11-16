@@ -6,7 +6,6 @@
     <title>Nivora | إنشاء فريق</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#2563EB">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
         body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
@@ -17,8 +16,12 @@
         .card .sub { text-align: center; color: var(--text-light); font-size: 0.85rem; margin-bottom: 1.5rem; }
         .dark-toggle { position: fixed; top: 1rem; left: 1rem; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.5rem 0.7rem; cursor: pointer; font-size: 1.1rem; }
     </style>
+<script src="js/config.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/theme.css">
+    <script src="js/theme.js" defer></script>
 </head>
-<body>
+<body data-ui="flow">
     <button class="dark-toggle" onclick="toggleDark()" id="darkBtn">🌙</button>
     <div class="container">
         <a href="setup-account.html" class="back">← رجوع</a>
@@ -44,7 +47,7 @@
             if (!team) { showToast('اسم الفريق مطلوب', 'warning'); return; }
             const btn = document.getElementById('createBtn'); setButtonLoading(btn, true, 'جاري...');
             try {
-                const res = await fetch('https://nivora-t9ov.onrender.com/api/workspaces', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ name: team }) });
+                const res = await fetch(Nivora.apiBase + '/workspaces', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ name: team }) });
                 const ws = await res.json();
                 if (res.ok) { localStorage.setItem('workspaceId', ws._id); localStorage.setItem('inviteCode', ws.inviteCode); window.location.href = 'setup-members.html'; }
                 else { showToast(ws.error, 'error'); }

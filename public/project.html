@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <link rel="stylesheet" href="css/style.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4f7fb">
+    <title>المشروع | نيفورا</title>
+    <link rel="stylesheet" href="css/workspace.css">
+    <script src="js/config.js" defer></script>
+    <script src="js/project.js" defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/theme.css">
+    <script src="js/theme.js" defer></script>
+</head>
+<body data-ui="app" class="workspace-shell">
+    <a class="skip-link" href="#content">انتقل إلى المحتوى</a>
+    <aside id="sidebar" class="shell-rail"></aside>
+    <main id="content" class="workspace-content">
+        <div class="project-loading" id="projectLoading" role="status">جارٍ تحميل المشروع…</div>
+        <section id="projectView" hidden aria-labelledby="projectTitle">
+            <div class="breadcrumb"><a id="projectsCrumb" href="projects.html">المشاريع</a><span aria-hidden="true">/</span><span id="projectCrumb"></span></div>
+            <header class="project-heading">
+                <div class="project-identity">
+                    <div class="project-mark" id="projectMark" aria-hidden="true"></div>
+                    <div>
+                        <p class="project-state" id="projectState"></p>
+                        <h1 id="projectTitle"></h1>
+                        <p class="project-description" id="projectDescription" hidden></p>
+                    </div>
+                </div>
+                <div class="project-actions">
+                    <a class="workspace-button quiet" id="projectSettings" href="project-settings.html">الإعدادات</a>
+                    <button type="button" class="workspace-button primary" id="newTask">مهمة جديدة <span aria-hidden="true">+</span></button>
+                </div>
+            </header>
+            <div class="project-metrics" aria-label="ملخص حالة المهام">
+                <div><span>إجمالي المهام</span><strong id="metricTotal">—</strong></div>
+                <div><span>قيد التنفيذ</span><strong id="metricProgress">—</strong></div>
+                <div><span>المكتملة</span><strong id="metricDone">—</strong></div>
+                <div class="attention"><span>المتأخرة</span><strong id="metricOverdue">—</strong></div>
+            </div>
+            <nav class="project-nav" aria-label="عروض المشروع">
+                <a href="#tasks" id="overviewTab" aria-current="page">المهام</a>
+                <a href="kanban.html" id="boardLink">لوحة العمل</a>
+                <a href="gantt.html" id="ganttLink">المخطط الزمني</a>
+                <a href="calendar.html" id="calendarLink">التقويم</a>
+                <a href="#files" id="filesTab">الملفات</a>
+                <a href="chat.html" id="chatLink">المحادثة</a>
+            </nav>
+            <p id="pageStatus" class="workspace-status" role="status" aria-live="polite" hidden></p>
+            <section class="workspace-panel" id="tasks" aria-labelledby="taskHeading">
+                <header class="panel-header">
+                    <h2 id="taskHeading">مهام المشروع</h2>
+                    <label class="workspace-label compact">الحالة
+                        <select id="taskFilter" class="workspace-input">
+                            <option value="">كل الحالات</option>
+                            <option value="new">جديدة</option>
+                            <option value="ready">جاهزة</option>
+                            <option value="in-progress">قيد التنفيذ</option>
+                            <option value="review">تحت المراجعة</option>
+                            <option value="blocked">متعثرة</option>
+                            <option value="done">مكتملة</option>
+                        </select>
+                    </label>
+                </header>
+                <ul class="workspace-list" id="taskList"></ul>
+                <button class="workspace-button quiet more" type="button" id="moreTasks" hidden>تحميل مزيد من المهام</button>
+            </section>
+            <section class="workspace-panel" id="files" aria-labelledby="filesHeading" hidden>
+                <header class="panel-header">
+                    <div><h2 id="filesHeading">ملفات المشروع</h2><p id="folderPath">المجلد الرئيسي</p></div>
+                    <div class="file-actions">
+                        <button class="workspace-button quiet" id="rootFolder" type="button" hidden>المجلد الرئيسي</button>
+                        <button class="workspace-button quiet" id="newFolder" type="button">مجلد جديد</button>
+                        <label class="workspace-button primary upload-control">رفع ملف <input id="projectFile" type="file" aria-label="اختر ملفًا للرفع"></label>
+                    </div>
+                </header>
+                <ul class="workspace-list" id="fileList"></ul>
+            </section>
+        </section>
+    </main>
+    <dialog class="workspace-dialog" id="taskDialog" aria-labelledby="taskDialogTitle">
+        <form id="taskForm">
+            <h2 id="taskDialogTitle">مهمة جديدة</h2>
+            <label class="workspace-label">عنوان المهمة <input class="workspace-input" name="title" required maxlength="200" autofocus></label>
+            <label class="workspace-label">الوصف <textarea class="workspace-input" name="description" rows="3" maxlength="10000"></textarea></label>
+            <div class="dialog-row">
+                <label class="workspace-label">المسؤول <select class="workspace-input" name="assigneeId"><option value="">دون إسناد</option></select></label>
+                <label class="workspace-label">تاريخ الاستحقاق <input class="workspace-input" name="dueDate" type="date"></label>
+            </div>
+            <p class="workspace-status error" id="taskFormError" role="alert" hidden></p>
+            <div class="dialog-actions">
+                <button class="workspace-button quiet" type="button" data-close="taskDialog">إلغاء</button>
+                <button class="workspace-button primary" type="submit">إنشاء المهمة</button>
+            </div>
+        </form>
+    </dialog>
+    <dialog class="workspace-dialog" id="folderDialog" aria-labelledby="folderDialogTitle">
+        <form id="folderForm">
+            <h2 id="folderDialogTitle">مجلد جديد</h2>
+            <label class="workspace-label">اسم المجلد <input class="workspace-input" name="name" required maxlength="120" autofocus></label>
+            <p class="workspace-status error" id="folderFormError" role="alert" hidden></p>
+            <div class="dialog-actions">
+                <button class="workspace-button quiet" type="button" data-close="folderDialog">إلغاء</button>
+                <button class="workspace-button primary" type="submit">إنشاء المجلد</button>
+            </div>
+        </form>
+    </dialog>
+</body>
+</html>

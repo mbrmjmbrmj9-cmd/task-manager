@@ -6,7 +6,6 @@
     <title>Nivora | الفريق</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#2563EB">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
         :root { --sidebar-w: 240px; }
@@ -69,29 +68,15 @@
         @media (max-width: 1024px) { :root { --sidebar-w: 72px; } .sidebar { padding: 1rem 0.5rem; } .sidebar .logo { font-size: 1rem; text-align: center; } .sidebar .label, .sidebar .logo span { display: none; } .sidebar a { justify-content: center; padding: 0.5rem; } }
         @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 0.75rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } table { font-size: 0.7rem; } th, td { padding: 0.5rem; } .invite-card { flex-direction: column; align-items: flex-start; } }
     </style>
+<script src="js/config.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/theme.css">
+    <script src="js/theme.js" defer></script>
 </head>
-<body>
+<body data-ui="app">
     <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
 
-    <aside class="sidebar" id="sidebar">
-    <div class="logo">
-        <img src="img/logo.svg" alt="Nivora" class="logo-img">
-        <span>Nivora</span>
-    </div>
-    <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="label">لوحة القيادة</span></a>
-    <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg><span class="label">المهام</span></a>
-    <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">المشاريع</span></a>
-    <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg><span class="label">Kanban</span></a>
-    <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">Gantt</span></a>
-    <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
-    <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
-    <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg><span class="label">Workflows</span></a>
-    <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">القوالب</span></a>
-    <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg><span class="label">الأرشيف</span></a>
-    <a href="chat.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="label">المحادثة</span></a>
-    <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
-    <a href="teams.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">فرق العمل</span></a>
-</aside>
+    <aside id="sidebar" class="shell-rail"></aside>
 
     <main class="main">
         <div class="topbar">
@@ -151,23 +136,15 @@
         </div>
     </main>
 
-    <nav class="bottom-nav">
-        <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>الرئيسية</a>
-        <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg>مهام</a>
-        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg>Kanban</a>
-        <a href="team.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>فريق</a>
-        <a href="#" onclick="openSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>المزيد</a>
-    </nav>
-
     <div class="modal-overlay" id="inviteModal" onclick="if(event.target===this)closeInviteModal()">
         <div class="modal">
             <div class="modal-header"><h3>📧 دعوة عضو جديد</h3><button class="modal-close" onclick="closeInviteModal()">✕</button></div>
             <div class="modal-body">
-                <div class="form-group"><label>البريد الإلكتروني</label><input type="email" class="input" id="inviteEmail" placeholder="أدخل البريد"></div>
+                <div class="form-group"><label>البريد الإلكتروني</label></div>
                 <div class="form-group"><label>الدور</label><select class="select" id="inviteRole"><option value="member">عضو</option><option value="admin">مدير</option></select></div>
                 <p style="font-size:0.8rem;color:var(--text-muted);">أو شارك رمز: <strong id="modalInviteCode">---</strong></p>
             </div>
-            <div class="modal-footer"><button class="btn btn-outline" onclick="closeInviteModal()">إلغاء</button><button class="btn btn-primary" onclick="sendInvite()">إرسال</button></div>
+            <div class="modal-footer"><button class="btn btn-outline" onclick="closeInviteModal()">إلغاء</button><button class="btn btn-primary" onclick="sendInvite()">نسخ رابط الدعوة</button></div>
         </div>
     </div>
 
@@ -175,7 +152,7 @@
     <script>
         function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
         function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
-        const API = 'https://nivora-t9ov.onrender.com/api';
+        const API = Nivora.apiBase;
         const token = localStorage.getItem('token');
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         if (!token) window.location.href = 'login.html';
@@ -193,29 +170,20 @@
             const username = document.getElementById('topUsername');
             if (username) username.textContent = user.fullName || user.username || 'مستخدم';
             if (avatar) {
-                if (user.avatar) avatar.innerHTML = `<img src="${user.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                if (user.avatar) avatar.innerHTML = `<img src="${safeImageUrl(user.avatar)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
                 else avatar.textContent = getInitials(user.fullName || user.username);
             }
         });
 
-        async function getUserRole() {
-            if (!wsId) return 'member';
-            try {
-                const res = await fetch(`${API}/workspaces/${wsId}/members`, { headers: { 'Authorization': `Bearer ${token}` } });
-                if (!res.ok) return 'member';
-                const members = await res.json();
-                const current = members.find(m => (m.userId?._id || m.userId) === user.id);
-                return current?.role || 'member';
-            } catch (e) { return 'member'; }
-        }
 
         async function loadMembers() {
             document.getElementById('inviteCodeDisplay').textContent = localStorage.getItem('inviteCode') || '---';
-            currentUserRole = await getUserRole();
-            if (currentUserRole === 'owner') document.getElementById('leaveBtn').style.display = 'none';
             try {
                 const res = await fetch(`${API}/workspaces/${wsId}/members`, { headers: { 'Authorization': `Bearer ${token}` } });
-                const members = await res.json();
+                const members = await Nivora.read(res);
+                currentUserRole = members.find(member => member.userId?._id === (user.id || user._id))?.role || 'member';
+                document.getElementById('leaveBtn').hidden = currentUserRole === 'owner';
+                for (const control of document.querySelectorAll('[onclick="openInviteModal()"], [onclick="copyInviteCode()"]')) control.hidden = currentUserRole === 'member';
                 if (!members.length) { document.getElementById('membersBody').innerHTML = '<tr><td colspan="4" style="text-align:center;padding:2rem;">لا يوجد أعضاء</td></tr>'; loadActivity(); return; }
                 const isOwner = currentUserRole === 'owner';
                 const isAdmin = currentUserRole === 'owner' || currentUserRole === 'admin';
@@ -223,12 +191,12 @@
                     const mid = m.userId?._id || m.userId;
                     const avatar = m.userId?.avatar || '';
                     const name = m.userId?.fullName || m.userId?.username || m.userId?.email || 'مستخدم';
-                    const avatarHTML = avatar ? `<img src="${avatar}">` : getInitials(name);
+                    const avatarHTML = avatar ? `<img src="${safeImageUrl(avatar)}">` : getInitials(name);
                     return `<tr>
-                        <td><span class="avatar-cell">${avatarHTML}</span>${name}</td>
-                        <td>${m.role === 'owner' ? '<span class="role-badge role-owner">مالك</span>' : isOwner ? `<select class="role-select" onchange="changeRole('${mid}', this.value)"><option value="admin" ${m.role==='admin'?'selected':''}>مدير</option><option value="member" ${m.role==='member'?'selected':''}>عضو</option></select>` : `<span class="role-badge role-${m.role}">${m.role==='admin'?'مدير':'عضو'}</span>`}</td>
+                        <td><span class="avatar-cell">${avatarHTML}</span>${escapeHtml(name)}</td>
+                        <td>${m.role === 'owner' ? '<span class="role-badge role-owner">مالك</span>' : isOwner && mid ? `<select class="role-select" onchange="changeRole('${mid}', this.value)"><option value="admin" ${escapeHtml(m.role==='admin'?'selected':'')}>مدير</option><option value="member" ${escapeHtml(m.role==='member'?'selected':'')}>عضو</option></select>` : `<span class="role-badge role-${escapeHtml(m.role)}">${escapeHtml(m.role==='admin'?'مدير':'عضو')}</span>`}</td>
                         <td>${formatDate(m.joinedAt)}</td>
-                        <td>${m.role !== 'owner' && isAdmin ? `<button class="btn btn-outline btn-sm" style="color:var(--danger);" onclick="removeMember('${mid}')">✕</button>` : ''}</td>
+                        <td>${mid && (m.role === 'member' && isAdmin || m.role === 'admin' && isOwner) ? `<button class="btn btn-outline btn-sm" style="color:var(--danger);" onclick="removeMember('${mid}')">✕</button>` : ''}</td>
                     </tr>`;
                 }).join('');
                 loadActivity();
@@ -260,11 +228,14 @@
         }
 
         function copyInviteCode() { copyToClipboard(localStorage.getItem('inviteCode') || '').then(() => showToast('تم النسخ', 'success')); }
-        function sendInvite() {
-            const email = document.getElementById('inviteEmail').value.trim();
-            if (!email) { showToast('البريد مطلوب', 'warning'); return; }
-            const code = localStorage.getItem('inviteCode') || '';
-            closeInviteModal(); showToast(`تم إرسال الدعوة - الرمز: ${code}`, 'success');
+        async function sendInvite() {
+            const code = localStorage.getItem('inviteCode');
+            if (!code || currentUserRole === 'member') return showToast('رمز الدعوة غير متاح', 'warning');
+            const origin = window.Capacitor?.isNativePlatform?.() ? 'https://task-manager-theta-beryl-91.vercel.app' : location.origin;
+            const link = new URL('/join-workspace.html', origin);
+            link.searchParams.set('code', code);
+            try { await copyToClipboard(link.href); showToast('نُسخ رابط الدعوة'); closeInviteModal(); }
+            catch { showToast('تعذر نسخ الرابط. شارك الرمز الظاهر أعلاه.', 'error'); }
         }
 
         async function loadActivity() {
@@ -275,14 +246,14 @@
                 if (!activities || activities.length === 0) { container.innerHTML = '<p style="color:var(--text-muted);text-align:center;">لا يوجد نشاط</p>'; return; }
                 container.innerHTML = activities.slice(0, 30).map(a => {
                     const dotClass = a.type === 'project' ? 'create' : a.type === 'member' ? 'member' : a.action?.includes('إنشاء') ? 'create' : a.action?.includes('done') ? 'complete' : a.action?.includes('تعليق') ? 'comment' : a.action?.includes('ملف') ? 'file' : 'default';
-                    return `<div class="activity-item"><span class="activity-dot ${dotClass}"></span><div class="activity-content"><span><strong>${a.username || 'مستخدم'}</strong> ${a.action} - ${a.details || ''} ${a.taskTitle ? `<span class="act-task" onclick="window.location.href='task.html?id=${a.taskId}'">${a.taskTitle}</span>` : ''}</span><span class="act-time">${timeAgo(a.createdAt)}</span></div></div>`;
+                    return `<div class="activity-item"><span class="activity-dot ${dotClass}"></span><div class="activity-content"><span><strong>${escapeHtml(a.username || 'مستخدم')}</strong> ${escapeHtml(a.action)} - ${escapeHtml(a.details || '')} ${a.taskTitle ? `<span class="act-task" onclick="window.location.href='task.html?id=${a.taskId}'">${escapeHtml(a.taskTitle)}</span>` : ''}</span><span class="act-time">${timeAgo(a.createdAt)}</span></div></div>`;
                 }).join('');
             } catch (err) { document.getElementById('activityLog').innerHTML = '<p style="color:var(--text-muted);">تعذر التحميل</p>'; }
         }
 
         if (!wsId || wsId === 'null') {
             fetch(`${API}/workspaces`, { headers: { 'Authorization': `Bearer ${token}` } }).then(r => r.json()).then(wss => {
-                if (wss.length) { localStorage.setItem('workspaceId', wss[0]._id); localStorage.setItem('inviteCode', wss[0].inviteCode); wsId = wss[0]._id; loadMembers(); }
+                if (wss.length) { localStorage.setItem('workspaceId', wss[0]._id); Nivora.setWorkspace(wss[0]); wsId = wss[0]._id; loadMembers(); }
                 else { window.location.href = 'workspace.html'; }
             });
         } else { loadMembers(); }
@@ -308,7 +279,7 @@ function renderNotifications() {
     }
     container.innerHTML = notifications.slice(0, 20).map(n => `
         <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border-light);cursor:pointer;${n.isRead ? '' : 'background:var(--primary-light);'}" onclick="readNotification('${n._id}')">
-            <div style="font-size:0.85rem;font-weight:600;">${n.message}</div>
+            <div style="font-size:0.85rem;font-weight:600;">${escapeHtml(n.message)}</div>
             <div style="font-size:0.7rem;color:var(--text-muted);margin-top:0.2rem;">${timeAgo(n.createdAt)}</div>
         </div>
     `).join('');

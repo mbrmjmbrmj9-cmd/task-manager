@@ -1,367 +1,483 @@
 const express = require('express');
+const path = require('node:path');
+const { Types } = require('mongoose');
 const Task = require('../models/Task');
+const Project = require('../models/Project');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
-const { authenticate, requireTaskOwnership, requireTenantAccess, AUTH_ERRORS } = require('../middleware/auth');
-const { requiredFields, maxLength, sanitize, allowedValues, requireValidObjectId } = require('../middleware/validate');
+const { authenticate, taskAccess, getProject, requireWorkspace, validateId, sameId, accessError } = require('../middleware/auth');
+const { legacyDir, attachmentMultipart, uploadName, removeFile, persistUpload, removeStoredUpload, streamStoredUpload } = require('../config/storage');
 
 const router = express.Router();
+router.use(authenticate);
 
-// ✅ استخراج mentions من النص وإرسال إشعارات
-async function processMentions(text, taskId, projectId, fromUserId, fromUsername) {
-    const mentionRegex = /@(\w+)/g;
-    const mentions = [...text.matchAll(mentionRegex)].map(m => m[1]);
-    
-    for (const username of mentions) {
-        try {
-            const user = await User.findOne({ username });
-            if (user && user._id.toString() !== fromUserId) {
-                await Notification.create({
-                    userId: user._id,
-                    fromUser: fromUsername,
-                    type: 'mention',
-                    message: `${fromUsername} أشار إليك في تعليق`,
-                    link: `/task.html?id=${taskId}`,
-                    taskId,
-                    projectId
-                });
+const statuses = Task.schema.path('status').enumValues;
+const priorities = Task.schema.path('priority').enumValues;
+const statusProgress = { new: 0, ready: 0, 'in-progress': 40, review: 75, done: 100 };
+const dependencyTypes = ['finish-to-start', 'start-to-start', 'finish-to-finish'];
+
+function stringValue(value, label, max, required = false) {
+    if (typeof value !== 'string' || value.length > max || (required && !value.trim())) {
+        throw accessError(400, label + ' غير صالح');
+    }
+    return value.trim();
+}
+
+function dateValue(value) {
+    if (value === null || value === '') return null;
+    if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}(?:$|T)/.test(value)) throw accessError(400, 'التاريخ غير صالح');
+    const date = new Date(value);
+    if (!Number.isFinite(date.getTime()) || (value.length === 10 && date.toISOString().slice(0, 10) !== value)) {
+        throw accessError(400, 'التاريخ غير صالح');
+    }
+    return date;
+}
+
+function taskFields(input) {
+    const fields = {};
+    if (input.title !== undefined) fields.title = stringValue(input.title, 'عنوان المهمة', 200, true);
+    if (input.description !== undefined) fields.description = stringValue(input.description, 'وصف المهمة', 10000);
+    if (input.status !== undefined) {
+        if (!statuses.includes(input.status)) throw accessError(400, 'حالة المهمة غير صالحة');
+        fields.status = input.status;
+    }
+    if (input.priority !== undefined) {
+        if (!priorities.includes(input.priority)) throw accessError(400, 'أولوية المهمة غير صالحة');
+        fields.priority = input.priority;
+    }
+    for (const field of ['startDate', 'dueDate']) {
+        if (input[field] !== undefined) fields[field] = dateValue(input[field]);
+    }
+    if (input.followers !== undefined) {
+        if (!Array.isArray(input.followers) || input.followers.length > 50) throw accessError(400, 'قائمة المتابعين غير صالحة');
+        fields.followers = [...new Set(input.followers.map(name => stringValue(name, 'اسم المتابع', 254, true)))];
+    }
+    return fields;
+}
+
+function validateDates(fields, existing = {}) {
+    const start = fields.startDate === undefined ? existing.startDate : fields.startDate;
+    const due = fields.dueDate === undefined ? existing.dueDate : fields.dueDate;
+    if (start && due && start > due) throw accessError(400, 'تاريخ البدء يجب أن يسبق الاستحقاق');
+}
+
+async function assignment(input, workspace, previous) {
+    if (input.assigneeId === undefined) {
+        if (input.assignee === undefined || input.assignee === previous?.assignee) return {};
+        const assignee = stringValue(input.assignee, 'اسم المسؤول', 254);
+        return { assignee, assigneeId: null };
+    }
+    if (input.assigneeId === null || input.assigneeId === '') return { assigneeId: null, assignee: '' };
+    const id = validateId(input.assigneeId);
+    if (!workspace?.members.some(member => sameId(member.userId, id))) {
+        throw accessError(400, 'اختر مسؤولًا من أعضاء مساحة العمل');
+    }
+    const member = await User.findById(id).select('username fullName isActive').lean();
+    if (!member || member.isActive === false) throw accessError(400, 'حساب المسؤول غير متاح');
+    return { assigneeId: member._id, assignee: member.fullName || member.username };
+}
+
+function tasksInProject(project, userId) {
+    if (!project.workspaceId) return { projectId: project._id, workspaceId: null, userId };
+    return { projectId: project._id, $or: [{ workspaceId: project.workspaceId }, { workspaceId: null }] };
+}
+
+async function taskFilter(query, userId) {
+    if (query.projectId !== undefined) {
+        const project = await getProject(query.projectId, userId);
+        if (query.workspaceId !== undefined && !sameId(query.workspaceId, project.workspaceId)) {
+            throw accessError(404, 'المشروع غير موجود في مساحة العمل الحالية');
+        }
+        return tasksInProject(project, userId);
+    }
+    if (query.workspaceId !== undefined) {
+        const { workspace } = await requireWorkspace(query.workspaceId, userId);
+        const projectIds = await Project.distinct('_id', { workspaceId: workspace._id });
+        return { $or: [
+            { workspaceId: workspace._id, projectId: null },
+            { workspaceId: { $in: [workspace._id, null] }, projectId: { $in: projectIds } }
+        ] };
+    }
+    const projectIds = await Project.distinct('_id', { userId, workspaceId: null });
+    return { userId, workspaceId: null, projectId: { $in: [null, ...projectIds] } };
+}
+
+async function listTasks(query, userId, res, archived = false) {
+    const filter = await taskFilter(query, userId);
+    if (query.status !== undefined && !statuses.includes(query.status)) throw accessError(400, 'حالة المهمة غير صالحة');
+    if (query.priority !== undefined && !priorities.includes(query.priority)) throw accessError(400, 'أولوية المهمة غير صالحة');
+    if (archived || query.status) filter.status = archived ? 'archived' : query.status;
+    if (query.priority) filter.priority = query.priority;
+    if (query.assigneeId !== undefined) filter.assigneeId = validateId(query.assigneeId);
+    if (query.assignee !== undefined) filter.assignee = stringValue(query.assignee, 'المسؤول', 254);
+    if (query.overdue === 'true') {
+        filter.dueDate = { $lt: new Date() };
+        filter.$and = [{ status: { $nin: ['done', 'archived'] } }];
+    }
+    if (query.search !== undefined) {
+        const search = stringValue(query.search, 'البحث', 120);
+        const literal = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const searchFilter = { $or: [{ title: { $regex: literal, $options: 'i' } }, { description: { $regex: literal, $options: 'i' } }] };
+        (filter.$and ||= []).push(searchFilter);
+    }
+    const tasks = Task.find(filter).sort({ createdAt: -1, _id: -1 });
+    if (query.limit !== undefined) {
+        const limit = typeof query.limit === 'string' ? Number(query.limit) : NaN;
+        const page = query.page === undefined ? 1 : typeof query.page === 'string' ? Number(query.page) : NaN;
+        if (!Number.isInteger(limit) || limit < 1 || limit > 100 || !Number.isInteger(page) || page < 1 || page > 1000) {
+            throw accessError(400, 'صفحة النتائج غير صالحة');
+        }
+        const result = await tasks.skip((page - 1) * limit).limit(limit + 1).lean();
+        res.set('X-Has-More', String(result.length > limit)).json(result.slice(0, limit));
+        return;
+    }
+    res.json(await tasks.lean());
+}
+
+router.get('/', (req, res) => listTasks(req.query, req.user.id, res));
+router.get('/archived/list', (req, res) => listTasks(req.query, req.user.id, res, true));
+
+router.get('/stats/:projectId', async (req, res) => {
+    const project = await getProject(req.params.projectId, req.user.id);
+    const filter = tasksInProject(project, req.user.id);
+    const [total, done, inProgress, overdue] = await Promise.all([
+        Task.countDocuments({ ...filter, status: { $ne: 'archived' } }),
+        Task.countDocuments({ ...filter, status: 'done' }),
+        Task.countDocuments({ ...filter, status: 'in-progress' }),
+        Task.countDocuments({ ...filter, dueDate: { $lt: new Date() }, status: { $nin: ['done', 'archived'] } })
+    ]);
+    res.json({ total, done, inProgress, overdue, completionRate: total ? Math.round(done * 100 / total) : 0 });
+});
+
+router.get('/:id', taskAccess(), (req, res) => {
+    res.json({ ...req.task.toObject(), workspaceId: req.workspace?._id || null });
+});
+
+router.post('/', async (req, res) => {
+    const input = req.body || {};
+    const fields = taskFields(input);
+    if (!fields.title) throw accessError(400, 'عنوان المهمة مطلوب');
+    validateDates(fields);
+    const project = input.projectId ? await getProject(input.projectId, req.user.id) : null;
+    if (project?.status === 'archived') throw accessError(409, 'استعد المشروع قبل إضافة المهام');
+    if (project && input.workspaceId && !sameId(project.workspaceId, input.workspaceId)) {
+        throw accessError(400, 'المشروع لا ينتمي إلى مساحة العمل المحددة');
+    }
+    const workspaceId = project ? project.workspaceId : input.workspaceId;
+    const workspace = workspaceId ? (await requireWorkspace(workspaceId, req.user.id)).workspace : null;
+    const task = await Task.create({
+        ...fields,
+        ...await assignment(input, workspace),
+        projectId: project?._id || null,
+        project: project?.name || (input.project === undefined ? '' : stringValue(input.project, 'اسم المشروع', 120)),
+        workspaceId: workspace?._id || null,
+        userId: req.user.id,
+        progress: statusProgress[fields.status] || 0,
+        completedAt: fields.status === 'done' ? new Date() : null,
+        archivedAt: fields.status === 'archived' ? new Date() : null,
+        archivedBy: fields.status === 'archived' ? req.user.id : null,
+        activity: [event(req, 'إنشاء المهمة')]
+    });
+    await notifyAssignment(task, req);
+    res.status(201).json(task);
+});
+
+function event(req, action, details = '') {
+    return { action, userId: req.user.id, username: req.user.username, details };
+}
+
+async function notifyAssignment(task, req, previousAssignee) {
+    if (!task.assigneeId || sameId(task.assigneeId, previousAssignee) || sameId(task.assigneeId, req.user.id)) return;
+    await Notification.create({
+        userId: task.assigneeId, fromUser: req.user.username, type: 'task_assigned',
+        message: 'أُسندت إليك مهمة', link: '/task.html?id=' + task._id, taskId: task._id, projectId: task.projectId
+    }).catch(() => console.warn('Task assignment notification could not be saved.'));
+}
+
+function changeStatus(task, status, req) {
+    if (task.status === status) return;
+    task.activity.push(event(req, 'تغيير الحالة', task.status + ' ← ' + status));
+    task.status = status;
+    task.completedAt = status === 'done' ? new Date() : null;
+    task.archivedAt = status === 'archived' ? new Date() : null;
+    task.archivedBy = status === 'archived' ? req.user.id : null;
+    if (statusProgress[status] !== undefined) task.progress = statusProgress[status];
+}
+
+async function validateDependencies(input, task, userId) {
+    if (!Array.isArray(input) || input.length > 50) throw accessError(400, 'قائمة التبعيات غير صالحة');
+    const ids = new Set();
+    const deps = input.map(entry => {
+        const taskId = String(validateId(entry?.taskId));
+        const type = entry.type ?? 'finish-to-start';
+        if (!dependencyTypes.includes(type) || sameId(taskId, task._id) || ids.has(taskId)) {
+            throw accessError(400, 'تبعية مكررة أو غير صالحة');
+        }
+        ids.add(taskId);
+        return { taskId, type };
+    });
+    if (!ids.size) return deps;
+
+    const filter = task.projectId
+        ? await taskFilter({ projectId: String(task.projectId) }, userId)
+        : { userId, projectId: null, workspaceId: task.workspaceId || null };
+    const related = await Task.find(filter).select('dependencies').lean();
+    const graph = new Map(related.map(item => [String(item._id), item.dependencies || []]));
+    const visit = [...ids];
+    const visited = new Set();
+    while (visit.length) {
+        const id = visit.pop();
+        if (sameId(id, task._id)) throw accessError(400, 'هذه التبعية تُنشئ حلقة بين المهام');
+        if (visited.has(id)) continue;
+        visited.add(id);
+        if (!graph.has(id)) throw accessError(400, 'المهمة المرتبطة غير متاحة في المشروع');
+        for (const dependency of graph.get(id)) visit.push(String(dependency.taskId));
+    }
+    return deps;
+}
+
+router.patch('/:id', taskAccess('edit'), async (req, res) => {
+    const input = req.body || {};
+    const task = req.task;
+    const previousAssignee = task.assigneeId;
+    const { status, ...fields } = taskFields(input);
+    if (status && status !== task.status && (status === 'archived' || task.status === 'archived')) {
+        throw accessError(400, 'استخدم إجراء الأرشفة أو الاستعادة لتغيير هذه الحالة');
+    }
+    validateDates(fields, task);
+    if (input.workspaceId !== undefined && !(sameId(input.workspaceId, req.workspace?._id)
+        || (!input.workspaceId && !req.workspace))) {
+        throw accessError(400, 'لا يمكن نقل المهمة بين مساحات العمل بهذا الإجراء');
+    }
+    if (input.projectId !== undefined && !sameId(input.projectId, task.projectId)) {
+        const project = input.projectId ? await getProject(input.projectId, req.user.id) : null;
+        if (project?.status === 'archived') throw accessError(409, 'استعد المشروع قبل نقل المهمة إليه');
+        if ((project?.workspaceId || req.workspace) && !sameId(project?.workspaceId, req.workspace?._id)) {
+            throw accessError(400, 'اختر مشروعًا من مساحة العمل الحالية');
+        }
+        if (task.dependencies.length || task.parentTask || await Task.exists({ parentTask: task._id })) {
+            throw accessError(409, 'لا يمكن نقل مهمة مرتبطة بمهام أخرى');
+        }
+        fields.projectId = project?._id || null;
+        fields.project = project?.name || '';
+    }
+    if (input.progress !== undefined) {
+        if (typeof input.progress !== 'number' || !Number.isFinite(input.progress) || input.progress < 0 || input.progress > 100) {
+            throw accessError(400, 'نسبة التقدم غير صالحة');
+        }
+        fields.progress = input.progress;
+    }
+    if (input.dependencies !== undefined) {
+        if (fields.projectId !== undefined) throw accessError(400, 'حدّث التبعيات بعد نقل المهمة');
+        fields.dependencies = await validateDependencies(input.dependencies, task, req.user.id);
+    }
+    task.set({ ...fields, ...await assignment(input, req.workspace, task) });
+    if (status) changeStatus(task, status, req);
+    await task.save();
+    if (status && task.parentTask) await updateParentProgress(task.parentTask);
+    await notifyAssignment(task, req, previousAssignee);
+    res.json({ message: 'تم تحديث المهمة بنجاح', task });
+});
+
+async function deleteTask(req, res) {
+    if (await Task.exists({ parentTask: req.task._id })) throw accessError(409, 'انقل المهام الفرعية أو احذفها أولًا');
+    const storageKeys = req.task.attachments.map(file => file.storageKey);
+    await req.task.deleteOne();
+    for (const key of storageKeys) await removeStoredUpload(key);
+    if (req.task.parentTask) await updateParentProgress(req.task.parentTask);
+    res.json({ message: 'تم حذف المهمة' });
+}
+
+router.delete('/:id', taskAccess('manage'), deleteTask);
+router.delete('/:id/permanent', taskAccess('manage'), (req, res) => {
+    if (req.task.status !== 'archived') throw accessError(409, 'أرشف المهمة قبل حذفها نهائيًا');
+    return deleteTask(req, res);
+});
+
+router.post('/:id/comments', taskAccess(), async (req, res) => {
+    const text = stringValue(req.body?.text, 'التعليق', 2000, true);
+    req.task.comments.push({ text, userId: req.user.id, username: req.user.username });
+    req.task.activity.push(event(req, 'تعليق', text.slice(0, 50)));
+    await req.task.save();
+
+    if (req.workspace) {
+        const names = [...new Set([...text.matchAll(/@([\p{L}\p{N}_.+@-]+)/gu)].map(match => match[1]))].slice(0, 10);
+        if (names.length) {
+            const members = await User.find({
+                _id: { $in: req.workspace.members.map(member => member.userId), $ne: req.user.id },
+                username: { $in: names },
+                isActive: { $ne: false }
+            }).select('_id').lean();
+            if (members.length) {
+                await Notification.insertMany(members.map(member => ({
+                    userId: member._id, fromUser: req.user.username, type: 'mention',
+                    message: req.user.username + ' أشار إليك في تعليق',
+                    link: '/task.html?id=' + req.task._id, taskId: req.task._id, projectId: req.task.projectId
+                }))).catch(() => console.warn('Task mention notifications could not be saved.'));
             }
-        } catch (err) {
-            console.error('خطأ في إرسال إشعار mention:', err);
         }
     }
+    res.json(req.task);
+});
+
+router.post('/:id/checklist', taskAccess('edit'), async (req, res) => {
+    req.task.checklist.push({ text: stringValue(req.body?.text, 'البند', 500, true) });
+    await req.task.save();
+    res.json(req.task);
+});
+
+router.patch('/:id/checklist/:itemId', taskAccess('edit'), async (req, res) => {
+    const item = req.task.checklist.id(validateId(req.params.itemId));
+    if (!item) throw accessError(404, 'البند غير موجود');
+    if (typeof req.body?.done !== 'boolean') throw accessError(400, 'حالة البند غير صالحة');
+    item.done = req.body.done;
+    await req.task.save();
+    res.json(req.task);
+});
+
+router.delete('/:id/checklist/:itemId', taskAccess('edit'), async (req, res) => {
+    req.task.checklist.pull(validateId(req.params.itemId));
+    await req.task.save();
+    res.json(req.task);
+});
+
+router.post('/:id/attachments/upload', taskAccess('edit'), attachmentMultipart, async (req, res) => {
+    if (!req.file) throw accessError(400, 'اختر ملفًا');
+    try {
+        if (req.task.attachments.length >= 100) throw accessError(409, 'بلغت المهمة الحد الأقصى للمرفقات');
+        const id = new Types.ObjectId();
+        const name = uploadName(req.file.originalname, 'مرفق');
+        await persistUpload(req.file, req.file.filename);
+        req.task.attachments.push({
+            _id: id, name, storageKey: req.file.filename, type: 'file', size: req.file.size,
+            url: '/api/tasks/' + req.task._id + '/attachments/' + id + '/download'
+        });
+        req.task.activity.push(event(req, 'رفع ملف', name));
+        await req.task.save();
+    } catch (error) {
+        await removeStoredUpload(req.file.filename);
+        await removeFile(req.file.path);
+        throw error;
+    }
+    res.status(201).json(req.task);
+});
+
+router.post('/:id/attachments', taskAccess('edit'), async (req, res) => {
+    const { name, url, type, size } = req.body || {};
+    const label = stringValue(name, 'اسم المرفق', 255, true);
+    const link = stringValue(url, 'رابط المرفق', 2048, true);
+    if (!/^https?:\/\/[^\s"'<>]+$/i.test(link) || /^\/uploads\//.test(new URL(link).pathname)) {
+        throw accessError(400, 'رابط المرفق غير صالح');
+    }
+    req.task.attachments.push({ name: label, url: link, type: type || 'file', size: Number(size) || 0 });
+    req.task.activity.push(event(req, 'إضافة مرفق', label));
+    await req.task.save();
+    res.json(req.task);
+});
+
+router.get('/:id/attachments/:attId/download', taskAccess(), async (req, res, next) => {
+    const attachment = req.task.attachments.id(validateId(req.params.attId));
+    if (!attachment) throw accessError(404, 'المرفق غير موجود');
+    const key = attachment.storageKey;
+    res.set('Cache-Control', 'private, no-store');
+    if (typeof key === 'string' && /^[a-f0-9-]{36}$/.test(key)) {
+        return streamStoredUpload(key, res, next, { name: attachment.name });
+    }
+    let url;
+    try { url = new URL(attachment.url, 'http://localhost'); } catch { /* invalid legacy link */ }
+    const legacy = url?.pathname.match(/^\/uploads\/([a-zA-Z0-9._-]+)$/);
+    if (!legacy || legacy[1] === '.' || legacy[1] === '..') throw accessError(404, 'الملف غير متاح للتنزيل');
+    const filename = path.join(legacyDir, legacy[1]);
+    res.download(filename, attachment.name, { headers: { 'Content-Type': 'application/octet-stream' } }, error => {
+        if (error) next(error);
+    });
+});
+
+router.delete('/:id/attachments/:attId', taskAccess('edit'), async (req, res) => {
+    const id = validateId(req.params.attId);
+    const attachment = req.task.attachments.id(id);
+    if (!attachment) throw accessError(404, 'المرفق غير موجود');
+    const key = attachment.storageKey;
+    req.task.attachments.pull(id);
+    req.task.activity.push(event(req, 'حذف مرفق'));
+    await req.task.save();
+    await removeStoredUpload(key);
+    res.json(req.task);
+});
+
+router.delete('/:id/dependencies/:dependencyId', taskAccess('edit'), async (req, res) => {
+    req.task.dependencies.pull(validateId(req.params.dependencyId));
+    await req.task.save();
+    res.json(req.task);
+});
+
+router.post('/:id/dependencies', taskAccess('edit'), async (req, res) => {
+    const task = req.task;
+    const deps = [...task.dependencies, { taskId: req.body?.taskId, type: req.body?.type }];
+    await validateDependencies(deps, task, req.user.id);
+    task.dependencies.push(deps.at(-1));
+    await task.save();
+    res.status(201).json(task);
+});
+
+router.get('/:id/subtasks', taskAccess(), async (req, res) => {
+    const filter = await taskFilter(req.task.projectId ? { projectId: String(req.task.projectId) }
+        : req.workspace ? { workspaceId: String(req.workspace._id) } : {}, req.user.id);
+    res.json(await Task.find({ ...filter, parentTask: req.task._id }).sort({ createdAt: -1 }).lean());
+});
+
+router.post('/:id/subtasks', taskAccess('edit'), async (req, res) => {
+    const parent = req.task;
+    const input = req.body || {};
+    const fields = taskFields(input);
+    if (!fields.title) throw accessError(400, 'عنوان المهمة مطلوب');
+    validateDates(fields);
+    const task = await Task.create({
+        priority: parent.priority,
+        ...fields,
+        ...await assignment(input, req.workspace),
+        project: parent.project,
+        projectId: parent.projectId,
+        workspaceId: req.workspace?._id || null,
+        parentTask: parent._id,
+        userId: req.user.id,
+        activity: [event(req, 'إنشاء مهمة فرعية', parent.title)]
+    });
+    await updateParentProgress(parent._id);
+    await notifyAssignment(task, req);
+    res.status(201).json(task);
+});
+
+router.delete('/:id/subtasks/:subtaskId', taskAccess('manage'), async (req, res) => {
+    const subtask = await Task.findOne({ _id: validateId(req.params.subtaskId), parentTask: req.task._id });
+    if (!subtask || (subtask.workspaceId && !sameId(subtask.workspaceId, req.workspace?._id))
+        || !sameId(subtask.projectId || req.task._id, req.task.projectId || req.task._id)) {
+        throw accessError(404, 'المهمة الفرعية غير موجودة');
+    }
+    if (await Task.exists({ parentTask: subtask._id })) throw accessError(409, 'احذف المهام الفرعية التابعة أولًا');
+    await subtask.deleteOne();
+    await updateParentProgress(req.task._id);
+    res.json({ message: 'تم حذف المهمة الفرعية' });
+});
+
+function archiveStatus(status, message) {
+    return async (req, res) => {
+        changeStatus(req.task, status, req);
+        await req.task.save();
+        if (req.task.parentTask) await updateParentProgress(req.task.parentTask);
+        res.json({ message, task: req.task });
+    };
 }
 
-// ✅ جلب جميع المهام (مع فلترة + Tenant Access)
-router.get('/', authenticate, async (req, res) => {
-    try {
-        const filter = { userId: req.user.id };
-        
-        if (req.query.projectId) filter.projectId = req.query.projectId;
-        if (req.query.workspaceId) filter.workspaceId = req.query.workspaceId;
-        if (req.query.status) filter.status = req.query.status;
-        if (req.query.priority) filter.priority = req.query.priority;
-        if (req.query.assignee) filter.assignee = req.query.assignee;
-        if (req.query.overdue === 'true') {
-            filter.dueDate = { $lt: new Date() };
-            filter.status = { $ne: 'done' };
-        }
-        if (req.query.search) {
-            filter.$or = [
-                { title: { $regex: req.query.search, $options: 'i' } },
-                { description: { $regex: req.query.search, $options: 'i' } }
-            ];
-        }
-        
-        const tasks = await Task.find(filter).sort({ createdAt: -1 });
-        res.json(tasks);
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في جلب المهام' });
-    }
-});
+router.patch('/:id/archive', taskAccess('manage'), archiveStatus('archived', 'تمت أرشفة المهمة'));
+router.patch('/:id/restore', taskAccess('manage'), archiveStatus('new', 'تمت استعادة المهمة'));
 
-// ✅ جلب مهمة واحدة (+ Tenant Access)
-router.get('/:id', authenticate, requireValidObjectId('id'), async (req, res) => {
-    try {
-        const task = await Task.findOne({ _id: req.params.id, userId: req.user.id });
-        if (!task) return res.status(404).json({ error: 'مهمة غير موجودة' });
-        res.json(task);
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في جلب المهمة' });
-    }
-});
-
-// ✅ إنشاء مهمة (مع Validation)
-router.post('/', authenticate, requiredFields('title'), sanitize('title'), maxLength('title', 200), async (req, res) => {
-    try {
-        const { title, description, priority, project, projectId, workspaceId, dueDate, status, assignee, startDate } = req.body;
-        if (!title) return res.status(400).json({ error: 'العنوان مطلوب' });
-
-        // ✅ إذا كان هناك workspaceId، تحقق من العضوية
-        if (workspaceId) {
-            const Workspace = require('../models/Workspace');
-// في الأعلى
-            if (!ws) return res.status(404).json({ error: 'مساحة العمل غير موجودة' });
-            const isMember = ws.members.some(m => m.userId.toString() === req.user.id);
-            if (!isMember) return res.status(403).json({ error: AUTH_ERRORS.TENANT_ACCESS_DENIED });
-        }
-
-        const task = await Task.create({
-            title,
-            description: description || '',
-            priority: priority || 'medium',
-            project: project || '',
-            projectId: projectId || null,
-            workspaceId: workspaceId || null,
-            status: status || 'new',
-            dueDate: dueDate || null,
-            startDate: startDate || null,
-            assignee: assignee || '',
-            userId: req.user.id,
-            progress: 0,
-            activity: [{ action: 'إنشاء المهمة', username: req.user.username, details: 'تم إنشاء المهمة' }]
-        });
-        res.status(201).json(task);
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في إنشاء المهمة' });
-    }
-});
-
-// ✅ تحديث مهمة (المالك فقط)
-router.patch('/:id', authenticate, requireTaskOwnership, async (req, res) => {
-    try {
-        const task = req.task;
-        const allowed = ['title', 'description', 'status', 'priority', 'project', 'projectId', 'dueDate', 'startDate', 'progress', 'assignee', 'workspaceId'];
-        
-        allowed.forEach(field => {
-            if (req.body[field] !== undefined) task[field] = req.body[field];
-        });
-
-        if (req.body.status && req.body.status !== task.status) {
-            task.activity.push({ action: 'تغيير الحالة', username: req.user.username, details: `من ${task.status} إلى ${req.body.status}` });
-        }
-
-        task.progress = calculateProgress(task);
-
-        await task.save();
-        res.json({ message: 'تم تحديث المهمة بنجاح', task });
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في تحديث المهمة' });
-    }
-});
-
-// ✅ حذف مهمة (المالك فقط)
-router.delete('/:id', authenticate, requireTaskOwnership, async (req, res) => {
-    try {
-        await Task.findByIdAndDelete(req.params.id);
-        res.json({ message: 'تم حذف المهمة بنجاح' });
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في حذف المهمة' });
-    }
-});
-
-// ========== Comments ==========
-router.post('/:id/comments', authenticate, requiredFields('text'), sanitize('text'), maxLength('text', 2000), async (req, res) => {
-    try {
-        const task = await Task.findOne({ _id: req.params.id, userId: req.user.id });
-        if (!task) return res.status(404).json({ error: 'مهمة غير موجودة' });
-        
-        task.comments.push({ text: req.body.text, userId: req.user.id, username: req.user.username });
-        task.activity.push({ action: 'تعليق', username: req.user.username, details: req.body.text.substring(0, 50) });
-        await task.save();
-        
-        await processMentions(req.body.text, task._id, task.projectId, req.user.id, req.user.username);
-        
-        res.json(task);
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في إضافة التعليق' });
-    }
-});
-
-// ========== Checklist ==========
-router.post('/:id/checklist', authenticate, requireTaskOwnership, requiredFields('text'), async (req, res) => {
-    try {
-        const task = req.task;
-        task.checklist.push({ text: req.body.text });
-        task.activity.push({ action: 'إضافة بند', username: req.user.username, details: req.body.text });
-        await task.save();
-        res.json(task);
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في إضافة البند' });
-    }
-});
-
-router.patch('/:id/checklist/:itemId', authenticate, requireTaskOwnership, async (req, res) => {
-    try {
-        const task = req.task;
-        const item = task.checklist.id(req.params.itemId);
-        if (!item) return res.status(404).json({ error: 'بند غير موجود' });
-        if (req.body.done !== undefined) item.done = req.body.done;
-        await task.save();
-        res.json(task);
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في تحديث البند' });
-    }
-});
-
-router.delete('/:id/checklist/:itemId', authenticate, requireTaskOwnership, async (req, res) => {
-    try {
-        const task = req.task;
-        task.checklist.pull(req.params.itemId);
-        await task.save();
-        res.json(task);
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في حذف البند' });
-    }
-});
-
-// ========== Attachments ==========
-router.post('/:id/attachments', authenticate, requireTaskOwnership, requiredFields('name', 'url'), async (req, res) => {
-    try {
-        const task = req.task;
-        const { name, url, type, size } = req.body;
-        task.attachments.push({ name, url, type: type || 'file', size: size || 0 });
-        task.activity.push({ action: 'رفع ملف', username: req.user.username, details: name });
-        await task.save();
-        res.json(task);
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في رفع الملف' });
-    }
-});
-
-router.delete('/:id/attachments/:attId', authenticate, async (req, res) => {
-    try {
-        const task = await Task.findById(req.params.id);
-        if (!task) return res.status(404).json({ error: 'مهمة غير موجودة' });
-        
-        task.attachments.pull(req.params.attId);
-        task.activity.push({ action: 'حذف مرفق', username: req.user.username, details: 'تم حذف مرفق' });
-        
-        await task.save();
-        res.json(task);
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في حذف المرفق' });
-    }
-});
-
-// ========== Subtasks ==========
-router.get('/:id/subtasks', authenticate, async (req, res) => {
-    try {
-        const subtasks = await Task.find({ parentTask: req.params.id, userId: req.user.id }).sort({ createdAt: -1 });
-        res.json(subtasks);
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في جلب المهام الفرعية' });
-    }
-});
-
-router.post('/:id/subtasks', authenticate, requiredFields('title'), async (req, res) => {
-    try {
-        const parentTask = await Task.findOne({ _id: req.params.id, userId: req.user.id });
-        if (!parentTask) return res.status(404).json({ error: 'المهمة الأصلية غير موجودة' });
-        
-        const subtask = await Task.create({
-            title: req.body.title,
-            priority: req.body.priority || parentTask.priority,
-            assignee: req.body.assignee || '',
-            dueDate: req.body.dueDate || null,
-            project: parentTask.project,
-            projectId: parentTask.projectId,
-            workspaceId: parentTask.workspaceId,
-            parentTask: parentTask._id,
-            userId: req.user.id,
-            activity: [{ action: 'إنشاء مهمة فرعية', username: req.user.username, details: `ضمن: ${parentTask.title}` }]
-        });
-        
-        await updateParentProgress(parentTask._id);
-        
-        res.status(201).json(subtask);
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في إنشاء المهمة الفرعية' });
-    }
-});
-
-router.delete('/:id/subtasks/:subtaskId', authenticate, async (req, res) => {
-    try {
-        const subtask = await Task.findOne({ _id: req.params.subtaskId, parentTask: req.params.id, userId: req.user.id });
-        if (!subtask) return res.status(404).json({ error: 'مهمة فرعية غير موجودة' });
-        
-        await Task.findByIdAndDelete(req.params.subtaskId);
-        await updateParentProgress(req.params.id);
-        
-        res.json({ message: 'تم حذف المهمة الفرعية' });
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في حذف المهمة الفرعية' });
-    }
-});
-
-// ========== أرشفة واستعادة ==========
-router.patch('/:id/archive', authenticate, requireTaskOwnership, async (req, res) => {
-    try {
-        req.task.status = 'archived';
-        req.task.archivedAt = new Date();
-        req.task.archivedBy = req.user.id;
-        req.task.activity.push({ action: 'أرشفة', username: req.user.username, details: 'تمت أرشفة المهمة' });
-        await req.task.save();
-        res.json({ message: 'تمت أرشفة المهمة بنجاح', task: req.task });
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في الأرشفة' });
-    }
-});
-
-router.patch('/:id/restore', authenticate, requireTaskOwnership, async (req, res) => {
-    try {
-        req.task.status = 'new';
-        req.task.archivedAt = null;
-        req.task.archivedBy = null;
-        req.task.activity.push({ action: 'استعادة', username: req.user.username, details: 'تمت استعادة المهمة من الأرشيف' });
-        await req.task.save();
-        res.json({ message: 'تمت استعادة المهمة بنجاح', task: req.task });
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في الاستعادة' });
-    }
-});
-
-// ✅ حذف نهائي
-router.delete('/:id/permanent', authenticate, requireTaskOwnership, async (req, res) => {
-    try {
-        await Task.findByIdAndDelete(req.params.id);
-        res.json({ message: 'تم الحذف النهائي للمهمة' });
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في الحذف النهائي' });
-    }
-});
-
-// ✅ المؤرشفة
-router.get('/archived/list', authenticate, async (req, res) => {
-    try {
-        const tasks = await Task.find({ userId: req.user.id, status: 'archived' });
-        res.json(tasks);
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في جلب الأرشيف' });
-    }
-});
-
-// ✅ إحصائيات المشروع
-router.get('/stats/:projectId', authenticate, async (req, res) => {
-    try {
-        const filter = { userId: req.user.id, projectId: req.params.projectId };
-        const total = await Task.countDocuments(filter);
-        const done = await Task.countDocuments({ ...filter, status: 'done' });
-        const inProgress = await Task.countDocuments({ ...filter, status: 'in-progress' });
-        const overdue = await Task.countDocuments({ ...filter, dueDate: { $lt: new Date() }, status: { $ne: 'done' } });
-        
-        res.json({ total, done, inProgress, overdue, completionRate: total > 0 ? Math.round((done / total) * 100) : 0 });
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في جلب الإحصائيات' });
-    }
-});
-
-// ========== دوال مساعدة ==========
-function calculateProgress(task) {
-    if (task.status === 'done') return 100;
-    if (task.status === 'blocked') return task.progress || 0;
-    const statusProgress = { 'new': 0, 'in-progress': 40, 'review': 75, 'archived': 0 };
-    return statusProgress[task.status] || 0;
-}
-
-async function updateParentProgress(parentTaskId) {
-    try {
-        const subtasks = await Task.find({ parentTask: parentTaskId });
-        if (subtasks.length === 0) {
-            await Task.findByIdAndUpdate(parentTaskId, { progress: 0 });
-            return;
-        }
-        const doneCount = subtasks.filter(s => s.status === 'done').length;
-        const progress = Math.round((doneCount / subtasks.length) * 100);
-        await Task.findByIdAndUpdate(parentTaskId, { progress });
-        const parent = await Task.findById(parentTaskId);
-        if (parent) {
-            parent.activity.push({ action: 'تحديث التقدم', username: 'النظام', details: `تقدم المهام الفرعية: ${progress}% (${doneCount}/${subtasks.length})` });
-            await parent.save();
-        }
-    } catch (err) {
-        console.error('خطأ في تحديث تقدم المهمة الأصلية:', err);
-    }
+async function updateParentProgress(parentTask) {
+    const [total, done] = await Promise.all([
+        Task.countDocuments({ parentTask, status: { $ne: 'archived' } }),
+        Task.countDocuments({ parentTask, status: 'done' })
+    ]);
+    await Task.updateOne({ _id: parentTask }, { $set: { progress: total ? Math.round(done * 100 / total) : 0 } });
 }
 
 module.exports = router;

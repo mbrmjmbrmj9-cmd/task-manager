@@ -1,190 +1,194 @@
 const express = require('express');
+const rateLimit = require('express-rate-limit');
+const { randomBytes } = require('node:crypto');
 const Workspace = require('../models/Workspace');
+const Organization = require('../models/Organization');
+const Project = require('../models/Project');
+const Task = require('../models/Task');
 const Plan = require('../models/Plan');
 const User = require('../models/User');
-const crypto = require('crypto');
-const { authenticate, requireRole, requireTenantAccess, AUTH_ERRORS } = require('../middleware/auth');
+const { authenticate, requireRole, requireTenantAccess, sameId, validateId, accessError } = require('../middleware/auth');
 
 const router = express.Router();
+router.use(authenticate);
 
-// إنشاء Workspace
-router.post('/', authenticate, async (req, res) => {
-    try {
-        const { name } = req.body;
-        if (!name) return res.status(400).json({ error: 'الاسم مطلوب' });
-        const inviteCode = crypto.randomBytes(4).toString('hex').toUpperCase();
-        const workspace = await Workspace.create({ name, ownerId: req.user.id, members: [{ userId: req.user.id, role: 'owner' }], inviteCode });
-        res.status(201).json(workspace);
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في إنشاء مساحة العمل' });
-    }
+const joins = rateLimit({ windowMs: 10 * 60 * 1000, limit: 15, standardHeaders: true, legacyHeaders: false,
+    message: { error: 'حاول الانضمام مرة أخرى لاحقًا' } });
+
+function workspaceName(input) {
+    if (typeof input !== 'string' || !input.trim() || input.length > 120) throw accessError(400, 'اسم الفريق مطلوب وبحد أقصى 120 حرفًا');
+    return input.trim();
+}
+
+function visibleWorkspace(workspace, userId) {
+    const data = workspace.toObject();
+    const role = data.members.find(member => sameId(member.userId, userId))?.role;
+    if (role !== 'owner' && role !== 'admin') delete data.inviteCode;
+    return { ...data, role };
+}
+
+router.post('/', async (req, res) => {
+    const workspace = await Workspace.create({
+        name: workspaceName(req.body?.name), ownerId: req.user.id,
+        members: [{ userId: req.user.id, role: 'owner' }],
+        inviteCode: randomBytes(8).toString('hex').toUpperCase()
+    });
+    res.status(201).json(visibleWorkspace(workspace, req.user.id));
 });
 
-// الانضمام
-router.post('/join', authenticate, async (req, res) => {
-    try {
-        const { code } = req.body;
-        if (!code) return res.status(400).json({ error: 'الرمز مطلوب' });
-        const workspace = await Workspace.findOne({ inviteCode: code.toUpperCase() });
-        if (!workspace) return res.status(404).json({ error: 'رمز غير صحيح' });
-        const already = workspace.members.find(m => m.userId.toString() === req.user.id);
-        if (already) return res.status(400).json({ error: 'أنت عضو بالفعل' });
-        if (workspace.members.length >= workspace.maxMembers) return res.status(400).json({ error: 'تم الوصول للحد الأقصى للأعضاء' });
-        workspace.members.push({ userId: req.user.id, role: 'member' });
-        await workspace.save();
-        res.json(workspace);
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في الانضمام' });
+router.post('/join', joins, async (req, res) => {
+    const code = typeof req.body?.code === 'string' ? req.body.code.trim().toUpperCase() : '';
+    if (typeof code !== 'string' || !/^(?:[A-F0-9]{8}|[A-F0-9]{16})$/.test(code)) throw accessError(400, 'رمز الدعوة غير صالح');
+    const target = await Workspace.findOne({ inviteCode: code, isActive: { $ne: false } });
+    if (!target) throw accessError(404, 'رمز الدعوة غير صحيح أو انتهت صلاحيته');
+    if (target.organizationId && await Organization.exists({ _id: target.organizationId, status: 'suspended' })) {
+        throw accessError(403, 'هذه المؤسسة معلّقة');
     }
+    if (target.members.some(member => sameId(member.userId, req.user.id))) {
+        return res.json(visibleWorkspace(target, req.user.id));
+    }
+    const workspace = await Workspace.findOneAndUpdate({
+        _id: target._id, inviteCode: code, isActive: { $ne: false }, 'members.userId': { $ne: req.user.id },
+        $expr: { $lt: [{ $size: '$members' }, { $ifNull: ['$maxMembers', 3] }] }
+    }, { $push: { members: { userId: req.user.id, role: 'member' } }, $inc: { __v: 1 } }, { new: true, runValidators: true });
+    if (!workspace) {
+        const current = await Workspace.findOne({ _id: target._id, isActive: { $ne: false }, 'members.userId': req.user.id });
+        if (current) return res.json(visibleWorkspace(current, req.user.id));
+        throw accessError(409, 'الرمز تغيّر أو وصل الفريق إلى الحد الأقصى للأعضاء');
+    }
+    res.json(visibleWorkspace(workspace, req.user.id));
 });
 
-// جلب Workspaces المستخدم
-router.get('/', authenticate, async (req, res) => {
-    try {
-        const workspaces = await Workspace.find({ 'members.userId': req.user.id });
-        res.json(workspaces);
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في جلب مساحات العمل' });
+router.get('/', async (req, res) => {
+    const filter = { 'members.userId': req.user.id, isActive: { $ne: false } };
+    if (req.query.archived === 'true') Object.assign(filter, { ownerId: req.user.id, isActive: false });
+    const workspaces = await Workspace.find(filter).sort({ name: 1 });
+    const suspended = new Set((await Organization.distinct('_id', {
+        _id: { $in: workspaces.map(workspace => workspace.organizationId).filter(Boolean) }, status: 'suspended'
+    })).map(String));
+    const visible = workspaces.filter(workspace => !suspended.has(String(workspace.organizationId)));
+    const result = visible.map(workspace => visibleWorkspace(workspace, req.user.id));
+    if (req.query.include === 'usage' && visible.length) {
+        const rows = await Project.aggregate([
+            { $match: { workspaceId: { $in: visible.map(workspace => workspace._id) }, status: { $ne: 'archived' } } },
+            { $group: { _id: '$workspaceId', count: { $sum: 1 } } }
+        ]);
+        const counts = new Map(rows.map(row => [String(row._id), row.count]));
+        for (const item of result) item.usage = { currentProjects: counts.get(String(item._id)) || 0, maxProjects: item.maxProjects };
     }
+    res.json(result);
 });
 
-// مغادرة
-router.post('/:id/leave', authenticate, requireTenantAccess, async (req, res) => {
-    try {
-        const ws = req.workspace;
-        const member = ws.members.find(m => m.userId.toString() === req.user.id);
-        if (member.role === 'owner') return res.status(400).json({ error: 'المالك لا يستطيع المغادرة' });
-        ws.members = ws.members.filter(m => m.userId.toString() !== req.user.id);
-        await ws.save();
-        res.json({ message: 'تمت المغادرة بنجاح' });
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في المغادرة' });
-    }
+router.post('/:id/leave', requireTenantAccess, async (req, res) => {
+    if (req.memberRole === 'owner') throw accessError(409, 'انقل ملكية الفريق قبل المغادرة');
+    req.workspace.members = req.workspace.members.filter(member => !sameId(member.userId, req.user.id));
+    await req.workspace.save();
+    res.json({ message: 'تمت المغادرة' });
 });
 
-// جلب أعضاء
-router.get('/:id/members', authenticate, requireTenantAccess, async (req, res) => {
-    try {
-        const ws = req.workspace;
-        const membersWithUsers = [];
-        for (const m of ws.members) {
-            const user = await User.findById(m.userId);
-            membersWithUsers.push({ _id: m._id, userId: user ? { _id: user._id, username: user.username, email: user.email, fullName: user.fullName, avatar: user.avatar } : null, role: m.role, joinedAt: m.joinedAt });
-        }
-        res.json(membersWithUsers);
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في جلب الأعضاء' });
-    }
+router.get('/:id/members', requireTenantAccess, async (req, res) => {
+    const users = await User.find({ _id: { $in: req.workspace.members.map(member => member.userId) } })
+        .select('username fullName avatar isActive').lean();
+    const byId = new Map(users.map(user => [String(user._id), user]));
+    res.json(req.workspace.members.map(member => ({
+        _id: member._id, role: member.role, joinedAt: member.joinedAt, userId: byId.get(String(member.userId)) || null
+    })));
 });
 
-// تغيير دور
-router.patch('/:id/members/:userId', authenticate, requireRole('owner'), async (req, res) => {
-    try {
-        const ws = req.workspace;
-        const target = ws.members.find(m => m.userId.toString() === req.params.userId);
-        if (!target) return res.status(404).json({ error: 'عضو غير موجود' });
-        if (target.role === 'owner') return res.status(400).json({ error: 'لا يمكن تغيير دور المالك' });
-        if (req.body.role) target.role = req.body.role;
-        await ws.save();
-        res.json(ws);
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في تغيير الدور' });
-    }
+router.patch('/:id/members/:userId', requireRole('owner'), async (req, res) => {
+    const role = req.body?.role;
+    if (!['member', 'admin'].includes(role)) throw accessError(400, 'الدور غير صالح');
+    const target = req.workspace.members.find(member => sameId(member.userId, req.params.userId));
+    if (!target) throw accessError(404, 'عضو غير موجود');
+    if (target.role === 'owner') throw accessError(409, 'انقل الملكية لتغيير دور المالك');
+    target.role = role;
+    await req.workspace.save();
+    res.json(visibleWorkspace(req.workspace, req.user.id));
 });
 
-// إزالة عضو
-router.delete('/:id/members/:userId', authenticate, requireRole('owner', 'admin'), async (req, res) => {
-    try {
-        const ws = req.workspace;
-        const target = ws.members.find(m => m.userId.toString() === req.params.userId);
-        if (!target) return res.status(404).json({ error: 'عضو غير موجود' });
-        if (target.role === 'owner') return res.status(400).json({ error: 'لا يمكن إزالة المالك' });
-        ws.members = ws.members.filter(m => m.userId.toString() !== req.params.userId);
-        await ws.save();
-        res.json({ message: 'تم إزالة العضو بنجاح', workspace: ws });
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في إزالة العضو' });
+router.delete('/:id/members/:userId', requireRole('owner', 'admin'), async (req, res) => {
+    const target = req.workspace.members.find(member => sameId(member.userId, req.params.userId));
+    if (!target) throw accessError(404, 'عضو غير موجود');
+    if (target.role === 'owner' || (target.role === 'admin' && req.memberRole !== 'owner')) {
+        throw accessError(403, 'لا تملك صلاحية إزالة هذا العضو');
     }
+    req.workspace.members.pull(target._id);
+    await req.workspace.save();
+    res.json({ message: 'تمت إزالة العضو' });
 });
 
-// نقل ملكية
-router.post('/:id/transfer-ownership', authenticate, requireRole('owner'), async (req, res) => {
-    try {
-        const ws = req.workspace;
-        const { newOwnerId } = req.body;
-        if (!newOwnerId) return res.status(400).json({ error: 'معرف المالك الجديد مطلوب' });
-        const newOwner = ws.members.find(m => m.userId.toString() === newOwnerId);
-        if (!newOwner) return res.status(400).json({ error: 'المستخدم ليس عضواً' });
-        const currentOwner = ws.members.find(m => m.userId.toString() === req.user.id);
-        if (currentOwner) currentOwner.role = 'admin';
-        newOwner.role = 'owner';
-        ws.ownerId = newOwnerId;
-        await ws.save();
-        res.json({ message: 'تم نقل الملكية بنجاح', workspace: ws });
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في نقل الملكية' });
+router.post('/:id/transfer-ownership', requireRole('owner'), async (req, res) => {
+    const workspace = req.workspace;
+    const id = validateId(req.body?.newOwnerId);
+    const nextOwner = workspace.members.find(member => sameId(member.userId, id));
+    const owner = workspace.members.find(member => sameId(member.userId, req.user.id));
+    if (!nextOwner || nextOwner.role === 'owner' || !await User.exists({ _id: id, isActive: { $ne: false } })) {
+        throw accessError(400, 'اختر عضوًا نشطًا لنقل الملكية');
     }
+    owner.role = 'admin';
+    nextOwner.role = 'owner';
+    workspace.ownerId = id;
+    await workspace.save();
+    res.json({ message: 'تم نقل الملكية', workspace: visibleWorkspace(workspace, req.user.id) });
 });
 
-// حدود الاستخدام
-router.get('/:id/usage', authenticate, requireTenantAccess, async (req, res) => {
-    try {
-        const ws = req.workspace;
-        const Project = require('../models/Project');
-        const projectCount = await Project.countDocuments({ workspaceId: ws._id });
-        res.json({ workspaceId: ws._id, plan: ws.plan, maxMembers: ws.maxMembers, currentMembers: ws.members.length, maxProjects: ws.maxProjects, currentProjects: projectCount, membersRemaining: ws.maxMembers - ws.members.length, projectsRemaining: ws.maxProjects - projectCount });
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في جلب حدود الاستخدام' });
-    }
+router.post('/:id/invite/rotate', requireRole('owner', 'admin'), async (req, res) => {
+    req.workspace.inviteCode = randomBytes(8).toString('hex').toUpperCase();
+    await req.workspace.save();
+    res.json({ inviteCode: req.workspace.inviteCode });
 });
 
-// تحديث خطة
-router.patch('/:id/plan', authenticate, requireRole('owner'), async (req, res) => {
-    try {
-        const ws = req.workspace;
-        const { planId } = req.body;
-        const plan = await Plan.findById(planId);
-        if (!plan) return res.status(404).json({ error: 'خطة غير موجودة' });
-        ws.plan = plan.name;
-        ws.maxMembers = plan.maxMembers;
-        ws.maxProjects = plan.maxProjects;
-        await ws.save();
-        res.json({ message: 'تم تحديث الخطة بنجاح', workspace: ws });
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في تحديث الخطة' });
-    }
+router.get('/:id/usage', requireTenantAccess, async (req, res) => {
+    const { _id, plan, maxMembers, maxProjects, members } = req.workspace;
+    const currentProjects = await Project.countDocuments({ workspaceId: _id, status: { $ne: 'archived' } });
+    res.json({
+        workspaceId: _id, plan, maxMembers, maxProjects, currentMembers: members.length, currentProjects,
+        membersRemaining: Math.max(0, maxMembers - members.length), projectsRemaining: Math.max(0, maxProjects - currentProjects)
+    });
 });
 
-// إعدادات
-router.patch('/:id/settings', authenticate, requireRole('owner'), async (req, res) => {
-    try {
-        const ws = req.workspace;
-        const allowed = ['name'];
-        allowed.forEach(field => { if (req.body[field] !== undefined) ws[field] = req.body[field]; });
-        await ws.save();
-        res.json({ message: 'تم تحديث الإعدادات', workspace: ws });
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في تحديث الإعدادات' });
-    }
+router.patch('/:id/plan', requireRole('owner'), async (req, res) => {
+    let name = req.body?.plan;
+    if (req.body?.planId) name = (await Plan.findById(validateId(req.body.planId)))?.name;
+    if (name !== 'free') throw accessError(400, 'يتطلب تفعيل الخطة المدفوعة التواصل مع نيفورا');
+    if (req.workspace.plan !== 'free') throw accessError(409, 'تواصل مع الدعم لتغيير اشتراكك الحالي');
+    res.json({ message: 'الخطة المجانية مفعلة', workspace: visibleWorkspace(req.workspace, req.user.id) });
 });
 
-// سجل نشاط
-router.get('/:id/activity', authenticate, requireTenantAccess, async (req, res) => {
-    try {
-        const ws = req.workspace;
-        const Task = require('../models/Task');
-        const Project = require('../models/Project');
-        const activities = [];
-        const projects = await Project.find({ workspaceId: ws._id }).sort({ updatedAt: -1 }).limit(10);
-        projects.forEach(p => activities.push({ type: 'project', action: 'إنشاء مشروع', username: 'مستخدم', details: p.name, taskId: p._id, createdAt: p.createdAt }));
-        const tasks = await Task.find({ workspaceId: ws._id }).sort({ updatedAt: -1 }).limit(30);
-        tasks.forEach(t => { if (t.activity && t.activity.length > 0) { t.activity.forEach(a => activities.push({ type: 'task', action: a.action, username: a.username, details: a.details, taskId: t._id, taskTitle: t.title, createdAt: a.createdAt || t.updatedAt })); } });
-        ws.members.forEach(m => activities.push({ type: 'member', action: 'انضمام عضو', username: m.userId?.toString() || 'مستخدم', details: 'انضم إلى الفريق', createdAt: m.joinedAt }));
-        activities.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        res.json(activities.slice(0, 50));
-    } catch (err) {
-        res.status(500).json({ error: 'خطأ في جلب سجل النشاط' });
+router.patch('/:id/settings', requireRole('owner'), async (req, res) => {
+    req.workspace.name = workspaceName(req.body?.name);
+    await req.workspace.save();
+    res.json({ message: 'تم تحديث الإعدادات', workspace: visibleWorkspace(req.workspace, req.user.id) });
+});
+
+router.delete('/:id', requireRole('owner'), async (req, res) => {
+    req.workspace.isActive = false;
+    req.workspace.inviteCode = randomBytes(8).toString('hex').toUpperCase();
+    await req.workspace.save();
+    res.json({ message: 'تمت أرشفة مساحة العمل' });
+});
+
+router.patch('/:id/restore', async (req, res) => {
+    const workspace = await Workspace.findOne({ _id: validateId(req.params.id), ownerId: req.user.id, isActive: false });
+    if (!workspace) throw accessError(404, 'مساحة العمل المؤرشفة غير موجودة');
+    workspace.isActive = true;
+    await workspace.save();
+    res.json(visibleWorkspace(workspace, req.user.id));
+});
+
+router.get('/:id/activity', requireTenantAccess, async (req, res) => {
+    const workspaceId = req.workspace._id;
+    const [projects, tasks] = await Promise.all([
+        Project.find({ workspaceId }).sort({ updatedAt: -1 }).limit(10).lean(),
+        Task.find({ workspaceId }).sort({ updatedAt: -1 }).limit(30).lean()
+    ]);
+    const activity = tasks.flatMap(task => (task.activity || []).slice(-5).map(entry => ({
+        ...entry, taskTitle: task.title, taskId: task._id
+    })));
+    for (const project of projects) {
+        activity.push({ action: 'تحديث مشروع', details: project.name, projectId: project._id, createdAt: project.updatedAt });
     }
+    res.json(activity.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 30));
 });
 
 module.exports = router;

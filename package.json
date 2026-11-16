@@ -6,10 +6,9 @@
   "scripts": {
     "start": "node server/server.js",
     "dev": "nodemon server/server.js",
-    "test": "jest --coverage",
+    "test": "jest --runInBand",
     "test:watch": "jest --watch",
-    "seed": "node server/config/seed.js",
-    "backup": "node scripts/backup.js"
+    "seed": "node server/config/seed.js"
   },
   "keywords": [
     "project-management",

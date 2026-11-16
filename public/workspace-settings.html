@@ -6,7 +6,6 @@
     <title>Nivora | إعدادات مساحة العمل</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#2563EB">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
         :root { --sidebar-w: 240px; }
@@ -48,29 +47,15 @@
         @media (max-width: 1024px) { :root { --sidebar-w: 72px; } .sidebar { padding: 1rem 0.5rem; } .sidebar .logo { font-size: 1rem; text-align: center; } .sidebar .label, .sidebar .logo span { display: none; } .sidebar a { justify-content: center; padding: 0.5rem; } }
         @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 0.75rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } .settings-grid { grid-template-columns: 1fr; } }
     </style>
+<script src="js/config.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/theme.css">
+    <script src="js/theme.js" defer></script>
 </head>
-<body>
+<body data-ui="app">
     <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
 
-    <aside class="sidebar" id="sidebar">
-    <div class="logo">
-        <img src="img/logo.svg" alt="Nivora" class="logo-img">
-        <span>Nivora</span>
-    </div>
-    <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="label">لوحة القيادة</span></a>
-    <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg><span class="label">المهام</span></a>
-    <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">المشاريع</span></a>
-    <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg><span class="label">Kanban</span></a>
-    <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">Gantt</span></a>
-    <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
-    <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
-    <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg><span class="label">Workflows</span></a>
-    <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">القوالب</span></a>
-    <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg><span class="label">الأرشيف</span></a>
-    <a href="chat.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="label">المحادثة</span></a>
-    <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
-    <a href="teams.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">فرق العمل</span></a>
-</aside>
+    <aside id="sidebar" class="shell-rail"></aside>
 
     <main class="main">
         <a href="team.html" class="back-link">← العودة للفريق</a>
@@ -99,7 +84,7 @@
             </div>
             <div class="card">
                 <div class="danger-zone">
-                    <h3>حذف الفريق</h3>
+                    <h3>أرشفة الفريق</h3>
                     <p>سيتم حذف كل البيانات نهائياً. لا يمكن التراجع.</p>
                     <button class="btn btn-danger btn-block" onclick="deleteWorkspace()">حذف نهائي</button>
                 </div>
@@ -107,19 +92,11 @@
         </div>
     </main>
 
-    <nav class="bottom-nav">
-        <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>الرئيسية</a>
-        <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg>مهام</a>
-        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg>Kanban</a>
-        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>فريق</a>
-        <a href="#" onclick="openSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>المزيد</a>
-    </nav>
-
     <script src="js/components.js"></script>
     <script>
         function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
         function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
-        const API = 'https://nivora-t9ov.onrender.com/api';
+        const API = Nivora.apiBase;
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'login.html';
         function logout() { localStorage.clear(); window.location.href = 'login.html'; }
@@ -146,7 +123,7 @@
                     <div class="usage-row"><span class="usage-label">الأعضاء</span><div class="progress-bar"><div class="progress-fill" style="width:${(usage.currentMembers/usage.maxMembers)*100}%;background:var(--primary);"></div></div><span class="usage-value">${usage.currentMembers}/${usage.maxMembers}</span></div>
                     <div class="usage-row"><span class="usage-label">المشاريع</span><div class="progress-bar"><div class="progress-fill" style="width:${(usage.currentProjects/usage.maxProjects)*100}%;background:var(--success);"></div></div><span class="usage-value">${usage.currentProjects}/${usage.maxProjects}</span></div>`;
                 const user = JSON.parse(localStorage.getItem('user') || '{}');
-                document.getElementById('newOwnerSelect').innerHTML = '<option value="">اختر عضواً...</option>' + members.filter(m => (m.userId?._id || m.userId) !== user.id).map(m => `<option value="${m.userId?._id || m.userId}">${m.userId?.fullName || m.userId?.username || 'مستخدم'}</option>`).join('');
+                document.getElementById('newOwnerSelect').innerHTML = '<option value="">اختر عضواً...</option>' + members.filter(m => (m.userId?._id || m.userId) !== user.id).map(m => `<option value="${m.userId?._id || m.userId}">${escapeHtml(m.userId?.fullName || m.userId?.username || 'مستخدم')}</option>`).join('');
             } catch (err) { showToast('تعذر التحميل', 'error'); }
         }
 
@@ -173,8 +150,8 @@
         }
 
         function deleteWorkspace() {
-            confirmDialog({ title: 'حذف نهائي', message: 'سيتم حذف كل شيء. لا يمكن التراجع.', confirmText: 'حذف نهائي', danger: true, onConfirm: async () => {
-                await fetch(`${API}/workspaces/${wsId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+            confirmDialog({ title: 'أرشفة مساحة العمل', message: 'ستختفي مساحة العمل من الفرق النشطة ويمكن للمالك استعادتها.', confirmText: 'أرشفة', danger: true, onConfirm: async () => {
+                await Nivora.api('/workspaces/' + wsId, { method: 'DELETE' });
                 localStorage.removeItem('workspaceId'); localStorage.removeItem('inviteCode');
                 window.location.href = 'workspace.html';
             } });

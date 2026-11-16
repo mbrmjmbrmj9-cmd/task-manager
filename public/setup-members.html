@@ -6,7 +6,6 @@
     <title>Nivora | إضافة أعضاء</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#2563EB">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
         body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
@@ -26,8 +25,11 @@
         .buttons { display: flex; gap: 1rem; }
         .dark-toggle { position: fixed; top: 1rem; left: 1rem; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.5rem 0.7rem; cursor: pointer; font-size: 1.1rem; }
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/theme.css">
+    <script src="js/theme.js" defer></script>
 </head>
-<body>
+<body data-ui="flow">
     <button class="dark-toggle" onclick="toggleDark()" id="darkBtn">🌙</button>
     <div class="container">
         <a href="setup-team.html" class="back">← رجوع</a>
@@ -36,17 +38,11 @@
 </div>
         <div class="card">
             <h1>إضافة أعضاء</h1>
-            <p class="sub">أضف أعضاء أو شارك الرمز</p>
-            <div class="invite-box"><div class="code" id="inviteCodeDisplay">---</div><p style="font-size:0.8rem;color:var(--text-muted);margin-top:0.25rem;">رمز الدعوة</p></div>
-            <div class="add-row">
-                <input type="text" class="input" id="memberName" placeholder="الاسم" style="flex:1;">
-                <input type="email" class="input" id="memberEmail" placeholder="البريد" style="flex:1;">
-                <button class="btn-add" onclick="addMember()">+</button>
-            </div>
-            <table><thead><tr><th>الاسم</th><th>البريد</th><th></th></tr></thead><tbody id="memberBody"></tbody></table>
+            <p class="sub">شارك رابط الدعوة مع زملائك للانضمام إلى مساحة العمل.</p>
+            <div class="invite-box"><div class="code" dir="ltr" id="inviteCodeDisplay">---</div><p style="font-size:0.8rem;color:var(--text-muted);margin-top:0.25rem;">رمز الدعوة</p></div>
             <div class="buttons">
-                <button class="btn btn-outline" onclick="finish()" style="flex:1;">تخطي</button>
-                <button class="btn btn-primary" onclick="finish()" style="flex:1;">إنهاء</button>
+                <button class="btn btn-outline" id="copyInvite" onclick="copyInvite()">نسخ رابط الدعوة</button>
+                <a class="btn btn-primary" href="dashboard.html">الانتقال إلى لوحة القيادة</a>
             </div>
         </div>
     </div>
@@ -54,11 +50,16 @@
     <script>
         function toggleDark() { document.body.classList.toggle('dark'); const d = document.body.classList.contains('dark'); localStorage.setItem('dark', d); document.getElementById('darkBtn').textContent = d ? '☀️' : '🌙'; }
         if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
-        document.getElementById('inviteCodeDisplay').textContent = localStorage.getItem('inviteCode') || '---';
-        let members = [];
-        function addMember() { const name = document.getElementById('memberName').value.trim(); const email = document.getElementById('memberEmail').value.trim(); if (!name || !email) { showToast('املأ الحقول', 'warning'); return; } members.push({ name, email }); document.getElementById('memberName').value = ''; document.getElementById('memberEmail').value = ''; renderMembers(); }
-        function renderMembers() { document.getElementById('memberBody').innerHTML = members.map((m, i) => `<tr><td>${m.name}</td><td>${m.email}</td><td><button class="btn-remove" onclick="members.splice(${i},1);renderMembers();">✕</button></td></tr>`).join(''); }
-        function finish() { window.location.href = 'dashboard.html'; }
+        const code = localStorage.getItem('inviteCode');
+        document.getElementById('inviteCodeDisplay').textContent = code || 'غير متاح';
+        document.getElementById('copyInvite').disabled = !code;
+        async function copyInvite() {
+            const origin = window.Capacitor?.isNativePlatform?.() ? 'https://task-manager-theta-beryl-91.vercel.app' : location.origin;
+            const link = new URL('/join-workspace.html', origin);
+            link.searchParams.set('code', code);
+            try { await copyToClipboard(link.href); showToast('نُسخ رابط الدعوة'); }
+            catch { showToast('تعذر نسخ الرابط. شارك الرمز الظاهر أعلاه.', 'error'); }
+        }
     </script>
 </body>
 </html>

@@ -6,7 +6,6 @@
     <title>Nivora | انضمام لفريق</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#2563EB">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -34,8 +33,12 @@
         .dark-toggle { position: fixed; top: 1.2rem; left: 1.2rem; background: var(--card); border: 1px solid var(--border); border-radius: 50%; width: 42px; height: 42px; cursor: pointer; font-size: 1.2rem; z-index: 10; box-shadow: var(--shadow-sm); transition: all var(--transition); }
         .dark-toggle:hover { transform: scale(1.05); }
     </style>
+<script src="js/config.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/theme.css">
+    <script src="js/theme.js" defer></script>
 </head>
-<body>
+<body data-ui="flow">
     <button class="dark-toggle" onclick="toggleDark()" id="darkBtn">🌙</button>
 
     <div class="container">
@@ -54,10 +57,10 @@
             <h1>الانضمام لفريق</h1>
             <p class="sub">أدخل رمز الدعوة الذي حصلت عليه من مدير الفريق للانضمام إلى مساحة العمل</p>
 
-            <input type="text" id="inviteCode" class="invite-input" placeholder="أدخل الرمز" maxlength="8" autocomplete="off" oninput="this.value = this.value.toUpperCase()" onkeydown="if(event.key==='Enter') join()">
+            <input type="text" id="inviteCode" class="invite-input" placeholder="أدخل الرمز" maxlength="16" aria-label="رمز الدعوة" dir="ltr" autocomplete="off" oninput="this.value = this.value.toUpperCase()" onkeydown="if(event.key==='Enter') join()">
 
             <button class="btn-join" id="joinBtn" onclick="join()">انضمام</button>
-            <p class="helper-text">الرمز مكون من 8 أحرف كبيرة</p>
+            <p class="helper-text">أدخل رمز الدعوة المكوّن من 8 أو 16 حرفًا ورقمًا.</p>
         </div>
     </div>
 
@@ -67,18 +70,21 @@
         if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
 
         const token = localStorage.getItem('token');
-        if (!token) window.location.href = 'login.html';
+        const invite = new URLSearchParams(location.search).get('code') || '';
+        const validInvite = /^(?:[a-f\d]{8}|[a-f\d]{16})$/i;
+        if (validInvite.test(invite)) document.getElementById('inviteCode').value = invite.toUpperCase();
+        if (!token) location.replace(Nivora.page('login.html', { invite: validInvite.test(invite) ? invite : '' }));
 
         async function join() {
             const code = document.getElementById('inviteCode').value.trim().toUpperCase();
             if (!code) { showToast('الرمز مطلوب', 'warning'); return; }
-            if (code.length < 8) { showToast('الرمز يجب أن يكون 8 أحرف', 'warning'); return; }
+            if (!validInvite.test(code)) { showToast('تحقق من صيغة رمز الدعوة', 'warning'); return; }
             const btn = document.getElementById('joinBtn');
             setButtonLoading(btn, true, 'جاري الانضمام...');
             try {
-                const res = await fetch('https://nivora-t9ov.onrender.com/api/workspaces/join', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ code }) });
+                const res = await fetch(Nivora.apiBase + '/workspaces/join', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ code }) });
                 const data = await res.json();
-                if (res.ok) { localStorage.setItem('workspaceId', data._id); localStorage.setItem('inviteCode', data.inviteCode || code); showToast('تم الانضمام بنجاح', 'success'); setTimeout(() => window.location.href = 'dashboard.html', 800); }
+                if (res.ok) { Nivora.setWorkspace(data); showToast('تم الانضمام بنجاح', 'success'); setTimeout(() => window.location.href = 'dashboard.html', 800); }
                 else { showToast(data.error || 'رمز غير صحيح', 'error'); }
             } catch (err) { showToast('خطأ في الاتصال', 'error'); }
             setButtonLoading(btn, false);

@@ -1,5 +1,6 @@
 const express = require('express');
-const jwt = require('jsonwebtoken');
+const { issueSession } = require('../config/session');
+const { logger } = require('../middleware/logger');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const Organization = require('../models/Organization');
@@ -15,11 +16,6 @@ const { adminAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
-// ✅ Secrets من متغيرات البيئة
-const JWT_SECRET = process.env.JWT_SECRET || 'nivora_secret_2025';
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'aldyrhghryb708@gmail.com';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '123&%*abd';
-
 // ✅ دالة Logging منظمة
 function logAdmin(action, details, req) {
     try {
@@ -32,28 +28,28 @@ function logAdmin(action, details, req) {
             createdAt: new Date()
         });
     } catch (err) {
-        console.error('[Admin] فشل تسجيل العملية:', err);
+        logger.error(message, err);
     }
 }
 
 // ✅ دالة معالجة الأخطاء
 function handleError(res, err, message = 'خطأ في الخادم') {
-    console.error(`[Admin] ${message}:`, err);
+    logger.error(message, err);
     res.status(500).json({ error: message });
 }
 
 // ========== Admin Login ==========
 router.post('/login', async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password } = req.body || {};
 
-        if (!email || !password) {
+        if (typeof email !== 'string' || email.length > 254 || typeof password !== 'string' || Buffer.byteLength(password) > 72) {
             return res.status(400).json({ error: 'البريد وكلمة المرور مطلوبان' });
         }
 
         const user = await User.findOne({ username: email });
 
-        if (!user || user.role !== 'super_admin') {
+        if (!user || user.isActive === false || user.role !== 'super_admin' || !user.password?.startsWith('$2')) {
             return res.status(401).json({ error: 'بيانات غير صحيحة' });
         }
 
@@ -63,11 +59,8 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ error: 'بيانات غير صحيحة' });
         }
 
-        const token = jwt.sign(
-            { id: user._id, username: user.username, role: 'super_admin' },
-            JWT_SECRET,
-            { expiresIn: '1d' }
-        );
+        const token = issueSession(user, 'nivora-admin');
+        req.user = { id: user._id, username: user.username };
 
         logAdmin('admin_login', 'تسجيل دخول المدير', req);
 
@@ -413,7 +406,7 @@ router.patch('/users/:id/toggle-active', async (req, res) => {
 
         logAdmin('toggle_user', `${user.isActive ? 'تفعيل' : 'تعطيل'} مستخدم ${user.username}`, req);
 
-        res.json({ message: user.isActive ? 'تم تفعيل المستخدم' : 'تم تعطيل المستخدم', user });
+        res.json({ message: user.isActive ? 'تم تفعيل المستخدم' : 'تم تعطيل المستخدم', isActive: user.isActive });
     } catch (err) {
         handleError(res, err, 'خطأ في تغيير حالة المستخدم');
     }
@@ -422,7 +415,7 @@ router.patch('/users/:id/toggle-active', async (req, res) => {
 // ========== حذف مستخدم ==========
 router.delete('/users/:id', async (req, res) => {
     try {
-        const user = await User.findByIdAndDelete(req.params.id);
+        const user = await User.findOneAndDelete({ _id: req.params.id, role: { $ne: 'super_admin' } });
         if (!user) return res.status(404).json({ error: 'المستخدم غير موجود' });
 
         logAdmin('delete_user', `حذف مستخدم ${user.username}`, req);
@@ -439,7 +432,7 @@ router.patch('/users/:id/role', async (req, res) => {
         const { role } = req.body;
         if (!role) return res.status(400).json({ error: 'الدور مطلوب' });
 
-        const user = await User.findByIdAndUpdate(req.params.id, { role }, { new: true });
+        const user = await User.findOneAndUpdate({ _id: req.params.id, role: { $ne: 'super_admin' } }, { $set: { role }, $inc: { sessionVersion: 1 } }, { new: true }).select('username role isActive');
         if (!user) return res.status(404).json({ error: 'المستخدم غير موجود' });
 
         logAdmin('change_role', `تغيير دور ${user.username} إلى ${role}`, req);

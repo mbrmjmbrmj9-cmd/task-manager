@@ -1,213 +1,139 @@
+const { signingKey, appOrigin } = require('./config/env');
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
-const http = require('http');
-const socketIo = require('socket.io');
+const path = require('node:path');
+const http = require('node:http');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const passport = require('passport');
-const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 const connectDB = require('./config/database');
-const authRoutes = require('./routes/auth');
+const attachGoogle = require('./config/google');
+const configureRealtime = require('./config/realtime');
+const { mailAvailable, sendMail } = require('./config/mail');
+const { avatarDir, durable, streamStoredUpload } = require('./config/storage');
 const { requestLogger, errorHandler } = require('./middleware/logger');
-require('./config/google.js');
+const { accessError } = require('./middleware/auth');
 
-const app = express();
-// ✅ تحميل متغيرات البيئة (للإنتاج)
-if (process.env.NODE_ENV !== 'production') {
-    require('dotenv').config();
+const publicDir = path.join(__dirname, '..', 'public');
+const port = Number(process.env.PORT || 3000);
+
+function allowedOrigins() {
+    const origins = new Set([appOrigin(), ...(process.env.ALLOWED_ORIGINS || '').split(',').map(origin => origin.trim()).filter(Boolean)]);
+    if (process.env.NODE_ENV !== 'production') {
+        for (const host of ['localhost', '127.0.0.1']) {
+            for (const localPort of [port, 5500]) origins.add('http://' + host + ':' + localPort);
+        }
+    }
+    return origin => !origin || origins.has(origin);
 }
 
-const PORT = process.env.PORT || 3000;
-const JWT_SECRET = process.env.JWT_SECRET || 'nivora_secret_2025';
+function limiter(windowMs, limit) {
+    return rateLimit({ windowMs, limit, standardHeaders: true, legacyHeaders: false,
+        message: { error: 'طلبات كثيرة. حاول مرة أخرى لاحقًا.' } });
+}
 
-// اتصال قاعدة البيانات
-connectDB();
+function createApp(isAllowed = allowedOrigins()) {
+    const app = express();
+    const proxyHops = Number(process.env.TRUST_PROXY_HOPS || (process.env.RENDER_EXTERNAL_URL ? 1 : 0));
+    if (!Number.isInteger(proxyHops) || proxyHops < 0) throw new Error('TRUST_PROXY_HOPS must be a nonnegative integer.');
+    app.set('trust proxy', proxyHops);
+    app.disable('x-powered-by');
 
-// ✅ أمان HTTP Headers مع CSP مخصص
-app.use(helmet({
-    contentSecurityPolicy: false,
-    crossOriginEmbedderPolicy: false,
-    crossOriginResourcePolicy: { policy: "cross-origin" }
-}));
-
-// CORS
-app.use(cors({ 
-    origin: ['https://task-manager-theta-beryl-91.vercel.app', 'http://localhost:3000', 'http://localhost:5500'],
-    credentials: true 
-}));
-
-// ✅ Rate Limiting للمسارات الحساسة
-
-// Rate Limiter للتسجيل
-const registerLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000, // ساعة
-    max: 5,
-    message: { error: 'تم تجاوز عدد محاولات التسجيل. حاول بعد ساعة.' },
-    standardHeaders: true,
-    legacyHeaders: false
-});
-
-// Rate Limiter لاستعادة كلمة المرور
-const forgotPasswordLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 دقيقة
-    max: 3,
-    message: { error: 'تم تجاوز عدد محاولات الاستعادة. حاول لاحقاً.' },
-    standardHeaders: true,
-    legacyHeaders: false
-});
-
-// Rate Limiter لرفع الملفات
-const uploadLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000, // ساعة
-    max: 50,
-    message: { error: 'تم تجاوز عدد مرات الرفع. حاول بعد ساعة.' },
-    standardHeaders: true,
-    legacyHeaders: false
-});
-
-// Rate Limiter لإنشاء المهام
-const createTaskLimiter = rateLimit({
-    windowMs: 60 * 1000, // دقيقة
-    max: 30,
-    message: { error: 'تم تجاوز عدد مرات إنشاء المهام. حاول بعد دقيقة.' },
-    standardHeaders: true,
-    legacyHeaders: false
-});
-
-// تطبيق الـ Limiters على المسارات المحددة
-app.use('/api/auth/register', registerLimiter);
-app.use('/api/auth/forgot-password', forgotPasswordLimiter);
-app.use('/api/upload', uploadLimiter);
-app.use('/api/tasks', createTaskLimiter);
-// ✅ Rate Limiting عام على كل الـ API
-app.set('trust proxy', 1);
-
-// ✅ Rate Limiter أساسي لجميع المسارات
-const generalLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 دقيقة
-    max: 1000,
-    message: { error: 'طلبات كثيرة. حاول لاحقاً.' },
-    standardHeaders: true,
-    legacyHeaders: false
-});
-app.use('/api/', generalLimiter);
-
-// Middleware
-app.use(express.json({ limit: '10mb' }));
-app.use(express.static(path.join(__dirname, '..', 'public')));
-
-// Passport
-app.use(passport.initialize());
-
-// Google OAuth
-app.get('/api/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
-app.get('/api/auth/google/callback', passport.authenticate('google', { session: false }), (req, res) => {
-    const token = jwt.sign({ id: req.user._id, username: req.user.username }, JWT_SECRET, { expiresIn: '7d' });
-    res.redirect(`/login.html?token=${token}&username=${req.user.username}`);
-});
-// ✅ Request Logger
-app.use(requestLogger);
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/tasks', require('./routes/tasks'));
-app.use('/api/projects', require('./routes/projects'));
-app.use('/api/workflows', require('./routes/workflows'));
-app.use('/api/workspaces', require('./routes/workspaces'));
-app.use('/api/plans', require('./routes/plans'));
-app.use('/api/templates', require('./routes/templates'));
-app.use('/api/chat', require('./routes/chat'));
-// Rate Limiting خاص للـ Admin
-const adminLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 200,
-    message: { error: 'طلبات كثيرة' }
-});
-app.use('/api/admin', adminLimiter);
-app.use('/api/admin', require('./routes/admin'));
-app.use('/api/subscriptions', require('./routes/subscriptions'));
-app.use('/api/folders', require('./routes/folders'));
-app.use('/api/files', require('./routes/files'));
-app.use('/api/upload', require('./routes/upload'));
-app.use('/api/notifications', require('./routes/notifications'));
-// ✅ Backup Routes
-app.use('/api/backup', require('./routes/backup'));
-
-// الملفات الثابتة
-app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
-
-// ✅ معالجة الأخطاء العامة
-app.use((err, req, res, next) => {
-    console.error('خطأ في الخادم:', err);
-    res.status(err.status || 500).json({
-        error: process.env.NODE_ENV === 'production' ? 'خطأ في الخادم' : err.message
+    app.use(helmet({
+        contentSecurityPolicy: {
+            directives: {
+                scriptSrc: ["'self'", "'unsafe-inline'"],
+                styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+                fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+                imgSrc: ["'self'", 'data:', 'https:'],
+                connectSrc: ["'self'"],
+                upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null
+            }
+        },
+        crossOriginResourcePolicy: { policy: 'cross-origin' },
+        referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
+    }));
+    app.use(cors({ origin: (origin, done) => done(null, isAllowed(origin)), exposedHeaders: ['X-Has-More'] }));
+    app.use(express.json({ limit: '1mb' }));
+    app.use('/api', requestLogger, limiter(15 * 60 * 1000, 800), (_req, res, next) => {
+        res.set('Cache-Control', 'no-store');
+        next();
     });
-});
 
-// Socket.io
-const server = http.createServer(app);
-const io = socketIo(server, { 
-    cors: { 
-        origin: ['https://task-manager-theta-beryl-91.vercel.app', 'http://localhost:3000', 'http://localhost:5500'],
-        methods: ['GET', 'POST']
-    } 
-});
+    app.get('/api/health', (_req, res) => {
+        const database = mongoose.connection.readyState === 1;
+        res.status(database ? 200 : 503).json({ server: 'ok', database: database ? 'ready' : 'unavailable' });
+    });
 
-io.on('connection', (socket) => {
-    console.log('✅ مستخدم متصل:', socket.id);
-    socket.on('join', (username) => { socket.username = username; io.emit('user-joined', username); });
-    socket.on('chat-message', (msg) => io.emit('chat-message', msg));
-    socket.on('typing', (username) => socket.broadcast.emit('typing', username));
-    socket.on('stop-typing', () => socket.broadcast.emit('stop-typing'));
-    socket.on('edit-message', (msg) => io.emit('edit-message', msg));
-    socket.on('delete-message', (msgId) => io.emit('delete-message', msgId));
-    socket.on('react-message', (data) => io.emit('react-message', data));
-    socket.on('pin-message', (msg) => io.emit('pin-message', msg));
-    socket.on('disconnect', () => { if (socket.username) io.emit('user-left', socket.username); });
-});
+    app.use('/api/auth/register', limiter(60 * 60 * 1000, 10));
+    app.use('/api/auth/forgot-password', limiter(15 * 60 * 1000, 5));
+    app.use('/api/auth/reset-password', limiter(15 * 60 * 1000, 15));
+    app.use('/api/auth/google/exchange', limiter(60 * 1000, 20));
+    app.use('/api/admin/login', limiter(15 * 60 * 1000, 10));
+    app.use('/api/upload', limiter(60 * 60 * 1000, 50));
+    app.post('/api/tasks/:id/attachments/upload', limiter(60 * 60 * 1000, 100));
+    app.post('/api/files/project/:id/upload', limiter(60 * 60 * 1000, 100));
 
-// ✅ معالج أخطاء مركزي
-app.use(errorHandler);
-
-// ✅ إرسال رسالة تواصل إلى البريد الرسمي
-const nodemailer = require('nodemailer');
-
-const contactTransporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
-    auth: {
-        user: 'nivorasystem@gmail.com',
-        pass: 'vgtzpkykwjgqbnqf'
+    attachGoogle(app);
+    for (const route of ['auth', 'tasks', 'projects', 'workflows', 'workspaces', 'plans', 'templates', 'admin',
+        'subscriptions', 'folders', 'files', 'upload', 'notifications', 'backup']) {
+        app.use('/api/' + route, require('./routes/' + route));
     }
-});
+    app.use('/api/chat', require('./routes/chat').router);
 
-app.post('/api/contact', async (req, res) => {
-    const { name, phone, email, message } = req.body;
-    
-    if (!name || !phone || !email || !message) {
-        return res.status(400).json({ error: 'جميع الحقول مطلوبة' });
-    }
-    
-    try {
-        await contactTransporter.sendMail({
-            from: '"Nivora Contact" <nivorasystem@gmail.com>',
-            to: 'nivorasystem@gmail.com',
-            subject: `رسالة جديدة من ${name}`,
-            html: `
-                <h3>رسالة تواصل جديدة</h3>
-                <p><strong>الاسم:</strong> ${name}</p>
-                <p><strong>الجوال:</strong> ${phone}</p>
-                <p><strong>البريد:</strong> ${email}</p>
-                <p><strong>الرسالة:</strong></p>
-                <p>${message}</p>
-            `
-        });
-        
+    app.post('/api/contact', limiter(15 * 60 * 1000, 5), async (req, res) => {
+        if (!mailAvailable() || !process.env.CONTACT_EMAIL) {
+            throw accessError(503, 'خدمة التواصل غير متاحة حاليًا');
+        }
+        const { name, phone, email, message } = req.body || {};
+        if ([name, phone, email, message].some(value => typeof value !== 'string' || !value.trim())
+            || name.length > 120 || phone.length > 40 || email.length > 254 || message.length > 5000
+            || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            throw accessError(400, 'تحقق من بيانات التواصل');
+        }
+        await sendMail({ to: process.env.CONTACT_EMAIL, replyTo: email, subject: 'رسالة جديدة من نموذج نيفورا',
+            text: [name, phone, email, '', message].join('\n') });
         res.json({ message: 'تم الإرسال بنجاح' });
-    } catch (err) {
-        console.error('خطأ في إرسال البريد:', err);
-        res.status(500).json({ error: 'خطأ في الإرسال' });
+    });
+
+    app.use('/api', (_req, res) => res.status(404).json({ error: 'المسار غير موجود' }));
+    if (durable) {
+        app.get('/uploads/avatars/:name', (req, res, next) => {
+            const extension = req.params.name.match(/^[a-f\d-]{36}\.(png|jpg|gif|webp)$/)?.[1];
+            if (!extension) return res.sendStatus(404);
+            res.set('Cache-Control', 'public, max-age=604800, immutable');
+            return streamStoredUpload(req.params.name, res, next, { type: 'image/' + (extension === 'jpg' ? 'jpeg' : extension) });
+        });
+    } else {
+        app.use('/uploads/avatars', express.static(avatarDir, { immutable: true, maxAge: '7d', index: false }));
     }
-});
-server.listen(PORT, () => console.log(`🚀 الخادم يعمل على http://localhost:${PORT}`));
+    app.use(express.static(publicDir));
+    app.use((_req, res) => res.status(404).sendFile(path.join(publicDir, '404.html')));
+    app.use(errorHandler);
+    return app;
+}
+
+function createServer() {
+    const isAllowed = allowedOrigins();
+    const app = createApp(isAllowed);
+    const server = http.createServer(app);
+    app.set('realtime', configureRealtime(server, isAllowed));
+    return server;
+}
+
+async function start() {
+    signingKey();
+    await connectDB();
+    const server = createServer();
+    const host = process.env.BIND_HOST || (process.env.NODE_ENV === 'production' || process.env.RENDER ? '0.0.0.0' : '127.0.0.1');
+    server.listen(port, host, () => console.log('Nivora listening on ' + host + ':' + port));
+}
+
+if (require.main === module) {
+    start().catch(error => {
+        console.error('Nivora could not start:', error.name === 'Error' ? error.message : error.name);
+        process.exitCode = 1;
+    });
+}
+
+module.exports = { createApp, createServer };

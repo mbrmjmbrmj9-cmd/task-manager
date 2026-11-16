@@ -13,6 +13,7 @@ const fileSchema = new mongoose.Schema({
         type: String, 
         required: true 
     },
+    storageKey: String,
     type: { 
         type: String, 
         default: 'file'  // file, image, document, spreadsheet, pdf, etc.

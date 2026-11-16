@@ -77,7 +77,7 @@ function sanitize(field) {
 
 // ✅ تحقق من MongoDB ObjectId
 function isValidObjectId(id) {
-    return /^[0-9a-fA-F]{24}$/.test(id);
+    return typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id);
 }
 
 function requireValidObjectId(field) {

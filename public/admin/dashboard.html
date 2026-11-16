@@ -1,71 +1,63 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+    <link rel="stylesheet" href="../css/style.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nivora | لوحة المدير</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { display: flex; min-height: 100vh; background: #0F172A; font-family: 'Cairo', sans-serif; color: #fff; }
-        .sidebar { width: 240px; background: #1E293B; padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 200; transition: right 0.3s ease; overflow-y: auto; }
+        body { display: flex; min-height: 100vh; background: var(--bg); font-family: 'Cairo', sans-serif; color: var(--text); }
+        .sidebar { width: 240px; background: var(--card); padding: 1.5rem 1rem; position: fixed; top: 0; right: 0; bottom: 0; z-index: 200; transition: right 0.3s ease; overflow-y: auto; }
         .sidebar .logo { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1.5rem; padding: 0 0.75rem; }
         .sidebar .logo img { width: 34px; height: 34px; flex-shrink: 0; }
         .sidebar .logo span { color: #EF4444; font-weight: 800; font-size: 1rem; }
-        .sidebar a { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.75rem; color: #94A3B8; text-decoration: none; border-radius: 8px; margin-bottom: 0.2rem; font-size: 0.9rem; transition: all 0.15s; }
-        .sidebar a:hover, .sidebar a.active { background: #334155; color: #fff; }
+        .sidebar a { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.75rem; color: var(--text-light); text-decoration: none; border-radius: 8px; margin-bottom: 0.2rem; font-size: 0.9rem; transition: all 0.15s; }
+        .sidebar a:hover, .sidebar a.active { background: var(--border); color: var(--text); }
         .main { margin-right: 240px; flex: 1; padding: 2rem; }
         .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem; }
         .topbar h1 { font-size: 1.4rem; font-weight: 800; }
         .topbar-actions { display: flex; gap: 0.5rem; }
-        .btn-refresh { background: #1E293B; border: 1px solid #334155; border-radius: 8px; padding: 0.5rem 0.75rem; cursor: pointer; color: #94A3B8; font-family: inherit; font-size: 0.8rem; transition: all 0.15s; }
-        .btn-refresh:hover { background: #334155; color: #fff; }
+        .btn-refresh { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 0.75rem; cursor: pointer; color: var(--text-light); font-family: inherit; font-size: 0.8rem; transition: all 0.15s; }
+        .btn-refresh:hover { background: var(--border); color: var(--text); }
         .quick-actions { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
-        .quick-btn { display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1rem; background: #1E293B; border: 1px solid #334155; border-radius: 8px; cursor: pointer; color: #94A3B8; font-family: inherit; font-size: 0.8rem; text-decoration: none; transition: all 0.15s; }
-        .quick-btn:hover { background: #334155; color: #fff; transform: translateY(-1px); }
+        .quick-btn { display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1rem; background: var(--card); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; color: var(--text-light); font-family: inherit; font-size: 0.8rem; text-decoration: none; transition: all 0.15s; }
+        .quick-btn:hover { background: var(--border); color: var(--text); transform: translateY(-1px); }
         .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-        .stat-card { background: #1E293B; padding: 1.25rem; border-radius: 12px; display: flex; align-items: center; gap: 1rem; transition: all 0.15s; }
+        .stat-card { background: var(--card); padding: 1.25rem; border-radius: 12px; display: flex; align-items: center; gap: 1rem; transition: all 0.15s; }
         .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
         .stat-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
         .stat-info .value { font-size: 1.7rem; font-weight: 800; line-height: 1; }
-        .stat-info .label { color: #94A3B8; font-size: 0.78rem; margin-top: 0.2rem; }
+        .stat-info .label { color: var(--text-light); font-size: 0.78rem; margin-top: 0.2rem; }
         .alert-item { padding: 0.7rem 1rem; border-radius: 8px; margin-bottom: 0.4rem; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; }
         .alert-warning { background: rgba(245,158,11,0.1); color: #F59E0B; border-right: 3px solid #F59E0B; }
         .alert-danger { background: rgba(239,68,68,0.1); color: #EF4444; border-right: 3px solid #EF4444; }
         .alert-info { background: rgba(59,130,246,0.1); color: #3B82F6; border-right: 3px solid #3B82F6; }
         .section-title { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; }
         .audit-filters { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
-        .audit-filters input, .audit-filters select { flex: 1; min-width: 150px; height: 34px; border-radius: 8px; border: 1px solid #334155; background: #1E293B; color: #fff; padding: 0 0.75rem; font-family: inherit; font-size: 0.8rem; }
+        .audit-filters input, .audit-filters select { flex: 1; min-width: 150px; height: 34px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--text); padding: 0 0.75rem; font-family: inherit; font-size: 0.8rem; }
         .audit-filters input:focus, .audit-filters select:focus { outline: none; border-color: #EF4444; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 0.7rem; border-bottom: 1px solid #334155; text-align: right; font-size: 0.85rem; }
-        th { color: #94A3B8; font-weight: 600; }
-        .skeleton { background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
+        th, td { padding: 0.7rem; border-bottom: 1px solid var(--border); text-align: right; font-size: 0.85rem; }
+        th { color: var(--text-light); font-weight: 600; }
+        .skeleton { background: linear-gradient(90deg, var(--border) 25%, var(--surface) 50%, var(--border) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
         @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
         .admin-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 199; }
         .admin-overlay.show { display: block; }
-        .admin-menu-btn { display: none; position: fixed; top: 12px; right: 12px; z-index: 150; background: #1E293B; color: #fff; border: 1px solid #334155; border-radius: 8px; padding: 0.4rem 0.6rem; cursor: pointer; font-size: 1.2rem; }
+        .admin-menu-btn { display: none; position: fixed; top: 12px; right: 12px; z-index: 150; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 0.4rem 0.6rem; cursor: pointer; font-size: 1.2rem; }
         @media (max-width: 1024px) { .sidebar { width: 60px; padding: 1rem 0.5rem; } .sidebar .logo span, .sidebar a span { display: none; } .sidebar .logo img { margin: 0 auto; } .sidebar a { justify-content: center; padding: 0.5rem; } .main { margin-right: 60px; } }
         @media (max-width: 768px) { body { flex-direction: column; } .sidebar { right: -260px; width: 260px; padding: 1.5rem 1rem; } .sidebar.open { right: 0; } .sidebar .logo span, .sidebar a span { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .main { margin-right: 0; padding: 1rem; } .admin-menu-btn { display: flex; } .stats { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; } .stat-card { padding: 0.85rem; gap: 0.5rem; } .stat-icon { width: 32px; height: 32px; font-size: 1rem; } .stat-info .value { font-size: 1.3rem; } }
     </style>
+<script src="../js/config.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/theme.css">
+    <script src="../js/theme.js" defer></script>
 </head>
-<body>
+<body data-ui="app" data-area="admin">
     <div class="admin-overlay" id="adminOverlay" onclick="closeSidebar()"></div>
     <button class="admin-menu-btn" id="adminMenuBtn" onclick="openSidebar()">☰</button>
 
-    <aside class="sidebar" id="sidebar">
-        <div class="logo"><img src="../img/logo.svg" alt="Nivora"><span>Nivora Admin</span></div>
-        <a href="dashboard.html" class="active"><span>📊</span><span>لوحة القيادة</span></a>
-        <a href="organizations.html"><span>🏢</span><span>المؤسسات</span></a>
-        <a href="subscriptions.html"><span>💳</span><span>الاشتراكات</span></a>
-        <a href="users.html"><span>👥</span><span>المستخدمون</span></a>
-        <a href="features.html"><span>🚩</span><span>Feature Flags</span></a>
-        <a href="usage.html"><span>📊</span><span>الاستخدام</span></a>
-        <a href="tickets.html"><span>🎫</span><span>التذاكر</span></a>
-        <a href="health.html"><span>🖥</span><span>صحة النظام</span></a>
-        <a href="notifications.html" class="active"><span>🔔</span><span>الإشعارات</span></a>
-        <a href="#" onclick="logout()"><span>🚪</span><span>خروج</span></a>
-    </aside>
+    <aside id="sidebar" class="shell-rail"></aside>
 
     <div class="main">
         <div class="topbar">
@@ -118,7 +110,7 @@
 
     <script src="../js/components.js"></script>
     <script>
-        const API = 'https://nivora-t9ov.onrender.com/api/admin';
+        const API = Nivora.apiBase + '/admin';
         const token = localStorage.getItem('adminToken');
         if (!token) window.location.href = 'login.html';
 
@@ -147,7 +139,7 @@
                     { icon: '🆕', color: '#14B8A6', bg: 'rgba(20,184,166,0.1)', label: 'اشتراكات جديدة', value: stats.newSubsThisMonth }
                 ];
 
-                document.getElementById('statsGrid').innerHTML = statsData.map(s => `<div class="stat-card"><div class="stat-icon" style="background:${s.bg};color:${s.color};">${s.icon}</div><div class="stat-info"><div class="value" style="color:${s.color};">${s.value}</div><div class="label">${s.label}</div></div></div>`).join('');
+                document.getElementById('statsGrid').innerHTML = statsData.map(s => `<div class="stat-card"><div class="stat-icon" style="background:${s.bg};color:${s.color};">${escapeHtml(s.icon)}</div><div class="stat-info"><div class="value" style="color:${safeColor(s.color)};">${s.value}</div><div class="label">${escapeHtml(s.label)}</div></div></div>`).join('');
             } catch (err) {
                 document.getElementById('statsGrid').innerHTML = '<div class="alert-danger" style="padding:1rem;border-radius:8px;">❌ تعذر تحميل البيانات</div>';
             }
@@ -200,7 +192,7 @@
                     });
                 }
 
-                document.getElementById('auditBody').innerHTML = logs.length === 0 ? '<tr><td colspan="4" style="text-align:center;padding:2rem;color:#94A3B8;">لا توجد سجلات</td></tr>' : logs.map(l => `<tr><td>${l.username || '-'}</td><td>${l.action}</td><td>${l.details || '-'}</td><td>${new Date(l.createdAt).toLocaleString('ar-SA')}</td></tr>`).join('');
+                document.getElementById('auditBody').innerHTML = logs.length === 0 ? '<tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--text-light);">لا توجد سجلات</td></tr>' : logs.map(l => `<tr><td>${escapeHtml(l.username || '-')}</td><td>${escapeHtml(l.action)}</td><td>${escapeHtml(l.details || '-')}</td><td>${new Date(l.createdAt).toLocaleString('ar-SA')}</td></tr>`).join('');
             } catch (err) {
                 document.getElementById('auditBody').innerHTML = '<tr><td colspan="4" style="text-align:center;color:#EF4444;">تعذر تحميل السجلات</td></tr>';
             }
@@ -225,10 +217,10 @@ function toggleNotifications() {
 function renderNotifList() {
     const container = document.getElementById('notifList');
     if (notifications.length === 0) {
-        container.innerHTML = '<p style="padding:1rem;text-align:center;color:#94A3B8;font-size:0.85rem;">لا توجد إشعارات</p>';
+        container.innerHTML = '<p style="padding:1rem;text-align:center;color:var(--text-light);font-size:0.85rem;">لا توجد إشعارات</p>';
         return;
     }
-    container.innerHTML = notifications.map(n => `<div style="padding:0.6rem 1rem;border-bottom:1px solid #334155;font-size:0.8rem;cursor:pointer;${notifRead.includes(n.id) ? 'opacity:0.6;' : ''}" onclick="markRead('${n.id}')">${n.icon} ${n.text}<div style="color:#64748B;font-size:0.7rem;margin-top:0.2rem;">${n.time}</div></div>`).join('');
+    container.innerHTML = notifications.map(n => `<div style="padding:0.6rem 1rem;border-bottom:1px solid var(--border);font-size:0.8rem;cursor:pointer;${notifRead.includes(n.id) ? 'opacity:0.6;' : ''}" onclick="markRead('${n.id}')">${escapeHtml(n.icon)} ${escapeHtml(n.text)}<div style="color:var(--text-muted);font-size:0.7rem;margin-top:0.2rem;">${n.time}</div></div>`).join('');
 }
 
 function markRead(id) {

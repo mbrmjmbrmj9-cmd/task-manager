@@ -6,7 +6,6 @@
     <title>Nivora | التقارير</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#2563EB">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
         :root { --sidebar-w: 240px; }
@@ -64,29 +63,15 @@
         @media (max-width: 1024px) { :root { --sidebar-w: 72px; } .sidebar { padding: 1rem 0.5rem; } .sidebar .logo { font-size: 1rem; text-align: center; } .sidebar .label, .sidebar .logo span { display: none; } .sidebar a { justify-content: center; padding: 0.5rem; } .kpi-grid { grid-template-columns: repeat(2, 1fr); } .charts-row { grid-template-columns: 1fr; } }
         @media (max-width: 768px) { :root { --sidebar-w: 0; } .sidebar { right: -260px; width: 260px; } .sidebar.open { right: 0; } .sidebar .label { display: inline; } .sidebar a { justify-content: flex-start; padding: 0.6rem 0.75rem; } .overlay.show { display: block; } .main { margin-right: 0; padding: 0.75rem; padding-bottom: 5rem; } .bottom-nav { display: flex; } .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; } .kpi-card { padding: 1rem; gap: 0.5rem; } .kpi-icon { width: 36px; height: 36px; font-size: 1.1rem; border-radius: var(--radius-xs); } .kpi-value { font-size: 1.4rem; } .projects-table { font-size: 0.7rem; } .projects-table th:nth-child(4), .projects-table td:nth-child(4) { display: none; } }
     </style>
+<script src="js/config.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/theme.css">
+    <script src="js/theme.js" defer></script>
 </head>
-<body>
+<body data-ui="app">
     <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
 
-    <aside class="sidebar" id="sidebar">
-    <div class="logo">
-        <img src="img/logo.svg" alt="Nivora" class="logo-img">
-        <span>Nivora</span>
-    </div>
-    <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="label">لوحة القيادة</span></a>
-    <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg><span class="label">المهام</span></a>
-    <a href="projects.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">المشاريع</span></a>
-    <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg><span class="label">Kanban</span></a>
-    <a href="gantt.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">Gantt</span></a>
-    <a href="calendar.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span class="label">التقويم</span></a>
-    <a href="reports.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><span class="label">التقارير</span></a>
-    <a href="workflows.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v4H4zM4 10h16v4H4zM4 16h16v4H4z"/></svg><span class="label">Workflows</span></a>
-    <a href="templates.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">القوالب</span></a>
-    <a href="archive.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></svg><span class="label">الأرشيف</span></a>
-    <a href="chat.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="label">المحادثة</span></a>
-    <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span class="label">الفريق</span></a>
-    <a href="teams.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg><span class="label">فرق العمل</span></a>
-</aside>
+    <aside id="sidebar" class="shell-rail"></aside>
 
     <main class="main">
         <div class="topbar">
@@ -136,19 +121,11 @@
         </div>
     </main>
 
-    <nav class="bottom-nav">
-        <a href="dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>الرئيسية</a>
-        <a href="tasks.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 5h6"/></svg>مهام</a>
-        <a href="kanban.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg>Kanban</a>
-        <a href="team.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>فريق</a>
-        <a href="#" onclick="openSidebar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>المزيد</a>
-    </nav>
-
     <script src="js/components.js"></script>
     <script>
         function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
         function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
-        const API_BASE = 'https://nivora-t9ov.onrender.com/api';
+        const API_BASE = Nivora.apiBase;
         const token = localStorage.getItem('token');
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         if (!token) window.location.href = 'login.html';
@@ -161,16 +138,16 @@
             const username = document.getElementById('topUsername');
             if (username) username.textContent = user.fullName || user.username || 'مستخدم';
             if (avatar) {
-                if (user.avatar) avatar.innerHTML = `<img src="${user.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                if (user.avatar) avatar.innerHTML = `<img src="${safeImageUrl(user.avatar)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
                 else avatar.textContent = getInitials(user.fullName || user.username);
             }
         });
 
         async function loadProjects() {
-            const res = await fetch(`${API_BASE}/projects`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const res = await fetch(Nivora.url('/projects', null, true), { headers: { 'Authorization': `Bearer ${token}` } });
             const projects = await res.json();
             const sel = document.getElementById('projectFilter');
-            sel.innerHTML = '<option value="">كل المشاريع</option>' + projects.map(p => `<option value="${p._id}">${p.name}</option>`).join('');
+            sel.innerHTML = '<option value="">كل المشاريع</option>' + projects.map(p => `<option value="${p._id}">${escapeHtml(p.name)}</option>`).join('');
         }
 
         async function loadReports() {
@@ -180,8 +157,8 @@
             try {
                 const pid = document.getElementById('projectFilter').value;
                 const [tRes, pRes] = await Promise.all([
-                    fetch(`${API_BASE}/tasks${pid ? '?projectId=' + pid : ''}`, { headers: { 'Authorization': `Bearer ${token}` } }),
-                    fetch(`${API_BASE}/projects`, { headers: { 'Authorization': `Bearer ${token}` } })
+                    fetch(Nivora.url('/tasks', { projectId: pid }, true), { headers: { 'Authorization': `Bearer ${token}` } }),
+                    fetch(Nivora.url('/projects', null, true), { headers: { 'Authorization': `Bearer ${token}` } })
                 ]);
                 const tasks = await tRes.json();
                 const projects = await pRes.json();
@@ -206,8 +183,8 @@
             ];
             document.getElementById('kpiGrid').innerHTML = cards.map(c => `
                 <div class="card kpi-card">
-                    <div class="kpi-icon ${c.cls}">${c.icon}</div>
-                    <div class="kpi-info"><div class="kpi-label">${c.label}</div><div class="kpi-value">${c.value}</div></div>
+                    <div class="kpi-icon ${c.cls}">${escapeHtml(c.icon)}</div>
+                    <div class="kpi-info"><div class="kpi-label">${escapeHtml(c.label)}</div><div class="kpi-value">${c.value}</div></div>
                 </div>`).join('');
         }
 
@@ -250,7 +227,7 @@
                     <thead><tr><th>المشروع</th><th>المهام</th><th>مكتملة</th><th>نسبة الإنجاز</th><th>الحالة</th></tr></thead>
                     <tbody>${summary.map(s => `
                         <tr>
-                            <td><strong>${s.name}</strong></td>
+                            <td><strong>${escapeHtml(s.name)}</strong></td>
                             <td>${s.total}</td>
                             <td>${s.done}</td>
                             <td><div style="display:flex;align-items:center;gap:0.5rem;"><div class="progress-bar"><div class="progress-fill" style="width:${s.rate}%;background:${s.progressColor};"></div></div><span style="font-size:0.8rem;font-weight:600;">${s.rate}%</span></div></td>
@@ -280,7 +257,7 @@ function renderNotifications() {
     }
     container.innerHTML = notifications.slice(0, 20).map(n => `
         <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border-light);cursor:pointer;${n.isRead ? '' : 'background:var(--primary-light);'}" onclick="readNotification('${n._id}')">
-            <div style="font-size:0.85rem;font-weight:600;">${n.message}</div>
+            <div style="font-size:0.85rem;font-weight:600;">${escapeHtml(n.message)}</div>
             <div style="font-size:0.7rem;color:var(--text-muted);margin-top:0.2rem;">${timeAgo(n.createdAt)}</div>
         </div>
     `).join('');

@@ -6,7 +6,6 @@
     <title>Nivora | إنشاء حساب</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#2563EB">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>
         body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1rem; }
@@ -20,8 +19,12 @@
         .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
         .dark-toggle { position: fixed; top: 1rem; left: 1rem; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.5rem 0.7rem; cursor: pointer; font-size: 1.1rem; }
     </style>
+<script src="js/config.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/theme.css">
+    <script src="js/theme.js" defer></script>
 </head>
-<body>
+<body data-ui="flow">
     <button class="dark-toggle" onclick="toggleDark()" id="darkBtn">🌙</button>
     <div class="container">
         <a href="workspace.html" class="back">← رجوع</a>
@@ -29,7 +32,7 @@
         <div class="card">
             <h1>إنشاء حساب</h1>
             <p class="sub">أنشئ حسابك للبدء</p>
-            <button class="google-btn" onclick="location.href='https://nivora-t9ov.onrender.com/api/auth/google'"><span style="font-weight:700;color:#4285F4;">G</span> المتابعة بـ Google</button>
+            <button class="google-btn" onclick="location.href=Nivora.apiBase + '/auth/google'"><span style="font-weight:700;color:#4285F4;">G</span> المتابعة بـ Google</button>
             <div class="divider">أو</div>
             <div class="form-group"><input type="text" class="input" id="fullName" placeholder="الاسم الكامل"></div>
             <div class="form-group"><input type="email" class="input" id="email" placeholder="البريد الإلكتروني"></div>
@@ -52,9 +55,9 @@
             if (pass.length < 8) { showToast('8 أحرف على الأقل', 'warning'); return; }
             const btn = document.getElementById('nextBtn'); setButtonLoading(btn, true, 'جاري...');
             try {
-                const res = await fetch('https://nivora-t9ov.onrender.com/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: email, password: pass, fullName }) });
+                const res = await fetch(Nivora.apiBase + '/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: email, password: pass, fullName }) });
                 if (res.ok) {
-                    const loginRes = await fetch('https://nivora-t9ov.onrender.com/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: email, password: pass }) });
+                    const loginRes = await fetch(Nivora.apiBase + '/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: email, password: pass }) });
                     const loginData = await loginRes.json();
                     if (loginRes.ok) { localStorage.setItem('token', loginData.token); localStorage.setItem('user', JSON.stringify(loginData.user)); window.location.href = 'setup-team.html'; }
                 } else { const d = await res.json(); showToast(d.error, 'error'); }
