@@ -182,6 +182,23 @@ test('an unread notification count is private to the signed-in account', async (
     expect(count).toHaveBeenCalledWith({ userId: owner.id, isRead: false });
 });
 
+test('Kanban returns task summaries and enforces the same project permissions', async () => {
+    const aggregate = jest.spyOn(Task, 'aggregate').mockResolvedValue([{
+        _id: task._id, title: task.title, commentCount: 2, attachmentCount: 1
+    }]);
+    const path = '/api/tasks?view=board&projectId=' + project.id;
+    expect((await request('GET', path, { principal: outsider })).status).toBe(403);
+    expect(aggregate).not.toHaveBeenCalled();
+    const response = await request('GET', path, { principal: owner });
+    expect(response.status).toBe(200);
+    expect(response.body[0]).toMatchObject({ commentCount: 2, attachmentCount: 1 });
+    const [scope, , projection] = aggregate.mock.calls[0][0];
+    expect(scope.$match).toMatchObject({ projectId: project._id, status: { $ne: 'archived' } });
+    expect(projection.$project).not.toHaveProperty('comments');
+    expect(projection.$project).not.toHaveProperty('attachments');
+    expect(projection.$project).not.toHaveProperty('activity');
+});
+
 test('workspace settings enforce membership and keep the invitation code private to managers', async () => {
     jest.spyOn(Project, 'countDocuments').mockResolvedValue(1);
     const route = '/api/workspaces/' + workspace.id + '/settings';

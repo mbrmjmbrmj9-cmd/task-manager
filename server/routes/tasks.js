@@ -119,7 +119,7 @@ async function listTasks(query, userId, res, archived = false) {
     if (query.status !== undefined && !statuses.includes(query.status)) throw accessError(400, 'حالة المهمة غير صالحة');
     if (query.priority !== undefined && !priorities.includes(query.priority)) throw accessError(400, 'أولوية المهمة غير صالحة');
     if (archived || query.status) filter.status = archived ? 'archived' : query.status;
-    else if (query.view === 'list' || query.view === 'options') filter.status = { $ne: 'archived' };
+    else if (['list', 'options', 'board', 'timeline'].includes(query.view)) filter.status = { $ne: 'archived' };
     if (query.priority) filter.priority = query.priority;
     if (query.assigneeId !== undefined) filter.assigneeId = validateId(query.assigneeId);
     if (query.assignee !== undefined) filter.assignee = stringValue(query.assignee, 'المسؤول', 254);
@@ -135,9 +135,22 @@ async function listTasks(query, userId, res, archived = false) {
         else (filter.$and ||= []).push({ $or: [{ title: regex }, { description: regex }] });
     }
     if (query.view === 'list' && query.after !== undefined) addCursor(filter, query.after);
+    if (query.view === 'board') {
+        const rows = await Task.aggregate([
+            { $match: filter },
+            { $sort: { createdAt: -1, _id: -1 } },
+            { $project: { title: 1, status: 1, priority: 1, project: 1, projectId: 1, assignee: 1, assigneeId: 1,
+                startDate: 1, dueDate: 1, progress: 1,
+                commentCount: { $size: { $ifNull: ['$comments', []] } },
+                attachmentCount: { $size: { $ifNull: ['$attachments', []] } } } }
+        ]);
+        res.json(rows);
+        return;
+    }
     const tasks = Task.find(filter).sort({ createdAt: -1, _id: -1 });
     if (query.view === 'options') tasks.select('title');
     if (query.view === 'list') tasks.select(listFields);
+    if (query.view === 'timeline') tasks.select(listFields + ' startDate progress');
     if (query.limit !== undefined) {
         const limit = typeof query.limit === 'string' ? Number(query.limit) : NaN;
         const page = query.page === undefined ? 1 : typeof query.page === 'string' ? Number(query.page) : NaN;

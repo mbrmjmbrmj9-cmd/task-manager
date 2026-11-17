@@ -167,8 +167,8 @@
         });
 
         async function loadProjects() {
-            const res = await fetch(Nivora.url('/projects', null, true), { headers: { 'Authorization': `Bearer ${token}` } });
-            allProjects = await res.json();
+            const res = await fetch(Nivora.url('/projects', { view: 'options' }, true), { headers: { 'Authorization': `Bearer ${token}` } });
+            allProjects = await Nivora.read(res);
             const sel = document.getElementById('projectFilter');
             sel.innerHTML = '<option value="">كل المشاريع</option>' + allProjects.map(p => `<option value="${p._id}">${escapeHtml(p.name)}</option>`).join('');
             const params = new URLSearchParams(window.location.search);
@@ -182,13 +182,13 @@
             document.getElementById('ganttBody').innerHTML = '';
             try {
                 const pid = document.getElementById('projectFilter').value;
-                const url = Nivora.url('/tasks', { projectId: pid }, true);
+                const url = Nivora.url('/tasks', { projectId: pid, view: 'timeline' }, true);
                 const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
-                allTasks = await res.json();
+                allTasks = await Nivora.read(res);
                 if (pid) document.getElementById('projectTitle').textContent = '📁 ' + (allProjects.find(p => p._id === pid)?.name || '');
                 else document.getElementById('projectTitle').textContent = '';
                 const assignees = [...new Set(allTasks.map(t => t.assignee).filter(Boolean))];
-                document.getElementById('assigneeFilter').innerHTML = '<option value="">👤 الكل</option>' + assignees.map(a => `<option value="${a}">${a}</option>`).join('');
+                document.getElementById('assigneeFilter').innerHTML = '<option value="">👤 الكل</option>' + assignees.map(a => `<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join('');
                 filteredTasks = [...allTasks];
                 renderGantt();
             } catch (err) {

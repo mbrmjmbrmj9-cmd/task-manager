@@ -145,8 +145,8 @@
         });
 
         async function loadProjects() {
-            const res = await fetch(Nivora.url('/projects', null, true), { headers: { 'Authorization': `Bearer ${token}` } });
-            const projects = await res.json();
+            const res = await fetch(Nivora.url('/projects', { view: 'options' }, true), { headers: { 'Authorization': `Bearer ${token}` } });
+            const projects = await Nivora.read(res);
             const sel = document.getElementById('projectFilter');
             sel.innerHTML = '<option value="">كل المشاريع</option>' + projects.map(p => `<option value="${p._id}">${escapeHtml(p.name)}</option>`).join('');
         }
@@ -158,11 +158,11 @@
             try {
                 const pid = document.getElementById('projectFilter').value;
                 const [tRes, pRes] = await Promise.all([
-                    fetch(Nivora.url('/tasks', { projectId: pid }, true), { headers: { 'Authorization': `Bearer ${token}` } }),
-                    fetch(Nivora.url('/projects', null, true), { headers: { 'Authorization': `Bearer ${token}` } })
+                    fetch(Nivora.url('/tasks', { projectId: pid, view: 'timeline' }, true), { headers: { 'Authorization': `Bearer ${token}` } }),
+                    fetch(Nivora.url('/projects', { view: 'options' }, true), { headers: { 'Authorization': `Bearer ${token}` } })
                 ]);
-                const tasks = await tRes.json();
-                const projects = await pRes.json();
+                const tasks = await Nivora.read(tRes);
+                const projects = await Nivora.read(pRes);
                 renderKPIs(tasks);
                 renderBarChart(tasks);
                 renderProjectsSummary(projects, tasks);

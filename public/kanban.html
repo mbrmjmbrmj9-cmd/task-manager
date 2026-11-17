@@ -200,13 +200,16 @@
         function logout() { localStorage.clear(); window.location.href = 'login.html'; }
         function toggleDark() { document.body.classList.toggle('dark'); const d = document.body.classList.contains('dark'); localStorage.setItem('dark', d); document.getElementById('darkBtn').textContent = d ? '☀️' : '🌙'; }
         if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
-        function closeM(id) { document.getElementById(id).classList.remove('show'); }
+        function closeM(id) {
+            document.getElementById(id).classList.remove('show');
+            if (id === 'detailsModal') { currentTaskId = null; detailSequence++; }
+        }
         function closeQuickAdd() { document.getElementById('quickAddModal').classList.remove('show'); document.getElementById('quickAddTitle').value = ''; }
 
-        const statuses = ['new', 'in-progress', 'review', 'done', 'blocked'];
-        const labels = { 'new': 'متاحة', 'in-progress': 'قيد التنفيذ', 'review': 'مراجعة', 'done': 'مكتملة', 'blocked': 'متعثرة' };
-        const icons = { 'new': '📥', 'in-progress': '⚙️', 'review': '👁️', 'done': '✅', 'blocked': '🚫' };
-        const sCls = { 'new': 'status-new', 'in-progress': 'status-progress', 'review': 'status-review', 'done': 'status-done', 'blocked': 'status-blocked' };
+        const statuses = ['new', 'ready', 'in-progress', 'review', 'done', 'blocked'];
+        const labels = { 'new': 'متاحة', ready: 'جاهزة', 'in-progress': 'قيد التنفيذ', 'review': 'مراجعة', 'done': 'مكتملة', 'blocked': 'متعثرة' };
+        const icons = { 'new': '📥', ready: '📋', 'in-progress': '⚙️', 'review': '👁️', 'done': '✅', 'blocked': '🚫' };
+        const sCls = { 'new': 'status-new', ready: 'status-new', 'in-progress': 'status-progress', 'review': 'status-review', 'done': 'status-done', 'blocked': 'status-blocked' };
         const priorities = ['critical', 'high', 'medium', 'low'];
         const pLabels = { critical: 'حرجة', high: 'عالية', medium: 'متوسطة', low: 'منخفضة' };
         const pCls = { critical: 'pri-critical', high: 'pri-high', medium: 'pri-medium', low: 'pri-low' };
@@ -224,8 +227,7 @@
         });
 
         async function loadProjects() {
-            const res = await fetch(Nivora.url('/projects', null, true), { headers: { 'Authorization': `Bearer ${token}` } });
-            allProjects = await res.json();
+            allProjects = await Nivora.api('/projects', { workspace: true, params: { view: 'options' } });
             const sel = document.getElementById('projectFilter');
             sel.innerHTML = '<option value="">كل المشاريع</option>' + allProjects.map(p => `<option value="${p._id}">${escapeHtml(p.name)}</option>`).join('');
             const params = new URLSearchParams(window.location.search);
@@ -233,19 +235,26 @@
             if (pid) { sel.value = pid; document.getElementById('projectTitle').textContent = '📁 ' + (allProjects.find(p => p._id === pid)?.name || ''); }
         }
 
+        let boardRequest;
         async function loadKanban() {
+            boardRequest?.abort();
+            const controller = new AbortController();
+            boardRequest = controller;
             showSkeleton('kanbanBoard', 'card', 5);
             try {
                 const pid = document.getElementById('projectFilter').value;
-                const url = Nivora.url('/tasks', { projectId: pid }, true);
-                const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
-                allTasks = await res.json();
+                const tasks = await Nivora.api('/tasks', { workspace: true, signal: controller.signal,
+                    params: { projectId: pid, view: 'board' } });
+                if (controller.signal.aborted) return;
+                allTasks = tasks;
                 if (pid) document.getElementById('projectTitle').textContent = '📁 ' + (allProjects.find(p => p._id === pid)?.name || '');
                 else document.getElementById('projectTitle').textContent = '';
                 const assignees = [...new Set(allTasks.map(t => t.assignee).filter(Boolean))];
-                document.getElementById('assigneeFilter').innerHTML = '<option value="">👤 الكل</option>' + assignees.map(a => `<option value="${a}">${a}</option>`).join('');
+                document.getElementById('assigneeFilter').innerHTML = '<option value="">👤 الكل</option>' + assignees.map(a => `<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join('');
                 renderBoard(allTasks);
-            } catch (err) { showError('kanbanBoard', 'تعذر تحميل المهام', loadKanban); }
+            } catch (err) {
+                if (!controller.signal.aborted) showError('kanbanBoard', err.status ? err.message : 'تعذر الاتصال لتحميل المهام', loadKanban);
+            }
         }
 
         function renderBoard(tasks) {
@@ -266,9 +275,9 @@
 
         function renderCard(t) {
             const cls = sCls[t.status] || 'status-new';
-            const isOverdue = t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'done';
-            const cCount = t.comments?.length || 0;
-            const aCount = t.attachments?.length || 0;
+            const isOverdue = t.dueDate && Nivora.taskDateKey(t.dueDate) < Nivora.dateKey(new Date()) && t.status !== 'done';
+            const cCount = t.comments?.length ?? t.commentCount ?? 0;
+            const aCount = t.attachments?.length ?? t.attachmentCount ?? 0;
             const initial = (t.assignee || '?')[0];
             const pc = pCls[t.priority] || 'pri-medium';
             return `<div class="task-card ${cls}" draggable="true" data-id="${t._id}" ondragstart="dragTask(event,'${t._id}')" ondragend="this.classList.remove('dragging')" onclick="openDetails('${t._id}')">
@@ -279,7 +288,7 @@
                 <div class="card-title">${escapeHtml(t.title)}</div>
                 ${t.dueDate ? `<div class="date-badge ${isOverdue ? 'overdue' : ''}">📅 ${formatDate(t.dueDate)}</div>` : ''}
                 <div class="card-footer">
-                    <div class="card-footer-left"><div class="avatar-sm">${initial}</div><div class="drag-handle" title="اسحب للنقل"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div>
+                    <div class="card-footer-left"><div class="avatar-sm">${escapeHtml(initial)}</div><div class="drag-handle" title="اسحب للنقل"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div>
                     <div class="card-footer-right">
                         <div class="indicators">
                             <button class="ind-btn" onclick="event.stopPropagation();openDetails('${t._id}','comments')">${cCount} 💬</button>
@@ -293,27 +302,63 @@
         }
 
         function dragTask(e, id) { e.dataTransfer.setData('text/plain', id); e.target.classList.add('dragging'); }
-        async function dropTask(event, status) { event.preventDefault(); event.currentTarget.classList.remove('drag-over'); const id = event.dataTransfer.getData('text/plain'); if (!id) return; try { await Nivora.api('/tasks/' + id, { method: 'PATCH', data: { status } }); loadKanban(); } catch (error) { showToast(error.message, 'error'); } }
+        function storeTask(task) {
+            const index = allTasks.findIndex(row => row._id === task._id);
+            if (index >= 0) allTasks[index] = task;
+            else allTasks.unshift(task);
+            renderBoard(allTasks);
+        }
+        async function dropTask(event, status) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('drag-over');
+            const id = event.dataTransfer.getData('text/plain');
+            if (!id) return;
+            try {
+                const result = await Nivora.api('/tasks/' + id, { method: 'PATCH', data: { status } });
+                storeTask(result.task);
+            } catch (error) { showToast(error.message, 'error'); }
+        }
 
         function openQuickAdd(status) { quickAddStatus = status; document.getElementById('quickAddModal').classList.add('show'); document.getElementById('quickAddTitle').focus(); }
         async function submitQuickAdd() {
             const title = document.getElementById('quickAddTitle').value.trim();
             if (!title) { showToast('العنوان مطلوب', 'warning'); return; }
             const btn = document.getElementById('quickAddBtn');
+            if (btn.disabled) return;
             setButtonLoading(btn, true, 'جاري...');
             const pid = document.getElementById('projectFilter').value;
-            await fetch(`${API_BASE}/tasks`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ title, status: quickAddStatus, projectId: pid || null, workspaceId: Nivora.workspaceId() }) });
-            setButtonLoading(btn, false);
-            closeQuickAdd();
-            showToast('تمت الإضافة', 'success');
-            loadKanban();
+            try {
+                const task = await Nivora.api('/tasks', { method: 'POST',
+                    data: { title, status: quickAddStatus, projectId: pid || null, workspaceId: Nivora.workspaceId() } });
+                boardRequest?.abort();
+                storeTask(task);
+                closeQuickAdd();
+                showToast('تمت الإضافة', 'success');
+            } catch (error) { showToast(error.message, 'error'); }
+            finally { setButtonLoading(btn, false); }
         }
 
-        async function refreshTask() { const r = await fetch(`${API_BASE}/tasks/${currentTaskId}`, { headers: { 'Authorization': `Bearer ${token}` } }); const u = await r.json(); const i = allTasks.findIndex(t => t._id === currentTaskId); if (i >= 0) allTasks[i] = u; return u; }
-
-        function openDetails(id, tab) {
+        let detailSequence = 0;
+        async function openDetails(id, tab) {
             currentTaskId = id;
-            const t = allTasks.find(t => t._id === id); if (!t) return;
+            const sequence = ++detailSequence;
+            const known = allTasks.find(task => task._id === id);
+            if (!known) return;
+            document.getElementById('detailsTitle').textContent = '📋 ' + known.title;
+            document.getElementById('detailsBody').textContent = 'جارٍ تحميل تفاصيل المهمة…';
+            document.getElementById('detailsModal').classList.add('show');
+            try {
+                const task = await Nivora.api('/tasks/' + id);
+                if (sequence !== detailSequence || currentTaskId !== id) return;
+                storeTask(task);
+                renderDetails(task, tab);
+            } catch (error) {
+                if (sequence === detailSequence) document.getElementById('detailsBody').textContent = error.message;
+            }
+        }
+
+        function renderDetails(t, tab) {
+            const id = t._id;
             const cCount = t.comments?.length || 0;
             const aCount = t.attachments?.length || 0;
             const comments = t.comments || [];
@@ -331,16 +376,15 @@
                 <div class="detail-section"><label>● الحالة</label><div class="opt-group">${statuses.map(s => `<button class="opt-btn ${t.status === s ? 'sel' : ''}" onclick="chStat('${s}')">${icons[s]} ${labels[s]}</button>`).join('')}</div></div>
                 <div class="detail-section">
                     <label>📎 الملفات (${aCount})</label>
-                    ${escapeHtml(attachments.length === 0 ? '<p style="color:var(--text-muted);font-size:0.85rem;">لا توجد مرفقات</p>' : '')}
+                    ${attachments.length === 0 ? '<p class="detail-empty">لا توجد مرفقات</p>' : ''}
                     ${attachments.map(a => `<div class="file-item"><span>📎</span><a href="${Nivora.page('task.html', { id: currentTaskId, tab: 'attachments' })}">${escapeHtml(a.name)}</a><button class="btn-delete-sm" onclick="delAtt('${a._id}')">🗑️</button></div>`).join('')}
                     <div style="margin-top:0.75rem;display:flex;gap:0.5rem;"><input type="file" id="fileUpload" style="display:none;" onchange="upFileDet()"><button class="btn btn-primary btn-sm" onclick="document.getElementById('fileUpload').click()">📁 رفع ملف</button></div>
                     <div class="drop-area" ondragover="event.preventDefault()" ondrop="dropFile(event)">📥 أفلت الملفات هنا</div>
                     <a href="task.html?id=${id}&tab=attachments" class="btn btn-outline btn-sm" style="width:100%;text-align:center;text-decoration:none;margin-top:0.5rem;display:block;">📋 فتح الملفات كاملة</a>
                 </div>
-                <div class="detail-section"><div class="toggle-row"><label>🔄 التكرار</label><div class="toggle-sw ${t.isRecurring ? 'on' : ''}" id="recurToggle" onclick="toggleRecur()"></div></div></div>
                 <div class="detail-section">
                     <label>💬 التعليقات (${cCount})</label>
-                    ${escapeHtml(comments.length === 0 ? '<p style="color:var(--text-muted);font-size:0.85rem;">لا توجد تعليقات</p>' : '')}
+                    ${comments.length === 0 ? '<p class="detail-empty">لا توجد تعليقات</p>' : ''}
                     ${comments.map(c => `<div class="comment-item"><div class="cu">${escapeHtml(c.username || 'مستخدم')}</div><div class="ct">${escapeHtml(c.text)}</div><div class="ctm">${formatDateTime(c.createdAt)}</div></div>`).join('')}
                     <div class="comment-row"><input type="text" id="commentInput" placeholder="اكتب تعليقاً... @ للإشارة"><button class="btn btn-primary btn-sm" onclick="addCommentDet()">إرسال</button></div>
                     <a href="task.html?id=${id}&tab=comments" class="btn btn-outline btn-sm" style="width:100%;text-align:center;text-decoration:none;margin-top:0.5rem;display:block;">📋 فتح التعليقات كاملة</a>
@@ -351,20 +395,68 @@
             if (tab === 'files') setTimeout(() => document.querySelector('.drop-area')?.scrollIntoView({ behavior: 'smooth' }), 300);
         }
 
-        async function saveField(field, value) { if (!currentTaskId) return; try { await Nivora.api('/tasks/' + currentTaskId, { method: 'PATCH', data: { [field]: value } }); await refreshTask(); } catch (error) { showToast(error.message, 'error'); } }
-        async function chPri(p) { await saveField('priority', p); openDetails(currentTaskId); }
-        async function chStat(s) { await saveField('status', s); openDetails(currentTaskId); }
-        async function toggleRecur() { const t = allTasks.find(t => t._id === currentTaskId); if (!t) return; await saveField('isRecurring', !t.isRecurring); document.getElementById('recurToggle')?.classList.toggle('on'); }
-        async function addCommentDet() { const inp = document.getElementById('commentInput'); const txt = inp.value.trim(); if (!txt || !currentTaskId) return; await fetch(`${API_BASE}/tasks/${currentTaskId}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ text: txt }) }); await refreshTask(); renderBoard(allTasks); showToast('تمت الإضافة', 'success'); openDetails(currentTaskId, 'comments'); }
+        let detailSave = Promise.resolve();
+        function updateDetails(id, suffix, method, data, tab, redraw = true) {
+            detailSave = detailSave.then(async () => {
+                try {
+                    const result = await Nivora.api('/tasks/' + id + suffix, { method, data });
+                    const task = result.task || result;
+                    boardRequest?.abort();
+                    storeTask(task);
+                    if (currentTaskId === id) {
+                        document.getElementById('detailsTitle').textContent = '📋 ' + task.title;
+                        if (redraw) renderDetails(task, tab);
+                    }
+                    return true;
+                } catch (error) {
+                    showToast(error.message, 'error');
+                    return false;
+                }
+            });
+            return detailSave;
+        }
+        function saveField(field, value) {
+            if (!currentTaskId) return;
+            return updateDetails(currentTaskId, '', 'PATCH', { [field]: value }, null, false);
+        }
+        function chPri(priority) {
+            return updateDetails(currentTaskId, '', 'PATCH', { priority });
+        }
+        function chStat(status) {
+            return updateDetails(currentTaskId, '', 'PATCH', { status });
+        }
+        async function addCommentDet() {
+            const input = document.getElementById('commentInput');
+            const text = input.value.trim();
+            const button = input.nextElementSibling;
+            if (!text || !currentTaskId || button.disabled) return;
+            button.disabled = true;
+            try {
+                if (await updateDetails(currentTaskId, '/comments', 'POST', { text }, 'comments')) showToast('تمت الإضافة');
+            } finally { button.disabled = false; }
+        }
         async function uploadBoardFile(file) {
             if (!file || !currentTaskId) return;
-            try { await Nivora.api('/tasks/' + currentTaskId + '/attachments/upload', { method: 'POST', data: Nivora.uploadData(file) }); await refreshTask(); }
-            catch (error) { showToast(error.message, 'error'); }
+            const input = document.getElementById('fileUpload');
+            if (input.disabled) return;
+            input.disabled = true;
+            try { await updateDetails(currentTaskId, '/attachments/upload', 'POST', Nivora.uploadData(file), 'files'); }
+            finally { input.disabled = false; }
         }
         function upFileDet() { uploadBoardFile(document.getElementById('fileUpload').files[0]); }
         function dropFile(event) { event.preventDefault(); uploadBoardFile(event.dataTransfer.files[0]); }
-        function delAtt(aid) { confirmDialog({ title: 'حذف المرفق', message: 'حذف هذا المرفق؟', confirmText: 'حذف', danger: true, onConfirm: async () => { await fetch(`${API_BASE}/tasks/${currentTaskId}/attachments/${aid}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); await refreshTask(); renderBoard(allTasks); openDetails(currentTaskId, 'files'); } }); }
-        loadProjects().then(() => loadKanban());
+        function delAtt(aid) {
+            const id = currentTaskId;
+            confirmDialog({ title: 'حذف المرفق', message: 'حذف هذا المرفق؟', confirmText: 'حذف',
+                onConfirm: () => updateDetails(id, '/attachments/' + aid, 'DELETE', undefined, 'files') });
+        }
+        const initialProject = new URLSearchParams(location.search).get('projectId');
+        if (initialProject) {
+            document.getElementById('projectFilter').add(new Option('المشروع المحدد', initialProject));
+            document.getElementById('projectFilter').value = initialProject;
+        }
+        loadProjects().catch(error => showToast(error.message, 'error'));
+        loadKanban();
     </script>
 </body>
 </html>
