@@ -1,14 +1,37 @@
 (() => {
     'use strict';
 
-    const deployedFrontend = 'task-manager-theta-beryl-91.vercel.app';
     const deployedBackend = 'https://nivora-t9ov.onrender.com';
     const native = window.Capacitor?.isNativePlatform?.() || location.protocol === 'capacitor:';
     const onVercel = location.hostname.endsWith('.vercel.app');
-    const apiOrigin = native || location.hostname === deployedFrontend ? deployedBackend : location.origin;
+    const apiOrigin = native ? deployedBackend : location.origin;
     const apiBase = apiOrigin + '/api';
+    const realtimeOrigin = native || onVercel ? deployedBackend : location.origin;
     const googleLoginUrl = (native || onVercel ? deployedBackend : apiOrigin) + '/api/auth/google';
     const personal = new URLSearchParams(location.search).get('scope') === 'personal';
+
+    const originalFetch = window.fetch?.bind(window);
+    let loginPending = false;
+    if (originalFetch) window.fetch = async (input, options) => {
+        const response = await originalFetch(input, options);
+        const target = new URL(typeof input === 'string' || input instanceof URL ? input : input.url, location.href);
+        const headers = new Headers(options?.headers || input.headers);
+        const admin = target.pathname.startsWith('/api/admin');
+        const key = admin ? 'adminToken' : 'token';
+        const current = localStorage.getItem(key);
+        const protectedApi = target.origin === apiOrigin && target.pathname.startsWith('/api/');
+        if (response.status === 401 && protectedApi && current
+            && headers.get('Authorization') === 'Bearer ' + current && !loginPending) {
+            loginPending = true;
+            localStorage.removeItem(key);
+            try {
+                sessionStorage.setItem('nivora-session-expired', 'true');
+                if (!admin) sessionStorage.setItem('nivora-return', location.pathname + location.search + location.hash);
+            } catch {}
+            location.replace(admin ? '/admin/login.html' : '/login.html');
+        }
+        return response;
+    };
 
     function workspaceId() {
         return personal ? null : localStorage.getItem('workspaceId');
@@ -114,6 +137,6 @@
         return data;
     }
 
-    window.Nivora = { apiBase, apiOrigin, googleLoginUrl, api, apiPage, url, page, personal, user, setWorkspace, workspaceId, read, externalUrl,
+    window.Nivora = { apiBase, apiOrigin, realtimeOrigin, googleLoginUrl, api, apiPage, url, page, personal, user, setWorkspace, workspaceId, read, externalUrl,
         download, uploadData, dateKey, taskDateKey };
 })();

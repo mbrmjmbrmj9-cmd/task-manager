@@ -1,7 +1,7 @@
 (() => {
     'use strict';
 
-    const { api, user, page, workspaceId, apiOrigin } = Nivora;
+    const { api, user, page, workspaceId, realtimeOrigin } = Nivora;
     const byId = id => document.getElementById(id);
     const params = new URLSearchParams(location.search);
     const scope = { workspaceId: params.get('workspaceId') || workspaceId(), projectId: params.get('projectId') || undefined };
@@ -162,10 +162,10 @@
             showStatus(error.message, true);
         }
         const client = document.createElement('script');
-        client.src = apiOrigin + '/socket.io/socket.io.js';
+        client.src = realtimeOrigin + '/socket.io/socket.io.js';
         client.addEventListener('load', () => {
             if (!window.io) return;
-            const socket = window.io(apiOrigin, { auth: { token } });
+            const socket = window.io(realtimeOrigin, { auth: { token } });
             socket.on('connect', () => socket.timeout(5000).emit('chat-subscribe', scope, () => {}));
             socket.on('chat-updated', () => refresh(false, true));
         });

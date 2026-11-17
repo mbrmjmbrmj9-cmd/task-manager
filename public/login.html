@@ -150,6 +150,12 @@
     <script src="js/i18n.js"></script>
     <script>
         const API = Nivora.apiBase + '/auth';
+        if (sessionStorage.getItem('nivora-session-expired')) {
+            sessionStorage.removeItem('nivora-session-expired');
+            const message = document.getElementById('loginError');
+            message.textContent = 'انتهت جلسة الدخول. سجّل الدخول مجددًا لعرض بياناتك.';
+            message.style.display = 'block';
+        }
 
         function toggleDark() { document.body.classList.toggle('dark'); const d = document.body.classList.contains('dark'); localStorage.setItem('dark', d); document.getElementById('darkBtn').textContent = d ? '☀️' : '🌙'; }
         if (localStorage.getItem('dark') === 'true') { document.body.classList.add('dark'); document.getElementById('darkBtn').textContent = '☀️'; }
@@ -207,7 +213,7 @@
             sessionStorage.removeItem('nivora-return');
             sessionStorage.removeItem('nivora-invite');
             if (pendingInvite) location.href = 'join-workspace.html?code=' + encodeURIComponent(pendingInvite);
-            else if (destination && /^\/(?:project|chat|task)\.html(?:[?#]|$)/.test(destination)) location.href = new URL(destination, location.origin).href;
+            else if (destination && /^\/(?:dashboard|projects|project|tasks|task|kanban|gantt|calendar|reports|chat|team|teams|profile|settings|workspace-settings|project-settings|archive|templates|workflows|workspace)\.html(?:[?#]|$)/.test(destination)) location.href = new URL(destination, location.origin).href;
             else location.href = workspaces.length ? 'dashboard.html' : 'workspace.html';
         }
 

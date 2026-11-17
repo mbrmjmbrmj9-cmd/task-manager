@@ -69,7 +69,7 @@
         } catch (error) {
             if (current.controller.signal.aborted) return;
             if (!tasks.length) tbody.replaceChildren();
-            status.textContent = 'تعذر تحميل المهام. ';
+            status.textContent = (error.status ? error.message : 'تعذر الاتصال لتحميل المهام.') + ' ';
             const retry = document.createElement('button');
             retry.className = 'btn btn-outline';
             retry.type = 'button';

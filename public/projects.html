@@ -166,7 +166,7 @@
                 allProjects = [...allProjects.filter(project => !startingIds.has(project._id) && !fetchedIds.has(project._id)), ...projects];
                 renderProjects();
             } catch (err) {
-                showError('projectGrid', 'تعذر تحميل المشاريع', loadProjects);
+                showError('projectGrid', err.status ? err.message : 'تعذر الاتصال لتحميل المشاريع', loadProjects);
             }
         }
 
